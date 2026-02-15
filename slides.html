@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Презентація | Безпека хмарних технологій</title>
+  <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/slides.css">
+</head>
+<body>
+
+  <div class="slide-deck">
+    <section class="slide active">
+      <h1>Безпека хмарних технологій</h1>
+      <p>Лекція 1: Вступ до хмарних обчислень та архітектура NIST</p>
+    </section>
+
+    <section class="slide">
+      <h1>Що таке хмарні обчислення?</h1>
+      <ul>
+        <li>Модель надання IT-ресурсів на вимогу</li>
+        <li>Оплата за фактичне використання</li>
+        <li>Швидке масштабування</li>
+        <li>Доступ через мережу</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <h1>5 характеристик за NIST</h1>
+      <ul>
+        <li>Самообслуговування на вимогу</li>
+        <li>Широкий мережевий доступ</li>
+        <li>Пул ресурсів (multi-tenancy)</li>
+        <li>Швидка еластичність</li>
+        <li>Вимірюваний сервіс</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <h1>Моделі обслуговування</h1>
+      <ul>
+        <li><strong>IaaS</strong> — Infrastructure as a Service</li>
+        <li><strong>PaaS</strong> — Platform as a Service</li>
+        <li><strong>SaaS</strong> — Software as a Service</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <h1>Shared Responsibility Model</h1>
+      <ul>
+        <li>Безпека <strong>хмари</strong> — провайдер</li>
+        <li>Безпека <strong>в хмарі</strong> — клієнт</li>
+        <li>Розподіл залежить від моделі (IaaS/PaaS/SaaS)</li>
+      </ul>
+    </section>
+
+    <section class="slide">
+      <h1>Питання?</h1>
+      <p>Переходимо до обговорення...</p>
+    </section>
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button onclick="prev()">&#8592;</button>
+    <button onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="js/slides.js"></script>
+
+</body>
+</html>
