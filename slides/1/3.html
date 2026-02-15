@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 1.3 — Типи хакерів</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="1">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Типи хакерів</h1>
+      <div class="subtitle">Тема 1.3 — Мотивація, методи та наслідки</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Main types -->
+    <section class="slide">
+      <h2>Основні категорії хакерів</h2>
+
+      <div class="three-col-grid">
+        <div class="card-green">
+          <h4>White Hat</h4>
+          <p><strong>Етичні хакери</strong></p>
+          <p>Працюють з дозволу власника системи, дотримуються закону та етичних норм.</p>
+          <ul>
+            <li>Пентестери</li>
+            <li>Bug Bounty мисливці</li>
+            <li>Security-аудитори</li>
+          </ul>
+          <p><strong>Мета:</strong> захист</p>
+        </div>
+        <div class="card-gray">
+          <h4>Grey Hat</h4>
+          <p><strong>Пограничні</strong></p>
+          <p>Діють без явного дозволу, але зазвичай без зловмисних намірів.</p>
+          <ul>
+            <li>Самостійний пошук вразливостей</li>
+            <li>Іноді повідомляють компанії</li>
+            <li>Юридично — незаконно</li>
+          </ul>
+          <p><strong>Мета:</strong> визнання, виклик</p>
+        </div>
+        <div class="card-red">
+          <h4>Black Hat</h4>
+          <p><strong>Зловмисники</strong></p>
+          <p>Зламують системи без дозволу заради вигоди або шкоди.</p>
+          <ul>
+            <li>Крадіжка даних</li>
+            <li>Ransomware-атаки</li>
+            <li>Шантаж та вимагання</li>
+          </ul>
+          <p><strong>Мета:</strong> збагачення, руйнування</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Additional types -->
+    <section class="slide">
+      <h2>Додаткові категорії хакерів</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h4>Script Kiddie</h4>
+            <p>Недосвідчений хакер, що використовує готові інструменти та експлойти без розуміння їх роботи.</p>
+            <p><strong>Небезпека:</strong> непередбачуваність дій може завдати значної шкоди.</p>
+          </div>
+          <div class="card-purple">
+            <h4>Hacktivist</h4>
+            <p>Мотивований політичними чи соціальними переконаннями.</p>
+            <p><strong>Приклад:</strong> Anonymous — DDoS-атаки на урядові сайти, витоки документів.</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h4>State-sponsored (державні)</h4>
+            <p>Працюють на розвідувальні агенції або уряди. Мають значні ресурси.</p>
+            <p><strong>Групи:</strong> APT28 (Fancy Bear), APT29 (Cozy Bear), Lazarus Group</p>
+          </div>
+          <div class="card-pink">
+            <h4>Insider Threat (інсайдер)</h4>
+            <p>Працівник або підрядник, що зловживає легітимним доступом.</p>
+            <p><strong>Статистика:</strong> до 60% інцидентів пов'язані з інсайдерами.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Warning about authorization -->
+    <section class="slide">
+      <h2>Авторизація — головна відмінність</h2>
+
+      <div class="warning-box">
+        <h4>Запам'ятайте назавжди</h4>
+        <p>Різниця між White Hat та Black Hat — <strong>авторизація</strong>. Одні й ті самі дії (сканування, експлуатація, збір даних) можуть бути <span class="highlight">законними</span> або <span class="highlight">злочинними</span> залежно від наявності дозволу.</p>
+      </div>
+
+      <div class="two-column">
+        <div class="card-green">
+          <h4>З авторизацією</h4>
+          <ul>
+            <li>Підписаний договір (SoW)</li>
+            <li>Визначений scope</li>
+            <li>Узгоджені правила (RoE)</li>
+            <li>Документування дій</li>
+            <li>Звіт з рекомендаціями</li>
+          </ul>
+          <p><strong>= Легальна професійна діяльність</strong></p>
+        </div>
+        <div class="card-red">
+          <h4>Без авторизації</h4>
+          <ul>
+            <li>Немає дозволу власника</li>
+            <li>Невизначені межі</li>
+            <li>Порушення закону</li>
+            <li>Кримінальна відповідальність</li>
+            <li>Позбавлення волі до 6 років (Ст. 361 КК)</li>
+          </ul>
+          <p><strong>= Кіберзлочин</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Closing -->
+    <section class="slide title-slide">
+      <h1>Типи хакерів</h1>
+      <div class="subtitle">Ваш вибір визначає вашу кар'єру — і вашу свободу</div>
+      <p>Далі: Правові аспекти</p>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

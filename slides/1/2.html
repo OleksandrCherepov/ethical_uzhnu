@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 1.2 — Фази тестування на проникнення</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="1">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Фази тестування на проникнення</h1>
+      <div class="subtitle">Тема 1.2 — Стандарт PTES (Penetration Testing Execution Standard)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Flow diagram -->
+    <section class="slide">
+      <h2>7 фаз пентесту (PTES)</h2>
+
+      <div class="flow-row">
+        <div class="flow-step card-gray"><strong>1. Pre-engagement</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-purple"><strong>2. Розвідка</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-blue"><strong>3. Сканування</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-yellow"><strong>4. Експлуатація</strong></div>
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-step card-red"><strong>5. Пост-експлуатація</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-pink"><strong>6. Закріплення</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-green"><strong>7. Звітування</strong></div>
+      </div>
+
+      <div class="info-box">
+        <h4>PTES — Penetration Testing Execution Standard</h4>
+        <p>Стандартизований фреймворк, що описує повний цикл тестування на проникнення — від початкової взаємодії з клієнтом до фінального звіту з рекомендаціями.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: Phases details (1-4) -->
+    <section class="slide">
+      <h2>Фази 1–4: Від підготовки до експлуатації</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-gray">
+            <h4>1. Pre-engagement</h4>
+            <p>Узгодження scope, правил, юридичних документів, контактних осіб та часових рамок тестування.</p>
+          </div>
+          <div class="card-purple">
+            <h4>2. Reconnaissance (розвідка)</h4>
+            <p>Пасивний збір інформації: домени, IP-адреси, електронні пошти, технології.</p>
+            <p><strong>Інструменти:</strong> Whois, Google Dorks, theHarvester, Shodan</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h4>3. Scanning & Enumeration</h4>
+            <p>Активне зондування: відкриті порти, версії сервісів, операційна система.</p>
+            <p><strong>Інструменти:</strong> Nmap, Masscan, Nikto</p>
+          </div>
+          <div class="card-yellow">
+            <h4>4. Exploitation (експлуатація)</h4>
+            <p>Використання знайдених вразливостей для отримання доступу до системи.</p>
+            <p><strong>Інструменти:</strong> Metasploit, SQLMap, Burp Suite</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Phases details (5-7) -->
+    <section class="slide">
+      <h2>Фази 5–7: Від пост-експлуатації до звіту</h2>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h4>5. Post-Exploitation</h4>
+          <p>Оцінка цінності скомпрометованої системи:</p>
+          <ul>
+            <li>Збір конфіденційних даних</li>
+            <li>Підвищення привілеїв</li>
+            <li>Горизонтальне переміщення</li>
+            <li>Pivot до інших систем</li>
+          </ul>
+        </div>
+        <div class="card-pink">
+          <h4>6. Persistence (закріплення)</h4>
+          <p>Перевірка можливості збереження доступу:</p>
+          <ul>
+            <li>Backdoor-механізми</li>
+            <li>Виживання після перезавантаження</li>
+            <li>Обхід антивірусів</li>
+            <li>Приховування присутності</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>7. Reporting (звітування)</h4>
+          <p>Документування всіх знахідок:</p>
+          <ul>
+            <li>Executive Summary</li>
+            <li>Технічні деталі</li>
+            <li>Оцінка ризиків (CVSS)</li>
+            <li>Рекомендації щодо виправлення</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Course mapping -->
+    <section class="slide">
+      <h2>Як курс відповідає фазам PTES</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Фаза PTES</th>
+            <th>Лекція курсу</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pre-engagement</td>
+            <td>Лекція 1 — Вступ до професії та етика</td>
+          </tr>
+          <tr>
+            <td>Reconnaissance</td>
+            <td>Лекція 3 — Розвідка та OSINT</td>
+          </tr>
+          <tr>
+            <td>Scanning & Enumeration</td>
+            <td>Лекція 4 — Сканування мережі</td>
+          </tr>
+          <tr>
+            <td>Exploitation</td>
+            <td>Лекції 5–8 — Metasploit, брутфорс, OWASP Top 10</td>
+          </tr>
+          <tr>
+            <td>Post-Exploitation</td>
+            <td>Лекція 9 — Meterpreter та пост-експлуатація</td>
+          </tr>
+          <tr>
+            <td>Persistence & Evasion</td>
+            <td>Лекція 10 — Утримання доступу</td>
+          </tr>
+          <tr>
+            <td>Reporting</td>
+            <td>Лекція 12 — Звітування та кар'єра</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success-box">
+        <h4>Логіка курсу</h4>
+        <p>Курс побудований за логікою реального пентесту: від <strong>розвідки</strong> (лекція 3) до <strong>звітування</strong> (лекція 12).</p>
+      </div>
+    </section>
+
+    <!-- Slide 6: Closing -->
+    <section class="slide title-slide">
+      <h1>Фази пентесту</h1>
+      <div class="subtitle">Структурований підхід — запорука успішного тестування</div>
+      <p>Далі: Типи хакерів</p>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

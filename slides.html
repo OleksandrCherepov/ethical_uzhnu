@@ -11,83 +11,276 @@
 <body>
 
   <div class="slide-deck">
-    <section class="slide active">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
       <h1>Вступ до професії та етика</h1>
-      <p>Лекція 1 — Основи етичного хакінгу</p>
+      <div class="subtitle">Лекція 1 — Основи етичного хакінгу</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
     </section>
 
+    <!-- Slide 2: What is ethical hacking -->
     <section class="slide">
-      <h1>Що таке етичний хакінг?</h1>
-      <ul>
-        <li>Авторизований пошук вразливостей в інформаційних системах</li>
-        <li>Мета — виявити слабкі місця раніше за зловмисників</li>
-        <li>Дотримання закону та етичних норм</li>
-        <li>Письмовий дозвіл власника системи</li>
-      </ul>
+      <h2>Що таке етичний хакінг?</h2>
+
+      <div class="info-box">
+        <h4>Визначення</h4>
+        <p><span class="highlight">Етичний хакінг</span> — авторизований та легальний процес пошуку вразливостей в інформаційних системах з метою підвищення їхньої безпеки.</p>
+      </div>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Ключові принципи</h4>
+          <ul>
+            <li>Письмовий дозвіл власника</li>
+            <li>Чітко визначений scope</li>
+            <li>Документування всіх дій</li>
+            <li>Конфіденційність знахідок</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Мета пентесту</h4>
+          <ul>
+            <li>Виявити слабкі місця раніше за зловмисників</li>
+            <li>Оцінити реальний рівень захисту</li>
+            <li>Надати рекомендації для виправлення</li>
+            <li>Перевірити відповідність стандартам</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
+    <!-- Slide 3: PTES Phases -->
     <section class="slide">
-      <h1>Типи хакерів</h1>
-      <ul>
-        <li><strong>White Hat</strong> — етичні хакери, працюють з дозволу</li>
-        <li><strong>Black Hat</strong> — зловмисники, діють незаконно</li>
-        <li><strong>Grey Hat</strong> — пограничні, без явного дозволу</li>
-      </ul>
+      <h2>Фази пентесту (PTES)</h2>
+
+      <div class="flow-row">
+        <div class="flow-step card-purple"><strong>Розвідка</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-blue"><strong>Сканування</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-yellow"><strong>Експлуатація</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-red"><strong>Пост-експлуатація</strong></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step card-green"><strong>Звітування</strong></div>
+      </div>
+
+      <div class="info-box">
+        <h4>PTES — Penetration Testing Execution Standard</h4>
+        <p>Стандартизований фреймворк, що описує повний цикл тестування на проникнення від початкової взаємодії з клієнтом до фінального звіту.</p>
+      </div>
     </section>
 
+    <!-- Slide 4: Hacker types -->
     <section class="slide">
-      <h1>Правові аспекти</h1>
-      <ul>
-        <li>Межа між пентестом і злочином — <strong>авторизація</strong></li>
-        <li>Письмовий договір (scope of engagement)</li>
-        <li>Визначений обсяг тестування (scope)</li>
-        <li>Відповідальне розкриття (responsible disclosure)</li>
-      </ul>
+      <h2>Типи хакерів</h2>
+
+      <div class="three-col-grid">
+        <div class="card-green">
+          <h4>White Hat</h4>
+          <p>Етичні хакери, що працюють з дозволу власника системи</p>
+          <ul>
+            <li>Пентестери</li>
+            <li>Bug Bounty мисливці</li>
+            <li>Security-аудитори</li>
+          </ul>
+        </div>
+        <div class="card-gray">
+          <h4>Grey Hat</h4>
+          <p>Діють без явного дозволу, але без зловмисних намірів</p>
+          <ul>
+            <li>Пограничні дії</li>
+            <li>Самостійний пошук багів</li>
+            <li>Ризик кримінальної відповідальності</li>
+          </ul>
+        </div>
+        <div class="card-red">
+          <h4>Black Hat</h4>
+          <p>Зловмисники, що порушують закон заради вигоди</p>
+          <ul>
+            <li>Крадіжка даних</li>
+            <li>Ransomware</li>
+            <li>Кримінальна відповідальність</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Запам'ятайте</h4>
+        <p>Різниця між White Hat та Black Hat — <strong>авторизація</strong>. Одні й ті самі дії можуть бути законними або злочинними залежно від наявності дозволу.</p>
+      </div>
     </section>
 
+    <!-- Slide 5: Legal aspects -->
     <section class="slide">
-      <h1>Сертифікації: CEH vs OSCP</h1>
-      <ul>
-        <li><strong>CEH</strong> — теорія, менеджмент, 125 питань</li>
-        <li><strong>OSCP</strong> — практика, 24-годинний іспит</li>
-        <li>CEH — широке визнання серед HR</li>
-        <li>OSCP — високе визнання серед технічних спеціалістів</li>
-      </ul>
+      <h2>Правові аспекти</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h4>Україна (КК)</h4>
+            <ul>
+              <li><strong>Ст. 361</strong> — несанкціоноване втручання в роботу комп'ютерних систем</li>
+              <li><strong>Ст. 361-1</strong> — створення шкідливого ПЗ</li>
+              <li><strong>Ст. 362</strong> — викрадення комп'ютерної інформації</li>
+              <li><strong>Ст. 363</strong> — порушення правил експлуатації</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h4>Міжнародне право</h4>
+            <ul>
+              <li><strong>CFAA</strong> (США) — Computer Fraud and Abuse Act</li>
+              <li><strong>GDPR</strong> (ЄС) — захист персональних даних</li>
+              <li><strong>Будапештська конвенція</strong> — кіберзлочинність</li>
+            </ul>
+          </div>
+
+          <div class="success-box">
+            <h4>Захист пентестера</h4>
+            <p>Підписаний договір + визначений scope = легальна діяльність</p>
+          </div>
+        </div>
+      </div>
     </section>
 
+    <!-- Slide 6: Certifications -->
     <section class="slide">
-      <h1>Кар'єрні шляхи</h1>
-      <ul>
-        <li>Penetration Tester</li>
-        <li>Security Analyst</li>
-        <li>Bug Bounty Hunter</li>
-        <li>Red Team Operator</li>
-        <li>Security Consultant</li>
-      </ul>
+      <h2>Сертифікації: CEH vs OSCP</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>CEH</th>
+            <th>OSCP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Організація</td>
+            <td>EC-Council</td>
+            <td>OffSec</td>
+          </tr>
+          <tr>
+            <td>Формат іспиту</td>
+            <td>125 питань (4 год)</td>
+            <td>Практичний (24 год)</td>
+          </tr>
+          <tr>
+            <td>Фокус</td>
+            <td>Теорія + менеджмент</td>
+            <td>Hands-on експлуатація</td>
+          </tr>
+          <tr>
+            <td>Вартість</td>
+            <td>~$1 200</td>
+            <td>~$1 600</td>
+          </tr>
+          <tr>
+            <td>Визнання</td>
+            <td class="cell-yellow">Широке (HR)</td>
+            <td class="cell-green">Глибоке (технічне)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <h4>Інші сертифікації</h4>
+        <p><strong>eJPT</strong> (початковий рівень), <strong>CPTS</strong> (HackTheBox), <strong>GPEN</strong> (SANS), <strong>OSWE</strong> (веб), <strong>OSEP</strong> (просунута експлуатація)</p>
+      </div>
     </section>
 
+    <!-- Slide 7: Career paths -->
     <section class="slide">
-      <h1>Структура курсу</h1>
-      <ul>
-        <li><strong>Модуль 1:</strong> Linux, розвідка, сканування, Metasploit, брутфорс</li>
-        <li><strong>Модуль 2:</strong> Веб-безпека, пост-експлуатація, соціальна інженерія</li>
-        <li>12 лекцій + 12 практичних робіт</li>
-        <li>Підсумковий CTF (Capture The Flag)</li>
-      </ul>
+      <h2>Кар'єрні шляхи</h2>
+
+      <div class="three-col-grid">
+        <div class="gradient-box gradient-red">
+          <h4>Red Team</h4>
+          <p>Імітація реальних атак</p>
+          <ul>
+            <li>Penetration Tester</li>
+            <li>Red Team Operator</li>
+            <li>Exploit Developer</li>
+          </ul>
+        </div>
+        <div class="gradient-box gradient-blue">
+          <h4>Blue Team</h4>
+          <p>Захист та моніторинг</p>
+          <ul>
+            <li>SOC Analyst</li>
+            <li>Incident Responder</li>
+            <li>Threat Hunter</li>
+          </ul>
+        </div>
+        <div class="gradient-box gradient-purple">
+          <h4>Purple Team</h4>
+          <p>Комбінація атаки та захисту</p>
+          <ul>
+            <li>Security Engineer</li>
+            <li>Security Architect</li>
+            <li>Bug Bounty Hunter</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <h4>Зарплати (USA, 2024)</h4>
+        <p>Penetration Tester: <strong>$90k—$130k</strong> | Security Engineer: <strong>$110k—$160k</strong> | Red Team Lead: <strong>$140k—$200k+</strong></p>
+      </div>
     </section>
 
+    <!-- Slide 8: Course structure -->
     <section class="slide">
+      <h2>Структура курсу</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Модуль 1: Фундамент</h4>
+          <ol>
+            <li>Вступ до професії та етика</li>
+            <li>Linux та командний рядок</li>
+            <li>Розвідка (OSINT)</li>
+            <li>Сканування та Enumeration</li>
+            <li>Metasploit та експлуатація</li>
+            <li>Брутфорс та атаки на паролі</li>
+          </ol>
+        </div>
+        <div class="card-green">
+          <h4>Модуль 2: Веб та пост-експлуатація</h4>
+          <ol>
+            <li>OWASP Top 10 (Частина 1)</li>
+            <li>OWASP Top 10 (Частина 2)</li>
+            <li>Пост-експлуатація та Meterpreter</li>
+            <li>Утримання доступу та Evasion</li>
+            <li>Соціальна інженерія</li>
+            <li>Звітування та кар'єра</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <p><strong>12 лекцій</strong> + <strong>12 практичних робіт</strong> + <strong>підсумковий CTF</strong> = 24 академічні години</p>
+      </div>
+    </section>
+
+    <!-- Slide 9: Q&A -->
+    <section class="slide title-slide">
       <h1>Питання?</h1>
-      <p>Переходимо до практичної роботи: побудова лабораторії</p>
+      <div class="subtitle">Переходимо до практичної роботи: побудова лабораторії</div>
     </section>
+
   </div>
 
   <div class="slide-counter" id="counter"></div>
   <div class="slide-progress" id="progress"></div>
 
   <div class="controls">
-    <button onclick="prev()">&#8592;</button>
-    <button onclick="next()">&#8594;</button>
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
   </div>
 
   <script src="js/slides.js"></script>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 1.1 — Що таке етичний хакінг?</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="1">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Що таке етичний хакінг?</h1>
+      <div class="subtitle">Тема 1.1 — Основи етичного хакінгу</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Definition + Principles + Goals -->
+    <section class="slide">
+      <h2>Визначення та ключові принципи</h2>
+
+      <div class="info-box">
+        <h4>Визначення</h4>
+        <p><span class="highlight">Етичний хакінг</span> (ethical hacking, penetration testing) — це авторизований процес систематичного пошуку вразливостей в інформаційних системах, мережах та додатках з метою їх виявлення та усунення до того, як ними скористаються зловмисники.</p>
+      </div>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Ключові принципи</h4>
+          <ul>
+            <li>Письмовий дозвіл власника системи</li>
+            <li>Чітко визначений scope (обсяг)</li>
+            <li>Документування всіх виконаних дій</li>
+            <li>Конфіденційність знахідок</li>
+            <li>Дотримання законодавства</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Мета пентесту</h4>
+          <ul>
+            <li>Виявити вразливості раніше за зловмисників</li>
+            <li>Оцінити реальний рівень захищеності</li>
+            <li>Перевірити ефективність засобів безпеки</li>
+            <li>Надати рекомендації для виправлення</li>
+            <li>Забезпечити відповідність стандартам (PCI DSS, ISO 27001)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Types of Testing -->
+    <section class="slide">
+      <h2>Типи тестування на проникнення</h2>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h4>Black Box</h4>
+          <p><strong>Знання: нульове</strong></p>
+          <p>Тестувальник не має жодної інформації про систему.</p>
+          <ul>
+            <li>Імітує реальну зовнішню атаку</li>
+            <li>Найбільш реалістичний сценарій</li>
+            <li>Потребує найбільше часу</li>
+          </ul>
+        </div>
+        <div class="card-blue">
+          <h4>White Box</h4>
+          <p><strong>Знання: повне</strong></p>
+          <p>Тестувальник має повний доступ до інформації.</p>
+          <ul>
+            <li>Вихідний код, схеми мережі</li>
+            <li>Максимальне покриття</li>
+            <li>Найефективніший за часом</li>
+          </ul>
+        </div>
+        <div class="card-gray">
+          <h4>Grey Box</h4>
+          <p><strong>Знання: часткове</strong></p>
+          <p>Тестувальник має обмежену інформацію.</p>
+          <ul>
+            <li>Облікові дані користувача</li>
+            <li>Баланс реалізму та ефективності</li>
+            <li>Найпоширеніший підхід</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Важливо</h4>
+        <p>Тип тестування завжди узгоджується з клієнтом <strong>до початку</strong> робіт і фіксується у документі Statement of Work (SoW).</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: Summary -->
+    <section class="slide">
+      <h2>Підсумок: Що таке етичний хакінг?</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Різниця між етичним хакером та зловмисником — <span class="highlight">авторизація</span>. Одні й ті самі дії можуть бути законними або злочинними залежно від наявності дозволу.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Етичний хакінг — це легальний та авторизований процес</li>
+        <li>Мета — підвищити безпеку, а не зашкодити</li>
+        <li>Завжди потрібен письмовий дозвіл</li>
+        <li>Scope, правила та звітування — обов'язкові елементи</li>
+        <li>Три підходи: Black Box, White Box, Grey Box</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>фази тестування на проникнення</strong> за стандартом PTES.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

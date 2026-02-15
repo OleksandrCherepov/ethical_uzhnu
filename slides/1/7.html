@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 1.7 — Структура курсу</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="1">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Структура курсу</h1>
+      <div class="subtitle">Тема 1.7 — Два модулі, 12 лекцій, підсумковий CTF</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Two modules -->
+    <section class="slide">
+      <h2>Два модулі курсу</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Модуль 1: Фундамент</h4>
+          <ol>
+            <li>Вступ до професії та етика</li>
+            <li>Linux та командний рядок</li>
+            <li>Розвідка та OSINT</li>
+            <li>Сканування мережі та Enumeration</li>
+            <li>Metasploit та експлуатація</li>
+            <li>Брутфорс та атаки на паролі</li>
+          </ol>
+          <p><strong>Фокус:</strong> підготовка, розвідка, перші атаки</p>
+        </div>
+        <div class="card-green">
+          <h4>Модуль 2: Веб та пост-експлуатація</h4>
+          <ol>
+            <li>OWASP Top 10 (Частина 1)</li>
+            <li>OWASP Top 10 (Частина 2)</li>
+            <li>Пост-експлуатація та Meterpreter</li>
+            <li>Утримання доступу та Evasion</li>
+            <li>Соціальна інженерія</li>
+            <li>Звітування та кар'єра</li>
+          </ol>
+          <p><strong>Фокус:</strong> веб-безпека, закріплення, звітування</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Course mapping to pentest phases -->
+    <section class="slide">
+      <h2>Відповідність курсу фазам пентесту</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>Лекція</th>
+            <th>Фаза пентесту</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Вступ до професії та етика</td>
+            <td class="cell-blue">Pre-engagement</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Linux та командний рядок</td>
+            <td class="cell-blue">Підготовка</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Розвідка та OSINT</td>
+            <td class="cell-purple">Reconnaissance</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Сканування мережі</td>
+            <td class="cell-purple">Scanning</td>
+          </tr>
+          <tr>
+            <td>5–6</td>
+            <td>Metasploit, брутфорс</td>
+            <td class="cell-yellow">Exploitation</td>
+          </tr>
+          <tr>
+            <td>7–8</td>
+            <td>OWASP Top 10</td>
+            <td class="cell-yellow">Web Exploitation</td>
+          </tr>
+          <tr>
+            <td>9–10</td>
+            <td>Пост-експлуатація, Persistence</td>
+            <td class="cell-red">Post-Exploitation</td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td>Соціальна інженерія</td>
+            <td class="cell-red">Social Engineering</td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td>Звітування та кар'єра</td>
+            <td class="cell-green">Reporting</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: CTF + format -->
+    <section class="slide">
+      <h2>Формат навчання та підсумковий CTF</h2>
+
+      <div class="info-box">
+        <h4>Формат курсу</h4>
+        <p><strong>12 лекцій</strong> + <strong>12 практичних робіт</strong> + <strong>підсумковий CTF</strong> = 24 академічні години</p>
+        <p>Кожна лекція супроводжується практичною роботою на навчальних віртуальних машинах.</p>
+      </div>
+
+      <div class="two-column">
+        <div class="card-purple">
+          <h4>CTF (Capture The Flag)</h4>
+          <p>Фінальне завдання курсу:</p>
+          <ul>
+            <li>Повний злам навчальної машини</li>
+            <li>Від розвідки до отримання root-доступу</li>
+            <li>Написання професійного write-up</li>
+            <li>Застосування всіх вивчених технік</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Навчальні платформи</h4>
+          <p>Для практики рекомендуються:</p>
+          <ul>
+            <li><strong>TryHackMe</strong> — для початківців</li>
+            <li><strong>HackTheBox</strong> — для середнього рівня</li>
+            <li><strong>PortSwigger Academy</strong> — веб-безпека</li>
+            <li><strong>OverTheWire</strong> — Linux та wargames</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <h4>Результат курсу</h4>
+        <p>Після завершення ви матимете практичні навички для складання <strong>eJPT</strong> та підготовки до <strong>OSCP</strong>.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Closing -->
+    <section class="slide title-slide">
+      <h1>Готові до старту?</h1>
+      <div class="subtitle">Переходимо до практичної роботи: побудова лабораторії</div>
+      <p>Основи етичного хакінгу — Лекція 1</p>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Лекція 1: Вступ до професії та етика — Основи етичного хакінгу.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
+  <meta name="theme-color" content="#0ea5e9">
+  <title>Лекція 1. Вступ до професії та етика — Основи етичного хакінгу</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body>
+
+  <aside>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        Основи<br>етичного хакінгу
+        <span>онлайн-курс</span>
+      </div>
+    </div>
+
+    <nav>
+      <a href="../index.html" class="active">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span>
+        Лекції
+      </a>
+      <a href="../practicals.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>
+        Практичні
+      </a>
+      <a href="../tests.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        Тести
+      </a>
+      <a href="../materials.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
+        Матеріали
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <span id="theme-label">Темна тема</span>
+      </button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="lecture-nav-top">
+      <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
+      <span class="lecture-badge">Лекція 1 з 12</span>
+    </div>
+
+    <article class="lecture-content">
+      <h1>Вступ до професії та етика</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
+
+      <hr>
+
+      <section>
+        <h2>Огляд лекції</h2>
+        <p>У цій лекції ми розглянемо основи етичного хакінгу — авторизованого процесу пошуку вразливостей в інформаційних системах. Від визначення професії та типів хакерів до правових аспектів, міжнародних сертифікацій та кар'єрних шляхів у кібербезпеці.</p>
+        <p>Ви дізнаєтесь про фази тестування на проникнення (PTES), різницю між CEH та OSCP, правові рамки в Україні та світі, а також структуру всього курсу, побудовану за логікою реального пентесту.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Що таке етичний хакінг?</strong> — Визначення, ключові принципи, мета пентесту, типи тестування (Black/White/Grey Box)</li>
+          <li><strong>Фази тестування на проникнення</strong> — Стандарт PTES: від розвідки до звітування, 7 етапів повного циклу пентесту</li>
+          <li><strong>Типи хакерів</strong> — White Hat, Black Hat, Grey Hat, Script Kiddie, Hacktivist, State-sponsored, Insider Threat</li>
+          <li><strong>Правові аспекти</strong> — Юридичні документи пентесту, КК України (ст. 361–363), CFAA, GDPR, Будапештська конвенція, Responsible Disclosure</li>
+          <li><strong>Сертифікації</strong> — CEH vs OSCP детальне порівняння, eJPT, CPTS, GPEN, OSWE, OSEP, рекомендований шлях</li>
+          <li><strong>Кар'єрні шляхи</strong> — Red Team, Blue Team, Purple Team, основні ролі, зарплати та ринок праці</li>
+          <li><strong>Структура курсу</strong> — Два модулі, 12 лекцій, відповідність фазам пентесту, підсумковий CTF</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 1</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/1/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.1 — Що таке етичний хакінг?</h3>
+            <p>Визначення, принципи, мета пентесту</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/1/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.2 — Фази тестування на проникнення</h3>
+            <p>Стандарт PTES, 7 етапів пентесту</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/1/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.3 — Типи хакерів</h3>
+            <p>White Hat, Black Hat, Grey Hat та інші категорії</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/1/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.4 — Правові аспекти</h3>
+            <p>КК України, CFAA, GDPR, Responsible Disclosure</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/1/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.5 — Сертифікації</h3>
+            <p>CEH vs OSCP, eJPT, CPTS, GPEN, рекомендований шлях</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/1/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.6 — Кар'єрні шляхи</h3>
+            <p>Red/Blue/Purple Team, ролі, зарплати</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/1/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 1.7 — Структура курсу</h3>
+            <p>Два модулі, 12 лекцій, підсумковий CTF</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+      </section>
+
+    </article>
+
+    <div class="lecture-nav-bottom">
+      <span class="nav-btn disabled">&larr; Попередня</span>
+      <a href="2.html" class="nav-btn">Наступна &rarr;</a>
+    </div>
+
+    <footer id="site-footer"></footer>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/footer.js"></script>
+
+</body>
+</html>
