@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Практичні роботи з курсу.">
-  <meta name="author" content="Ваша кафедра, Ваш університет">
+  <meta name="description" content="Практичні роботи з курсу Основи етичного хакінгу.">
+  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
-  <title>Практичні роботи — Назва курсу</title>
+  <title>Практичні роботи — Основи етичного хакінгу</title>
   <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -27,7 +27,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        Назва<br>курсу
+        Основи<br>етичного хакінгу
         <span>онлайн-курс</span>
       </div>
     </div>
@@ -71,19 +71,20 @@
         <div class="practical-header">
           <div class="practical-number">01</div>
           <div>
-            <h3>Практична робота 1</h3>
-            <p class="practical-lecture">До лекцій 1-2</p>
+            <h3>Побудова лабораторії (Lab Setup)</h3>
+            <p class="practical-lecture">До лекції 1</p>
           </div>
           <span class="badge badge-new">Нова</span>
         </div>
-        <p>Короткий опис практичної роботи та її мети.</p>
+        <p>Розгортання віртуального середовища для проведення тестів на проникнення. Встановлення гіпервізора, налаштування Kali Linux та вразливої машини Metasploitable 2.</p>
         <div class="practical-tasks">
           <h4>Завдання:</h4>
           <ol>
-            <li>Перше завдання практичної роботи</li>
-            <li>Друге завдання практичної роботи</li>
-            <li>Третє завдання практичної роботи</li>
-            <li>Четверте завдання практичної роботи</li>
+            <li>Встановити VirtualBox або VMware Workstation Player</li>
+            <li>Завантажити та розгорнути віртуальну машину Kali Linux</li>
+            <li>Завантажити та розгорнути Metasploitable 2</li>
+            <li>Налаштувати мережу Host-Only між Kali та Metasploitable</li>
+            <li>Перевірити зв'язок між машинами командою ping</li>
           </ol>
         </div>
       </div>
@@ -92,18 +93,19 @@
         <div class="practical-header">
           <div class="practical-number">02</div>
           <div>
-            <h3>Практична робота 2</h3>
-            <p class="practical-lecture">До лекцій 3-4</p>
+            <h3>Основи Bash та скриптингу</h3>
+            <p class="practical-lecture">До лекції 2</p>
           </div>
           <span class="badge badge-locked">Скоро</span>
         </div>
-        <p>Короткий опис практичної роботи та її мети.</p>
+        <p>Освоєння базових команд Linux-терміналу та створення простих Bash-скриптів для автоматизації рутинних завдань у сфері кібербезпеки.</p>
         <div class="practical-tasks">
           <h4>Завдання:</h4>
           <ol>
-            <li>Перше завдання практичної роботи</li>
-            <li>Друге завдання практичної роботи</li>
-            <li>Третє завдання практичної роботи</li>
+            <li>Виконати базові команди навігації: cd, ls, pwd, mkdir, rm</li>
+            <li>Попрактикуватись з командами grep, cat, head, tail для роботи з файлами</li>
+            <li>Написати Bash-скрипт, який приймає IP-адресу та виконує ping-сканування</li>
+            <li>Розширити скрипт для збереження результатів у файл з міткою часу</li>
           </ol>
         </div>
       </div>
@@ -112,18 +114,19 @@
         <div class="practical-header">
           <div class="practical-number">03</div>
           <div>
-            <h3>Практична робота 3</h3>
-            <p class="practical-lecture">До лекцій 5-6</p>
+            <h3>Збір інформації про ціль</h3>
+            <p class="practical-lecture">До лекції 3</p>
           </div>
           <span class="badge badge-locked">Скоро</span>
         </div>
-        <p>Короткий опис практичної роботи та її мети.</p>
+        <p>Практика пасивного та активного збору інформації (Reconnaissance) про цільову систему з використанням відкритих джерел та спеціалізованих інструментів.</p>
         <div class="practical-tasks">
           <h4>Завдання:</h4>
           <ol>
-            <li>Перше завдання практичної роботи</li>
-            <li>Друге завдання практичної роботи</li>
-            <li>Третє завдання практичної роботи</li>
+            <li>Виконати whois-запит для заданого домену та проаналізувати результати</li>
+            <li>Використати nslookup / dig для отримання DNS-записів</li>
+            <li>Запустити theHarvester для збору email-адрес та піддоменів</li>
+            <li>Скласти звіт зібраної інформації про ціль (footprinting report)</li>
           </ol>
         </div>
       </div>
@@ -132,40 +135,207 @@
         <div class="practical-header">
           <div class="practical-number">04</div>
           <div>
-            <h3>Практична робота 4</h3>
-            <p class="practical-lecture">До лекцій 7-8</p>
+            <h3>Робота з Nmap</h3>
+            <p class="practical-lecture">До лекції 4</p>
           </div>
           <span class="badge badge-locked">Скоро</span>
         </div>
-        <p>Короткий опис практичної роботи та її мети.</p>
+        <p>Глибоке сканування мережі за допомогою Nmap: визначення відкритих портів, версій сервісів, операційних систем та пошук потенційних вразливостей.</p>
         <div class="practical-tasks">
           <h4>Завдання:</h4>
           <ol>
-            <li>Перше завдання практичної роботи</li>
-            <li>Друге завдання практичної роботи</li>
-            <li>Третє завдання практичної роботи</li>
+            <li>Провести базове SYN-сканування Metasploitable 2 (nmap -sS)</li>
+            <li>Виконати сканування версій сервісів (-sV) та визначення ОС (-O)</li>
+            <li>Запустити скриптове сканування (-sC) для виявлення вразливостей</li>
+            <li>Проаналізувати результати та визначити застарілі сервіси</li>
+            <li>Зберегти результати сканування у форматах -oN та -oX</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">05</div>
+          <div>
+            <h3>Використання Metasploit (System Hacking)</h3>
+            <p class="practical-lecture">До лекції 5</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Практичне знайомство з Metasploit Framework: пошук експлойтів, налаштування параметрів атаки та отримання віддаленого доступу до вразливої системи.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Запустити msfconsole та ознайомитися з базовими командами (search, use, info)</li>
+            <li>Знайти експлойт для вразливого сервісу на Metasploitable 2</li>
+            <li>Налаштувати параметри RHOST, LHOST та payload</li>
+            <li>Виконати експлойт та отримати shell-доступ до цільової машини</li>
+            <li>Продемонструвати виконання команд на зламаній системі</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">06</div>
+          <div>
+            <h3>Злам сервісів методом перебору</h3>
+            <p class="practical-lecture">До лекції 6</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Проведення атак методом грубої сили (Brute Force) на мережеві сервіси з використанням Hydra та допоміжних модулів Metasploit.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Підготувати словники логінів та паролів для атаки</li>
+            <li>Виконати brute-force атаку на SSH за допомогою Hydra</li>
+            <li>Використати Metasploit Auxiliary модуль для підбору пароля до VNC</li>
+            <li>Порівняти швидкість та ефективність Hydra та Metasploit Auxiliary</li>
+            <li>Підключитися до зламаного сервісу з отриманими обліковими даними</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">07</div>
+          <div>
+            <h3>SQL Injection (SQLi)</h3>
+            <p class="practical-lecture">До лекції 7</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Практика виявлення та експлуатації SQL-ін'єкцій на веб-застосунку DVWA: від ручного тестування до автоматизованого дампу бази даних.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Налаштувати DVWA на Metasploitable 2, встановити рівень безпеки Low</li>
+            <li>Виконати ручну SQL-ін'єкцію через поле введення (UNION-based)</li>
+            <li>Отримати список таблиць та стовпців бази даних вручну</li>
+            <li>Використати SQLMap для автоматизованого виявлення SQLi</li>
+            <li>Виконати дамп бази даних за допомогою SQLMap (--dump)</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">08</div>
+          <div>
+            <h3>Веб-аналіз з Burp Suite</h3>
+            <p class="practical-lecture">До лекції 8</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Перехоплення та аналіз HTTP-трафіку за допомогою Burp Suite. Налаштування проксі-сервера, модифікація запитів та пошук XSS-вразливостей.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Налаштувати Burp Suite як проксі для браузера</li>
+            <li>Перехопити HTTP-запити до DVWA та проаналізувати їх структуру</li>
+            <li>Модифікувати перехоплений запит у вкладці Repeater</li>
+            <li>Знайти та експлуатувати XSS-вразливість через Burp Suite</li>
+            <li>Повторити перехоплення з OWASP ZAP (альтернативний інструмент)</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">09</div>
+          <div>
+            <h3>Робота з сесіями Meterpreter</h3>
+            <p class="practical-lecture">До лекції 9</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Поглиблена робота з Meterpreter: апгрейд простого shell до повноцінної сесії, збір даних, хешів паролів та знімків екрана зламаної системи.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Отримати базовий shell через Metasploit та виконати апгрейд до Meterpreter</li>
+            <li>Виконати команди sysinfo, getuid, ps для розвідки системи</li>
+            <li>Зібрати хеші паролів за допомогою команди hashdump</li>
+            <li>Зробити знімок екрана цільової машини (screenshot)</li>
+            <li>Завантажити файл з цільової машини (download) та вивчити keyscan</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">10</div>
+          <div>
+            <h3>Створення бекдору з msfvenom</h3>
+            <p class="practical-lecture">До лекції 10</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Генерація шкідливих файлів (payload) за допомогою msfvenom та налаштування Multi/Handler для прийому зворотного з'єднання.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Згенерувати payload у форматі .exe для Windows за допомогою msfvenom</li>
+            <li>Згенерувати payload у форматі .apk для Android</li>
+            <li>Налаштувати Multi/Handler у Metasploit для прийому з'єднання</li>
+            <li>Протестувати зворотне з'єднання у лабораторному середовищі</li>
+            <li>Дослідити параметри кодування payload для обходу антивірусів</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">11</div>
+          <div>
+            <h3>Соціальна інженерія (Симуляція)</h3>
+            <p class="practical-lecture">До лекції 11</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Симуляція атак соціальної інженерії за допомогою Social Engineering Toolkit (SET): клонування веб-сторінок та створення фішингових сценаріїв у контрольованому середовищі.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Запустити Social Engineering Toolkit (SET) у Kali Linux</li>
+            <li>Обрати Website Attack Vector та метод Credential Harvester</li>
+            <li>Клонувати сторінку входу (наприклад, навчальний портал) у локальній мережі</li>
+            <li>Протестувати збір облікових даних на клонованій сторінці</li>
+            <li>Проаналізувати зібрані дані та підготувати звіт про вразливості</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="practical-card">
+        <div class="practical-header">
+          <div class="practical-number">12</div>
+          <div>
+            <h3>Підсумковий CTF (Capture The Flag)</h3>
+            <p class="practical-lecture">До лекції 12</p>
+          </div>
+          <span class="badge badge-locked">Скоро</span>
+        </div>
+        <p>Комплексне завдання Black Box: самостійний злам навчальної машини з використанням усіх вивчених технік та написання детального write-up звіту.</p>
+        <div class="practical-tasks">
+          <h4>Завдання:</h4>
+          <ol>
+            <li>Провести повну розвідку цільової машини (Reconnaissance)</li>
+            <li>Виявити вразливості та визначити вектор атаки</li>
+            <li>Експлуатувати знайдені вразливості для отримання початкового доступу</li>
+            <li>Виконати ескалацію привілеїв (Privilege Escalation)</li>
+            <li>Знайти всі прапорці (flags) та написати детальний write-up</li>
           </ol>
         </div>
       </div>
 
     </div>
 
-    <footer>
-      <div class="footer-content">
-        <div>
-          Назва кафедри<br>
-          Фізичний факультет<br>
-          Назва університету<br>
-          <a href="#" target="_blank" rel="noopener">website.edu</a>
-        </div>
-        <div class="footer-right">
-          &copy; 2026 Назва курсу
-        </div>
-      </div>
-    </footer>
+    <footer id="site-footer"></footer>
   </main>
 
   <script src="js/main.js"></script>
+  <script src="js/footer.js"></script>
 
 </body>
 </html>
