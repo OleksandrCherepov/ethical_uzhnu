@@ -62,20 +62,130 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 2 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 2 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Linux та командний рядок для хакера</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Основи файлової системи Linux, права доступу, управління пакетами, робота з терміналом.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Linux є стандартною платформою для тестування на проникнення. У цій лекції ми розглянемо причини домінування Linux у сфері кібербезпеки, вивчимо ієрархію файлової системи, основні команди терміналу, систему прав доступу, управління пакетами, інструменти обробки тексту та мережеві утиліти. Особлива увага приділяється спеціалізованим дистрибутивам Kali Linux та Parrot OS, які містять попередньо встановлені інструменти для пентесту.</p>
+        <p>Студенти здобудуть практичні навички навігації файловою системою Linux, керування файлами та правами доступу, фільтрації тексту за допомогою grep, awk та sed, а також використання мережевих утиліт ssh, curl та netcat — усе це є фундаментом для подальшого вивчення етичного хакінгу та проведення тестувань на проникнення.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Чому Linux є стандартом для пентесту</strong> — Kali Linux, Parrot OS, переваги Linux, попередньо встановлені інструменти</li>
+          <li><strong>Файлова система Linux (FHS)</strong> — Ієрархія каталогів, ключові директорії для безпеки, файли конфігурації</li>
+          <li><strong>Навігація та робота з файлами</strong> — Команди cd, ls, find, cat, cp, mv, підстановочні символи</li>
+          <li><strong>Права доступу та користувачі</strong> — chmod, chown, SUID/SGID, Sticky Bit, привілеї</li>
+          <li><strong>Управління пакетами та сервісами</strong> — apt, dpkg, метапакети Kali, systemctl</li>
+          <li><strong>Фільтрація тексту та потоки</strong> — grep, awk, sed, пайпи, перенаправлення введення/виведення</li>
+          <li><strong>Мережеві утиліти та налаштування</strong> — ip, ss, curl, wget, ssh, netcat</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 2</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/2/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.1 — Чому Linux є стандартом для пентесту</h3>
+            <p>Kali Linux, Parrot OS, переваги</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/2/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.2 — Файлова система Linux</h3>
+            <p>Ієрархія FHS, ключові каталоги</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/2/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.3 — Навігація та робота з файлами</h3>
+            <p>Базові команди терміналу</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/2/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.4 — Права доступу та користувачі</h3>
+            <p>chmod, SUID, привілеї</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/2/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.5 — Управління пакетами</h3>
+            <p>apt, dpkg, метапакети Kali</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/2/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.6 — Фільтрація тексту та потоки</h3>
+            <p>grep, awk, sed, пайпи</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/2/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 2.7 — Мережеві утиліти</h3>
+            <p>ip, ssh, curl, netcat</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

