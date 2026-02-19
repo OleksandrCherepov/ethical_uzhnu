@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.5 — Управління пакетами та сервісами</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Управління пакетами та сервісами</h1>
+      <div class="subtitle">Тема 2.5 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: APT — менеджер пакетів -->
+    <section class="slide">
+      <h2>APT — менеджер пакетів</h2>
+
+      <div class="info-box">
+        <h4>Що таке APT?</h4>
+        <p><span class="highlight">APT</span> (Advanced Package Tool) — високорівневий менеджер пакетів для Debian/Ubuntu/Kali. Автоматично вирішує залежності.</p>
+      </div>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Оновлення системи</h4>
+          <ul>
+            <li><code>sudo apt update</code> — оновити список пакетів</li>
+            <li><code>sudo apt full-upgrade</code> — оновити пакети (для Kali!)</li>
+            <li><code>sudo apt autoremove</code> — видалити непотрібне</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Встановлення / видалення</h4>
+          <ul>
+            <li><code>sudo apt install nmap</code></li>
+            <li><code>sudo apt remove package</code></li>
+            <li><code>sudo apt purge package</code> — з конфігами</li>
+            <li><code>apt search keyword</code></li>
+            <li><code>apt show package</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Важливо</h4>
+        <p>Для Kali Linux використовуйте <code>full-upgrade</code>, а не <code>upgrade</code> — rolling release потребує інтелектуального оновлення залежностей.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: Метапакети Kali та systemctl -->
+    <section class="slide">
+      <h2>Метапакети Kali та systemctl</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Метапакет</th>
+            <th>Призначення</th>
+            <th>Приклади інструментів</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue">kali-linux-default</td>
+            <td>Стандартний набір</td>
+            <td>nmap, metasploit, burpsuite</td>
+          </tr>
+          <tr>
+            <td class="cell-green">kali-tools-web</td>
+            <td>Веб-тестування</td>
+            <td>sqlmap, nikto, wpscan</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow">kali-tools-wireless</td>
+            <td>Бездротові мережі</td>
+            <td>aircrack-ng, wifite</td>
+          </tr>
+          <tr>
+            <td class="cell-red">kali-tools-passwords</td>
+            <td>Атаки на паролі</td>
+            <td>john, hashcat, hydra</td>
+          </tr>
+          <tr>
+            <td class="cell-purple">kali-tools-exploitation</td>
+            <td>Експлуатація</td>
+            <td>metasploit, searchsploit</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card-purple">
+        <h4>systemctl — керування сервісами</h4>
+        <ul>
+          <li><code>systemctl start ssh</code> — запустити сервіс</li>
+          <li><code>systemctl stop apache2</code> — зупинити сервіс</li>
+          <li><code>systemctl enable ssh</code> — увімкнути автозапуск</li>
+          <li><code>systemctl status postgresql</code> — перевірити стан</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Slide 4: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>APT та метапакети дозволяють швидко розгорнути повноцінне середовище для пентесту.</p>
+      </div>
+
+      <ul class="checklist">
+        <li><code>apt update && apt full-upgrade</code> — щотижневе оновлення Kali</li>
+        <li><code>apt install</code> — встановлення інструментів</li>
+        <li>Метапакети — тематичні набори інструментів</li>
+        <li><code>systemctl</code> — керування сервісами (SSH, PostgreSQL)</li>
+        <li><code>dpkg</code> — робота з локальними .deb файлами</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>фільтрацію тексту та потоки</strong>.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

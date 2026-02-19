@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 3: Розвідка (Reconnaissance) та OSINT — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 3: Розвідка (Reconnaissance) та OSINT — повний текст. Пасивна та активна розвідка, DNS-аналіз, Whois, Google Dorking, інструменти OSINT, соціальні мережі, веб-розвідка, методологія та OPSEC.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 3. Розвідка (Reconnaissance) та OSINT</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,11 +69,1135 @@
       <h1>Розвідка (Reconnaissance) та OSINT</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 3.1 Що таке розвідка та OSINT                               -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>3.1 Що таке розвідка та OSINT</h2>
+        <p><strong>Розвідка</strong> (Reconnaissance) — це перший активний етап тестування на проникнення, під час якого пентестер систематично збирає інформацію про цільову організацію, її інфраструктуру, персонал та технології. Згідно зі стандартом <strong>PTES</strong> (Penetration Testing Execution Standard), розвідка є другою фазою (Intelligence Gathering), що йде одразу після попередньої домовленості (Pre-engagement).</p>
+        <p>Досвідчені пентестери часто стверджують, що розвідка становить <strong>60-80% успішного тестування на проникнення</strong>. Це не перебільшення: якість зібраної інформації безпосередньо впливає на ефективність подальших етапів — сканування, експлуатації та пост-експлуатації. Чим більше ви знаєте про ціль до початку активних дій, тим точнішими будуть ваші атаки і тим менше шансів бути виявленим.</p>
+
+        <h3>Пасивна та активна розвідка</h3>
+        <p>Розвідку поділяють на два фундаментальні типи залежно від того, чи відбувається прямий контакт із цільовою системою:</p>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Пасивна розвідка</th>
+            <th>Активна розвідка</th>
+          </tr>
+          <tr>
+            <td><strong>Визначення</strong></td>
+            <td>Збір інформації без прямого контакту з ціллю</td>
+            <td>Збір інформації через безпосередню взаємодію з ціллю</td>
+          </tr>
+          <tr>
+            <td><strong>Виявлення</strong></td>
+            <td>Практично неможливо виявити</td>
+            <td>Може бути зафіксовано в логах, IDS/IPS</td>
+          </tr>
+          <tr>
+            <td><strong>Приклади</strong></td>
+            <td>Whois, Google Dorking, OSINT, аналіз публічних документів, Shodan</td>
+            <td>Сканування портів (Nmap), перебір піддоменів, спроба Zone Transfer</td>
+          </tr>
+          <tr>
+            <td><strong>Джерела</strong></td>
+            <td>Публічні бази даних, пошукові системи, соціальні мережі, кеш</td>
+            <td>Відповіді серверів, банери сервісів, DNS-відповіді</td>
+          </tr>
+          <tr>
+            <td><strong>Юридичний ризик</strong></td>
+            <td>Мінімальний — інформація є публічною</td>
+            <td>Потребує авторизації; без дозволу може порушувати закон</td>
+          </tr>
+          <tr>
+            <td><strong>Інструменти</strong></td>
+            <td>theHarvester, Maltego, Shodan, Google, Hunter.io</td>
+            <td>Nmap, Nikto, Gobuster, dig (AXFR), traceroute</td>
+          </tr>
+        </table>
+        <p>На практиці межа між пасивною та активною розвідкою не завжди чітка. Наприклад, DNS-запит до публічного DNS-сервера (8.8.8.8) є пасивним, але запит безпосередньо до авторитативного DNS-сервера цілі вже може вважатися активним.</p>
+
+        <h3>Визначення OSINT</h3>
+        <p><strong>OSINT</strong> (Open Source Intelligence — розвідка з відкритих джерел) — це процес збору, аналізу та використання інформації, отриманої з публічно доступних джерел. Термін має військове походження.</p>
+        <p>Історія OSINT:</p>
+        <ul>
+          <li><strong>1941 рік</strong> — у США створено <strong>Foreign Broadcast Monitoring Service (FBMS)</strong> при Федеральній комісії зв'язку для моніторингу іноземних радіопередач. Це вважається першою систематичною програмою OSINT.</li>
+          <li><strong>Кінець 1980-х</strong> — американські військові формалізують концепцію OSINT як окрему дисципліну розвідки поряд з HUMINT (агентурна), SIGINT (радіоелектронна) та IMINT (візуальна).</li>
+          <li><strong>2005 рік</strong> — Директор Національної розвідки США створює <strong>Open Source Center</strong> для централізації OSINT-діяльності.</li>
+          <li><strong>2010-ті роки</strong> — з розвитком соціальних мереж та інтернету OSINT стає доступним широкому колу дослідників, журналістів та фахівців з кібербезпеки.</li>
+        </ul>
+
+        <h3>Цикл OSINT</h3>
+        <p>Процес OSINT-розвідки є циклічним і складається з шести етапів, що повторюються для поглиблення результатів:</p>
+        <ol>
+          <li><strong>Planning (Планування)</strong> — визначення цілей збору, ключових питань, джерел інформації та обмежень. Що саме ми шукаємо? Які ресурси маємо?</li>
+          <li><strong>Collection (Збір)</strong> — систематичний збір сирих даних із визначених джерел: веб-сайти, бази даних, соціальні мережі, публічні реєстри.</li>
+          <li><strong>Processing (Обробка)</strong> — фільтрація, дедуплікація, структурування та нормалізація зібраних даних у придатний для аналізу формат.</li>
+          <li><strong>Analysis (Аналіз)</strong> — інтерпретація оброблених даних, виявлення зв'язків, паттернів та аномалій. Перетворення даних на розвідувальну інформацію.</li>
+          <li><strong>Dissemination (Поширення)</strong> — підготовка звіту або бриф для замовника, представлення результатів у зрозумілій формі.</li>
+          <li><strong>Feedback (Зворотний зв'язок)</strong> — оцінка якості результатів, корекція методології, визначення нових напрямків дослідження.</li>
+        </ol>
+
+        <h3>Сфери застосування OSINT</h3>
+        <p>OSINT використовується далеко за межами кібербезпеки:</p>
+        <ul>
+          <li><strong>Національна безпека та розвідка</strong> — моніторинг загроз, аналіз терористичних мереж, відстеження пропаганди. Організації: CIA, NSA, MI6, НАТО.</li>
+          <li><strong>Кібербезпека та пентестинг</strong> — збір інформації про цільову інфраструктуру, виявлення витоків даних, аналіз поверхні атаки (attack surface).</li>
+          <li><strong>Бізнес-розвідка (Competitive Intelligence)</strong> — аналіз конкурентів, моніторинг ринку, перевірка контрагентів, оцінка ризиків перед M&A угодами.</li>
+          <li><strong>Журналістика та розслідування</strong> — верифікація фактів, відкриті розслідування. Приклад: <strong>Bellingcat</strong> використовує OSINT для розслідування військових конфліктів та катастроф (зокрема, збиття MH17).</li>
+          <li><strong>Due Diligence</strong> — перевірка репутації, фінансового стану та зв'язків осіб або компаній перед укладанням контрактів.</li>
+          <li><strong>Правоохоронна діяльність</strong> — пошук підозрюваних, відстеження кримінальної активності в інтернеті, аналіз цифрових слідів.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.2 DNS-розвідка                                            -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.2 DNS-розвідка</h2>
+        <p><strong>DNS</strong> (Domain Name System) — це критично важливе джерело інформації для пентестера. Система доменних імен не лише перетворює доменні імена на IP-адреси, а й зберігає багато метаданих про інфраструктуру організації: поштові сервери, піддомени, зовнішні сервіси та навіть інформацію про хмарних провайдерів.</p>
+
+        <h3>Типи DNS-записів та їх значення для розвідки</h3>
+        <p>Кожен тип DNS-запису розкриває певний аспект інфраструктури цілі:</p>
+        <table>
+          <tr>
+            <th>Тип запису</th>
+            <th>Призначення</th>
+            <th>Що дає пентестеру</th>
+          </tr>
+          <tr>
+            <td><strong>A</strong></td>
+            <td>Ім'я домену &rarr; IPv4-адреса</td>
+            <td>Основна IP-адреса сервера; дозволяє визначити хостинг-провайдера та географію</td>
+          </tr>
+          <tr>
+            <td><strong>AAAA</strong></td>
+            <td>Ім'я домену &rarr; IPv6-адреса</td>
+            <td>IPv6-інфраструктура часто має менший захист; може обійти фаєрвол, налаштований лише для IPv4</td>
+          </tr>
+          <tr>
+            <td><strong>MX</strong></td>
+            <td>Поштові сервери домену</td>
+            <td>Виявлення поштових серверів (Exchange, Google Workspace, Proton); вектор для фішингу та email spoofing</td>
+          </tr>
+          <tr>
+            <td><strong>NS</strong></td>
+            <td>Авторитативні DNS-сервери</td>
+            <td>Визначення DNS-провайдера; ціль для спроби Zone Transfer (AXFR)</td>
+          </tr>
+          <tr>
+            <td><strong>TXT</strong></td>
+            <td>Довільний текст (SPF, DKIM, DMARC, верифікації)</td>
+            <td>Розкриває поштову конфігурацію, використовувані хмарні сервіси (Google, Microsoft 365, AWS), токени верифікації</td>
+          </tr>
+          <tr>
+            <td><strong>CNAME</strong></td>
+            <td>Аліас (канонічне ім'я)</td>
+            <td>Вказує на зовнішні сервіси (CDN, SaaS); потенційна вразливість subdomain takeover, якщо зовнішній сервіс деактивовано</td>
+          </tr>
+          <tr>
+            <td><strong>SOA</strong></td>
+            <td>Start of Authority — метадані зони</td>
+            <td>Email адміністратора, серійний номер зони, параметри реплікації</td>
+          </tr>
+          <tr>
+            <td><strong>PTR</strong></td>
+            <td>Зворотний запис: IP &rarr; ім'я домену</td>
+            <td>Виявлення інших доменів на тій самій IP-адресі (virtual hosting); ідентифікація внутрішніх імен хостів</td>
+          </tr>
+          <tr>
+            <td><strong>SRV</strong></td>
+            <td>Сервісний запис (порт + пріоритет)</td>
+            <td>Виявлення специфічних сервісів: SIP, XMPP, LDAP, Kerberos; критично для Active Directory-розвідки</td>
+          </tr>
+        </table>
+
+        <h3>Zone Transfer (AXFR/IXFR)</h3>
+        <p><strong>Zone Transfer</strong> — це механізм реплікації DNS-зон між серверами. Існує два типи:</p>
+        <ul>
+          <li><strong>AXFR</strong> (Authoritative Zone Transfer) — повний трансфер зони, передає всі записи</li>
+          <li><strong>IXFR</strong> (Incremental Zone Transfer) — інкрементальний трансфер, передає лише зміни</li>
+        </ul>
+        <p>Якщо DNS-сервер неправильно налаштований і дозволяє Zone Transfer будь-якому клієнту, зловмисник отримує <strong>повний перелік усіх DNS-записів домену</strong> — усі піддомени, IP-адреси, поштові сервери та внутрішні імена хостів. Це одна з найцінніших знахідок на етапі розвідки.</p>
+        <p><strong>Спроба Zone Transfer:</strong></p>
+        <pre><code># Спочатку дізнаємось NS-сервери домену
+dig NS example.com +short
+
+# Спроба AXFR-трансферу зони
+dig axfr @ns1.example.com example.com
+
+# Якщо успішно — отримаємо повний список записів зони
+# Якщо захищено — отримаємо помилку "Transfer failed"</code></pre>
+        <p><strong>Захист від Zone Transfer:</strong></p>
+        <ul>
+          <li><strong>ACL (Access Control Lists)</strong> — дозволити трансфер лише з визначених IP-адрес (secondary DNS-серверів)</li>
+          <li><strong>TSIG (Transaction Signature)</strong> — криптографічний підпис запитів на трансфер за допомогою спільного секретного ключа</li>
+          <li><strong>Моніторинг</strong> — логування та сповіщення про спроби несанкціонованого трансферу</li>
+        </ul>
+
+        <h3>Certificate Transparency для виявлення піддоменів</h3>
+        <p><strong>Certificate Transparency (CT)</strong> — це публічний реєстр усіх SSL/TLS-сертифікатів, виданих центрами сертифікації (CA). Кожен сертифікат, виданий для домену, записується в CT-лог і стає публічно доступним. Це створює потужне джерело для виявлення піддоменів.</p>
+        <p>Головний інструмент — <strong>crt.sh</strong> (Certificate Search), що дозволяє шукати сертифікати за доменним іменем:</p>
+        <pre><code># Пошук через браузер
+https://crt.sh/?q=%25.example.com
+
+# Пошук через API (JSON-формат)
+curl -s "https://crt.sh/?q=%25.example.com&output=json" | jq '.[].name_value' | sort -u
+
+# Результат може містити піддомени, яких немає в публічному DNS:
+# dev.example.com
+# staging.example.com
+# vpn.example.com
+# internal-api.example.com</code></pre>
+        <p>CT-логи часто розкривають внутрішні піддомени, що не повинні бути публічними: dev, staging, test, admin, vpn, api та інші.</p>
+
+        <h3>Базові DNS-інструменти</h3>
+        <p><code>dig</code> (Domain Information Groper) — найпотужніший CLI-інструмент для DNS-запитів:</p>
+        <pre><code># Базовий A-запит
+dig example.com
+
+# Конкретні типи записів
+dig example.com MX          # Поштові сервери
+dig example.com NS          # DNS-сервери
+dig example.com TXT         # TXT-записи (SPF, DKIM)
+dig example.com AAAA        # IPv6-адреса
+dig example.com SOA         # Start of Authority
+dig example.com ANY         # Всі записи (часто блокується)
+
+# Короткий вивід (тільки відповідь)
+dig +short example.com
+dig +short example.com MX
+
+# Зворотний DNS-запит (IP → домен)
+dig -x 93.184.216.34
+
+# Запит через конкретний DNS-сервер
+dig @8.8.8.8 example.com
+
+# Спроба Zone Transfer
+dig axfr @ns1.example.com example.com
+
+# Трасування DNS-резолюції (від кореня до відповіді)
+dig +trace example.com</code></pre>
+
+        <p><code>nslookup</code> — простіший інструмент, доступний у Windows та Linux:</p>
+        <pre><code># Простий запит
+nslookup example.com
+
+# Запит через конкретний DNS-сервер
+nslookup example.com 8.8.8.8
+
+# Конкретний тип запису
+nslookup -type=MX example.com
+nslookup -type=NS example.com
+nslookup -type=TXT example.com</code></pre>
+
+        <p><code>host</code> — найпростіший DNS-інструмент для швидких запитів:</p>
+        <pre><code># A-запит
+host example.com
+
+# Зворотний DNS
+host 93.184.216.34
+
+# Всі записи
+host -a example.com
+
+# Конкретний тип
+host -t MX example.com</code></pre>
+
+        <h3>Спеціалізовані DNS-інструменти</h3>
+        <p>Базові утиліти запитують лише відомі домени. Для виявлення невідомих піддоменів використовують спеціалізовані інструменти:</p>
+        <ul>
+          <li><strong>dnsenum</strong> — автоматизоване перелічення DNS: brute-force піддоменів, Zone Transfer, Google scraping, зворотний DNS для мережевих блоків</li>
+          <li><strong>dnsrecon</strong> — комплексний інструмент DNS-розвідки: підтримує zone transfer, brute-force, cache snooping, DNSSEC zone walking</li>
+          <li><strong>Sublist3r</strong> — пасивне виявлення піддоменів через пошукові системи (Google, Bing, Yahoo, Baidu, VirusTotal, Netcraft)</li>
+          <li><strong>OWASP Amass</strong> — потужний фреймворк для discovery: комбінує пасивні та активні техніки, інтегрується з десятками API, будує граф інфраструктури</li>
+        </ul>
+        <pre><code># dnsenum — повне DNS-перелічення
+dnsenum example.com
+dnsenum --enum -f /usr/share/wordlists/dns/subdomains-top1million-5000.txt example.com
+
+# dnsrecon — zone transfer + brute-force
+dnsrecon -d example.com -t axfr         # Спроба zone transfer
+dnsrecon -d example.com -t brt -D /usr/share/wordlists/dns/subdomains-top1million-5000.txt
+
+# Sublist3r — пасивний пошук піддоменів
+sublist3r -d example.com
+
+# OWASP Amass — комплексний збір
+amass enum -d example.com               # Пасивний режим
+amass enum -active -d example.com       # Активний режим (включає DNS-резолюцію)</code></pre>
+
+        <h3>DNS over HTTPS (DoH) та вплив на розвідку</h3>
+        <p><strong>DNS over HTTPS (DoH)</strong> — це протокол, що шифрує DNS-запити всередині HTTPS-з'єднання (RFC 8484). Замість традиційних DNS-запитів у відкритому вигляді (UDP порт 53), запити надсилаються через HTTPS (TCP порт 443), що унеможливлює їх перехоплення та моніторинг.</p>
+        <p>Вплив DoH на розвідку:</p>
+        <ul>
+          <li><strong>Для захисників:</strong> ускладнює моніторинг DNS-трафіку користувачів; традиційні DNS-фільтри та IDS стають неефективними</li>
+          <li><strong>Для атакуючих:</strong> дозволяє приховати DNS-запити при ексфільтрації даних через DNS-тунелювання</li>
+          <li><strong>Для пентестерів:</strong> ускладнює пасивний DNS-моніторинг; необхідність адаптувати інструменти для роботи з DoH</li>
+        </ul>
+        <p>У 2025 році Виконавчий указ Президента США щодо кібербезпеки рекомендував федеральним агенціям впровадити зашифрований DNS (DoH/DoT) для всіх урядових мереж, що підкреслює зростання значення цієї технології.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.3 Whois та доменна розвідка                               -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.3 Whois та доменна розвідка</h2>
+        <p>Протокол <strong>Whois</strong> (RFC 3912) — один із найстаріших інструментів інтернет-розвідки. Він дозволяє отримати реєстраційну інформацію про домен або IP-адресу з публічних баз даних реєстраторів.</p>
+
+        <h3>Що розкриває Whois</h3>
+        <p>Типовий Whois-запит може повернути:</p>
+        <ul>
+          <li><strong>Реєстратор</strong> — через якого реєстратора зареєстровано домен (GoDaddy, Namecheap, Cloudflare тощо)</li>
+          <li><strong>Дати</strong> — створення домену, останнє оновлення, дата закінчення реєстрації</li>
+          <li><strong>Nameservers</strong> — DNS-сервери, які обслуговують домен</li>
+          <li><strong>Контактна інформація</strong> — ім'я, організація, адреса, email, телефон реєстранта (registrant), адміністратора (admin) та технічного контакту (tech)</li>
+          <li><strong>Статус домену</strong> — clientTransferProhibited, serverDeleteProhibited тощо</li>
+        </ul>
+        <pre><code># Whois-запит для домену
+whois example.com
+
+# Whois-запит для IP-адреси
+whois 93.184.216.34
+
+# Приклад скороченого виводу:
+# Domain Name: EXAMPLE.COM
+# Registry Domain ID: 2336799_DOMAIN_COM-VRSN
+# Registrar: ICANN
+# Updated Date: 2024-08-14T07:01:34Z
+# Creation Date: 1995-08-14T04:00:00Z
+# Registrar Abuse Contact Email: abuse@icann.org
+# Name Server: A.IANA-SERVERS.NET
+# Name Server: B.IANA-SERVERS.NET</code></pre>
+
+        <h3>Вплив GDPR на Whois</h3>
+        <p>З набуттям чинності <strong>Загального регламенту захисту даних (GDPR)</strong> Європейського Союзу у травні 2018 року, ландшафт Whois-розвідки радикально змінився. Більшість реєстраторів почали маскувати персональні дані реєстрантів:</p>
+        <ul>
+          <li>Імена, адреси, телефони замінюються на "REDACTED FOR PRIVACY" або дані проксі-сервісу</li>
+          <li>Email-адреси часто замінюються анонімними формами для зв'язку</li>
+          <li>Згідно з дослідженнями, лише <strong>27% доменів</strong> зберігають email-адресу реєстранта у відкритому доступі після GDPR</li>
+        </ul>
+        <p>Проте навіть після GDPR Whois залишається корисним: дати реєстрації, nameservers, реєстратор та статус домену досі доступні і дають важливий контекст для розвідки.</p>
+
+        <h3>Регіональні інтернет-реєстри (RIR)</h3>
+        <p>IP-адреси та номери автономних систем (ASN) розподіляються через п'ять регіональних реєстрів:</p>
+        <table>
+          <tr>
+            <th>Реєстр</th>
+            <th>Рік створення</th>
+            <th>Штаб-квартира</th>
+            <th>Регіон</th>
+          </tr>
+          <tr>
+            <td><strong>RIPE NCC</strong></td>
+            <td>1992</td>
+            <td>Амстердам, Нідерланди</td>
+            <td>Європа, Близький Схід, Центральна Азія (включно з Україною)</td>
+          </tr>
+          <tr>
+            <td><strong>ARIN</strong></td>
+            <td>1997</td>
+            <td>Шантіллі, Вірджинія, США</td>
+            <td>Північна Америка, частина Карибського басейну</td>
+          </tr>
+          <tr>
+            <td><strong>APNIC</strong></td>
+            <td>1993</td>
+            <td>Брисбен, Австралія</td>
+            <td>Азіатсько-Тихоокеанський регіон</td>
+          </tr>
+          <tr>
+            <td><strong>LACNIC</strong></td>
+            <td>2002</td>
+            <td>Монтевідео, Уругвай</td>
+            <td>Латинська Америка, Карибський басейн</td>
+          </tr>
+          <tr>
+            <td><strong>AfriNIC</strong></td>
+            <td>2005</td>
+            <td>Ебене, Маврикій</td>
+            <td>Африка</td>
+          </tr>
+        </table>
+        <p>Для розвідки українських організацій основним реєстром є <strong>RIPE NCC</strong> (ripe.net). Його база <strong>RIPE Database</strong> дозволяє знайти:</p>
+        <ul>
+          <li>Які IP-блоки виділені організації</li>
+          <li>Контактну інформацію мережевих адміністраторів</li>
+          <li>ASN (Autonomous System Number) організації</li>
+          <li>Маршрутну інформацію (route objects)</li>
+        </ul>
+
+        <h3>ASN та IP-розвідка</h3>
+        <p><strong>ASN</strong> (Autonomous System Number) — це унікальний ідентифікатор мережі організації в глобальній системі маршрутизації BGP. Знання ASN дозволяє виявити всі IP-діапазони, що належать організації.</p>
+        <p>Інструмент <strong>BGP Toolkit</strong> (<code>bgp.he.net</code>) від Hurricane Electric дозволяє:</p>
+        <ul>
+          <li>Знайти ASN організації за назвою або IP-адресою</li>
+          <li>Переглянути всі IP-префікси (мережеві блоки), анонсовані через цей ASN</li>
+          <li>Побачити BGP-сусідів (peering) та upstream-провайдерів</li>
+          <li>Переглянути зворотні DNS-записи для IP-діапазонів</li>
+        </ul>
+        <pre><code># Пошук ASN через Whois
+whois -h whois.radb.net "!gAS13335"   # IP-блоки Cloudflare (AS13335)
+
+# Пошук через BGP Toolkit (браузер)
+https://bgp.he.net/AS13335           # Всі префікси Cloudflare
+
+# Пошук через командний рядок
+whois -h whois.ripe.net "ORG-UA24-RIPE"  # Пошук організації в RIPE</code></pre>
+
+        <h3>Історичний Whois</h3>
+        <p>Навіть якщо поточні Whois-дані приховані через GDPR, історичні записи можуть містити цінну інформацію. Сервіси для історичного Whois:</p>
+        <ul>
+          <li><strong>DomainTools</strong> (domaintools.com) — найбільша база історичних Whois-записів; дозволяє відстежити зміни реєстрантів, nameservers та контактів у часі; функція "reverse Whois" дозволяє знайти всі домени, зареєстровані на один email або організацію</li>
+          <li><strong>SecurityTrails</strong> (securitytrails.com) — база з понад <strong>3 мільярдами</strong> історичних DNS та Whois записів; надає API для автоматизації; показує історію зміни A-записів, NS-серверів та IP-адрес</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.4 Google Dorking (Google Hacking)                         -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.4 Google Dorking (Google Hacking)</h2>
+        <p><strong>Google Dorking</strong> (також відомий як Google Hacking) — це техніка використання розширених пошукових операторів Google для виявлення інформації, яку власники сайтів ненавмисно залишили доступною для індексації. Концепцію популяризував Джонні Лонг (Johnny Long) у книзі "Google Hacking for Penetration Testers" (2005).</p>
+        <p>Пошукові системи індексують мільярди сторінок, включно з файлами конфігурацій, резервними копіями баз даних, панелями адміністрування та іншою чутливою інформацією, яка не повинна бути публічно доступною.</p>
+
+        <h3>Основні пошукові оператори</h3>
+        <table>
+          <tr>
+            <th>Оператор</th>
+            <th>Призначення</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><code>site:</code></td>
+            <td>Обмежити пошук конкретним доменом</td>
+            <td><code>site:example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>filetype:</code></td>
+            <td>Шукати файли конкретного типу</td>
+            <td><code>filetype:pdf site:example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>intitle:</code></td>
+            <td>Пошук у заголовку сторінки (&lt;title&gt;)</td>
+            <td><code>intitle:"admin panel"</code></td>
+          </tr>
+          <tr>
+            <td><code>inurl:</code></td>
+            <td>Пошук у URL-адресі</td>
+            <td><code>inurl:admin site:example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>intext:</code></td>
+            <td>Пошук у тексті сторінки</td>
+            <td><code>intext:"database error"</code></td>
+          </tr>
+          <tr>
+            <td><code>cache:</code></td>
+            <td>Показати кешовану версію сторінки</td>
+            <td><code>cache:example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>related:</code></td>
+            <td>Знайти схожі сайти</td>
+            <td><code>related:example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>-</code> (мінус)</td>
+            <td>Виключити слово з результатів</td>
+            <td><code>site:example.com -www</code></td>
+          </tr>
+          <tr>
+            <td><code>" "</code> (лапки)</td>
+            <td>Точний збіг фрази</td>
+            <td><code>"password" filetype:log</code></td>
+          </tr>
+          <tr>
+            <td><code>OR</code></td>
+            <td>Логічне АБО</td>
+            <td><code>site:example.com filetype:sql OR filetype:bak</code></td>
+          </tr>
+        </table>
+
+        <h3>Google Hacking Database (GHDB)</h3>
+        <p><strong>Google Hacking Database</strong> (<code>exploit-db.com/google-hacking-database</code>) — це колекція перевірених Google Dork-запитів, що підтримується командою <strong>Offensive Security</strong>. GHDB містить тисячі дорків, категоризованих за типом інформації, яку вони виявляють:</p>
+        <ul>
+          <li>Файли з паролями</li>
+          <li>Чутливі директорії</li>
+          <li>Вразливі сервери</li>
+          <li>Мережеве обладнання та камери</li>
+          <li>Сторінки з помилками та діагностичною інформацією</li>
+        </ul>
+
+        <h3>Практичні приклади Google Dork-запитів</h3>
+        <p><strong>Пошук чутливих файлів:</strong></p>
+        <pre><code># PDF-документи на домені (можуть містити метадані, внутрішню інформацію)
+site:target.com filetype:pdf
+
+# SQL-дампи з паролями
+filetype:sql "INSERT INTO" password
+
+# Резервні копії баз даних
+filetype:sql "CREATE TABLE" site:target.com
+
+# Файли Excel з паролями
+filetype:xls "password" site:target.com
+
+# Файли конфігурацій
+filetype:conf "password" site:target.com</code></pre>
+
+        <p><strong>Пошук адміністративних панелей:</strong></p>
+        <pre><code># Панелі входу в адмінку
+intitle:"admin login" site:target.com
+
+# WordPress адмінка
+inurl:wp-admin site:target.com
+inurl:wp-login.php site:target.com
+
+# CPanel, Plesk та інші панелі хостингу
+inurl:":2082/login" OR inurl:":2083/login"
+intitle:"Plesk" inurl:login</code></pre>
+
+        <p><strong>Пошук відкритих директорій:</strong></p>
+        <pre><code># Directory listing — відкриті директорії сервера
+intitle:"index of" site:target.com
+intitle:"index of" "password" site:target.com
+intitle:"index of" ".git" site:target.com
+
+# Відкриті каталоги з бекапами
+intitle:"index of" "backup" filetype:zip OR filetype:tar.gz</code></pre>
+
+        <p><strong>Пошук файлів конфігурацій та змінних середовища:</strong></p>
+        <pre><code># .env файли (часто містять ключі API, паролі бази даних)
+filetype:env "DB_PASSWORD"
+filetype:env "AWS_SECRET_ACCESS_KEY"
+filetype:env "MAIL_PASSWORD"
+
+# Файли конфігурацій web.config (ASP.NET)
+filetype:config "connectionString" "password"
+
+# PHP-конфігурації
+filetype:php "db_password" OR "DB_PASS" inurl:config</code></pre>
+
+        <p><strong>Пошук повідомлень про помилки:</strong></p>
+        <pre><code># SQL-помилки (вказують на потенційну SQL-ін'єкцію)
+intext:"sql syntax near" site:target.com
+intext:"mysql_fetch" site:target.com
+intext:"ORA-" site:target.com            # Oracle помилки
+
+# PHP-помилки (розкривають шляхи файлів)
+intext:"Warning: include" site:target.com
+intext:"Fatal error" filetype:php site:target.com
+
+# ASP.NET-помилки
+intext:"Server Error in" site:target.com</code></pre>
+
+        <h3>Альтернативні пошукові системи</h3>
+        <p>Google — не єдина пошукова система, корисна для розвідки:</p>
+        <ul>
+          <li><strong>Bing</strong> (bing.com) — підтримує оператори <code>site:</code>, <code>filetype:</code>, <code>inurl:</code>, <code>intitle:</code>; іноді індексує сторінки, яких немає в Google</li>
+          <li><strong>DuckDuckGo</strong> (duckduckgo.com) — обмежена підтримка операторів, але корисний для перевірки результатів без персоналізації</li>
+          <li><strong>Yandex</strong> (yandex.com) — особливо ефективний для пошуку контенту в пострадянському регіоні; має потужний пошук по зображеннях</li>
+        </ul>
+
+        <h3>Юридичні аспекти Google Dorking</h3>
+        <p>Google Dorking сам по собі є <strong>легальною</strong> діяльністю — ви використовуєте публічну пошукову систему для пошуку публічно проіндексованої інформації. Проте:</p>
+        <ul>
+          <li><strong>Легально:</strong> пошук інформації через Google; перегляд публічно доступних сторінок; документування знахідок</li>
+          <li><strong>Нелегально:</strong> використання знайдених облікових даних для доступу до систем; завантаження та розповсюдження чужих конфіденційних даних; експлуатація знайдених вразливостей без авторизації</li>
+        </ul>
+        <p>Пам'ятайте: факт того, що інформація знайдена через Google, не означає, що вам дозволено нею користуватися для несанкціонованого доступу.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.5 Інструменти та фреймворки OSINT                        -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.5 Інструменти та фреймворки OSINT</h2>
+        <p>Сучасний OSINT-арсенал пентестера включає десятки спеціалізованих інструментів. Розглянемо ключові з них, їх можливості та сценарії використання.</p>
+
+        <h3>theHarvester</h3>
+        <p><strong>theHarvester</strong> — це один з найпопулярніших інструментів для пасивного збору інформації про домен. Він агрегує дані з <strong>понад 38 джерел</strong>, включаючи пошукові системи, бази даних сертифікатів, API-сервіси та соціальні мережі.</p>
+        <p>Можливості theHarvester:</p>
+        <ul>
+          <li>Пошук email-адрес, пов'язаних з доменом</li>
+          <li>Виявлення піддоменів</li>
+          <li>Пошук віртуальних хостів</li>
+          <li>Збір імен працівників (з LinkedIn)</li>
+          <li>Визначення IP-адрес та ASN</li>
+        </ul>
+        <pre><code># Базовий пошук з усіма джерелами
+theHarvester -d example.com -b all
+
+# Пошук з конкретними джерелами
+theHarvester -d example.com -b google,bing,linkedin,crtsh
+
+# Обмежити кількість результатів
+theHarvester -d example.com -b all -l 200
+
+# Зберегти результати у файл
+theHarvester -d example.com -b all -f results.html
+
+# Джерела: baidu, bing, binaryedge, censys, certspotter, crtsh,
+# dnsdumpster, duckduckgo, google, hackertarget, hunter,
+# linkedin, netcraft, otx, securityTrails, shodan,
+# threatminer, urlscan, virustotal, yahoo та інші</code></pre>
+
+        <h3>Maltego</h3>
+        <p><strong>Maltego</strong> — це потужний інструмент для візуального аналізу зв'язків (link analysis), розроблений компанією Paterva. Maltego будує графи зв'язків між об'єктами (entities): доменами, IP-адресами, email-адресами, людьми, організаціями, акаунтами в соціальних мережах.</p>
+        <p>Ключові концепції Maltego:</p>
+        <ul>
+          <li><strong>Entities</strong> — об'єкти дослідження (домен, IP, email, персона, компанія)</li>
+          <li><strong>Transforms</strong> — запити, що перетворюють один entity в інші (домен &rarr; IP-адреси, email &rarr; соціальні профілі)</li>
+          <li><strong>Граф</strong> — візуальне представлення зв'язків між entities</li>
+        </ul>
+        <p>Видання Maltego:</p>
+        <ul>
+          <li><strong>Maltego CE</strong> (Community Edition) — безкоштовна версія з обмеженнями (максимум 12 entities на transform, обмежений набір transforms)</li>
+          <li><strong>Maltego Pro</strong> — повна версія для комерційного використання; необмежені entities, інтеграція з комерційними API</li>
+        </ul>
+
+        <h3>Shodan</h3>
+        <p><strong>Shodan</strong> (shodan.io) — це пошукова система для пристроїв, підключених до інтернету. На відміну від Google, який індексує вміст веб-сторінок, Shodan індексує <strong>банери сервісів</strong> — відповіді, які сервери надають при підключенні до їхніх портів.</p>
+        <p>Shodan сканує весь IPv4-простір та збирає інформацію про:</p>
+        <ul>
+          <li>Відкриті порти та версії сервісів</li>
+          <li>Операційні системи</li>
+          <li>SSL/TLS-сертифікати</li>
+          <li>Вразливості (CVE)</li>
+          <li>Геолокацію та провайдера</li>
+        </ul>
+        <p>Синтаксис пошуку Shodan:</p>
+        <pre><code># Пошук за ключовим словом у банері
+apache 2.4.49
+
+# Фільтри Shodan
+port:22                              # SSH-сервери
+port:3389                            # RDP-сервери
+country:UA                           # Пристрої в Україні
+product:nginx                        # Nginx-сервери
+hostname:example.com                 # Конкретний домен
+org:"Example Corp"                   # Конкретна організація
+net:192.168.1.0/24                   # Конкретна підмережа
+os:"Windows Server 2012"             # Конкретна ОС
+vuln:CVE-2021-44228                  # Пристрої з конкретною вразливістю
+
+# Комбінація фільтрів
+port:22 country:UA product:OpenSSH
+port:443 hostname:example.com has_screenshot:true
+
+# CLI-інструмент
+pip install shodan
+shodan init YOUR_API_KEY
+shodan host 93.184.216.34            # Інформація про IP
+shodan search "apache" --fields ip_str,port,org</code></pre>
+
+        <h3>Censys</h3>
+        <p><strong>Censys</strong> (censys.io) — академічний проект Мічиганського університету, який виконує аналогічну функцію до Shodan, але з важливими відмінностями:</p>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Shodan</th>
+            <th>Censys</th>
+          </tr>
+          <tr>
+            <td><strong>Покриття IPv4</strong></td>
+            <td>~57% за тиждень</td>
+            <td>~100% за тиждень</td>
+          </tr>
+          <tr>
+            <td><strong>Кількість сервісів</strong></td>
+            <td>Менша кількість портів</td>
+            <td>У 8 разів більше виявлених сервісів (за даними досліджень)</td>
+          </tr>
+          <tr>
+            <td><strong>Фокус</strong></td>
+            <td>IoT-пристрої, OT/ICS-системи</td>
+            <td>TLS-сертифікати, веб-сервіси, enterprise-інфраструктура</td>
+          </tr>
+          <tr>
+            <td><strong>API</strong></td>
+            <td>REST API, Python SDK</td>
+            <td>REST API, Python SDK, BigQuery інтеграція</td>
+          </tr>
+          <tr>
+            <td><strong>Безкоштовний доступ</strong></td>
+            <td>Обмежені результати</td>
+            <td>Більш щедрий безкоштовний рівень для дослідників</td>
+          </tr>
+        </table>
+
+        <h3>Recon-ng</h3>
+        <p><strong>Recon-ng</strong> — це фреймворк для веб-розвідки, побудований за архітектурою, подібною до <strong>Metasploit</strong>. Він надає модульну систему для автоматизації різних завдань розвідки.</p>
+        <p>Ключові концепції:</p>
+        <ul>
+          <li><strong>Workspaces</strong> — ізольовані робочі простори для різних проектів</li>
+          <li><strong>Modules</strong> — модулі для конкретних завдань (DNS, Whois, social media)</li>
+          <li><strong>Database</strong> — вбудована SQLite база для зберігання знахідок</li>
+        </ul>
+        <pre><code># Запуск Recon-ng
+recon-ng
+
+# Створити робочий простір для проекту
+workspaces create target_project
+
+# Пошук доступних модулів
+marketplace search
+marketplace search domains
+marketplace search contacts
+
+# Встановити модуль
+marketplace install recon/domains-hosts/hackertarget
+
+# Завантажити та запустити модуль
+modules load recon/domains-hosts/hackertarget
+options set SOURCE example.com
+run
+
+# Переглянути зібрані дані
+show hosts
+show contacts
+show credentials
+
+# Експорт результатів
+modules load reporting/html
+options set FILENAME /tmp/report.html
+run</code></pre>
+
+        <h3>SpiderFoot</h3>
+        <p><strong>SpiderFoot</strong> — це автоматизований OSINT-інструмент з <strong>понад 100 модулями</strong> збору даних. Відрізняється від інших інструментів автоматичною кореляцією результатів — знахідки одного модуля автоматично стають вхідними даними для інших.</p>
+        <ul>
+          <li>Веб-інтерфейс для візуалізації результатів</li>
+          <li>Підтримка сканування доменів, IP, email, імен, телефонів</li>
+          <li>Інтеграція з VirusTotal, Shodan, Hunter.io, Have I Been Pwned та десятками інших API</li>
+          <li>Автоматичне виявлення витоків даних, відкритих портів, вразливостей</li>
+        </ul>
+        <pre><code># Запуск SpiderFoot з веб-інтерфейсом
+spiderfoot -l 127.0.0.1:5001
+
+# CLI-сканування
+spiderfoot -s example.com -t DOMAIN -o tab > results.txt
+
+# Тихий режим (без веб-інтерфейсу)
+spiderfoot -s example.com -m sfp_dnsresolve,sfp_whois -q</code></pre>
+
+        <h3>OSINT Framework</h3>
+        <p><strong>OSINT Framework</strong> (<code>osintframework.com</code>) — це не інструмент, а каталогізований довідник OSINT-ресурсів, організований у вигляді інтерактивного дерева. Він категоризує сотні інструментів і сервісів за типом інформації:</p>
+        <ul>
+          <li>Username / Email / Domain / IP / Phone Number</li>
+          <li>Social Networks / Dating / People Search</li>
+          <li>Images / Videos / Documents</li>
+          <li>Business Records / Public Records / Court Records</li>
+          <li>Dark Web / Cryptocurrency / Threat Intelligence</li>
+        </ul>
+        <p>OSINT Framework є відмінною відправною точкою, коли ви не знаєте, який інструмент використати для конкретного типу розвідки.</p>
+
+        <h3>Have I Been Pwned</h3>
+        <p><strong>Have I Been Pwned</strong> (haveibeenpwned.com), створений Троєм Хантом (Troy Hunt), — це сервіс для перевірки, чи фігурують email-адреси або паролі у відомих витоках даних (data breaches).</p>
+        <p>Можливості для пентестера:</p>
+        <ul>
+          <li><strong>Email breach check</strong> — перевірка, в яких витоках фігурує email-адреса (назва бреча, дата, тип даних)</li>
+          <li><strong>Domain search</strong> — пошук усіх email-адрес домену, що фігурують у витоках (потребує верифікації домену)</li>
+          <li><strong>Pwned Passwords</strong> — база з понад 850 мільйонів зламаних паролів; API для перевірки паролів за хешем (k-anonymity model — не передає повний хеш)</li>
+          <li><strong>API</strong> — інтеграція з іншими інструментами для автоматизованої перевірки</li>
+        </ul>
+        <p>Серед найбільших витоків останніх років: <strong>Synthient (2025)</strong> — 1.9 мільярда email-адрес, зібраних з численних джерел, що стало одним із найбільших агрегованих витоків в історії.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.6 Розвідка в соціальних мережах                           -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.6 Розвідка в соціальних мережах</h2>
+        <p>Соціальні мережі є одним з найбагатших джерел OSINT. Працівники організацій публікують величезний обсяг інформації, яка може бути використана для побудови профілю цілі: технологічний стек, структура організації, імена працівників, їх ролі та навіть внутрішні процеси.</p>
+
+        <h3>LinkedIn-розвідка</h3>
+        <p><strong>LinkedIn</strong> — це головне джерело для отримання інформації про працівників організації. Профілі LinkedIn розкривають:</p>
+        <ul>
+          <li><strong>Імена та посади</strong> — дозволяє побудувати організаційну структуру компанії</li>
+          <li><strong>Технологічний стек</strong> — вакансії та описи посад часто вказують технології: "шукаємо DevOps з досвідом AWS, Kubernetes, Jenkins" розкриває хмарного провайдера та інструменти CI/CD</li>
+          <li><strong>Email-формат</strong> — знаючи ім'я працівника та домен компанії, можна припустити email (john.smith@company.com, jsmith@company.com)</li>
+          <li><strong>Попередні місця роботи</strong> — потенційні зв'язки з іншими організаціями</li>
+        </ul>
+        <p>Інструменти для LinkedIn-розвідки:</p>
+        <pre><code># linkedin2username — генерація списку можливих імен користувачів
+# на основі списку працівників компанії з LinkedIn
+python3 linkedin2username.py -u email@gmail.com -c "Target Company"
+# Генерує формати: first.last, flast, firstl
+
+# theHarvester з LinkedIn як джерелом
+theHarvester -d targetcompany.com -b linkedin
+
+# Результат: імена працівників, які можна використати для:
+# 1. Генерації email-адрес
+# 2. Password spraying (firstname2024!, CompanyName123)
+# 3. Цільового фішингу (spear phishing)</code></pre>
+
+        <h3>Пошук за іменем користувача</h3>
+        <p>Знаючи ім'я користувача (username) на одній платформі, можна знайти його акаунти на інших:</p>
+        <ul>
+          <li><strong>Sherlock</strong> — пошук username на <strong>понад 400 сайтах</strong> (GitHub, Twitter, Instagram, Reddit, Steam, VK тощо)</li>
+          <li><strong>social-analyzer</strong> — аналіз профілів на <strong>понад 1000 платформах</strong> з можливістю збору додаткової інформації (аватари, біографії)</li>
+        </ul>
+        <pre><code># Sherlock — пошук за username
+sherlock targetuser
+sherlock targetuser --output results.txt
+sherlock targetuser --site github twitter instagram
+
+# social-analyzer
+python3 -m social-analyzer --username "targetuser" --metadata</code></pre>
+
+        <h3>Пошук email-адрес</h3>
+        <p>Email-адреси працівників — це критична інформація для фішингових атак та password spraying:</p>
+        <ul>
+          <li><strong>Hunter.io</strong> (hunter.io) — пошук email-адрес за доменом компанії:
+            <ul>
+              <li><strong>Domain Search</strong> — знаходить усі публічно доступні email-адреси домену</li>
+              <li><strong>Email Verification</strong> — перевіряє, чи існує конкретна email-адреса</li>
+              <li><strong>Confidence Score</strong> — показує ймовірність того, що email-адреса валідна (у відсотках)</li>
+              <li>Безкоштовний план: 25 запитів на місяць</li>
+            </ul>
+          </li>
+          <li><strong>Phonebook.cz</strong> — безкоштовний пошук email-адрес, доменів та URL за ключовим словом; агрегує дані з витоків та публічних джерел</li>
+        </ul>
+
+        <h3>Фото-розвідка (Photo OSINT)</h3>
+        <p>Фотографії містять значно більше інформації, ніж здається на перший погляд:</p>
+        <p><strong>EXIF-метадані</strong> — кожна цифрова фотографія зберігає метадані (Exchangeable Image File Format), які можуть включати:</p>
+        <ul>
+          <li>GPS-координати (геолокація місця зйомки)</li>
+          <li>Модель камери/телефону</li>
+          <li>Дата та час зйомки</li>
+          <li>Програмне забезпечення для обробки</li>
+          <li>Серійний номер камери</li>
+        </ul>
+        <pre><code># ExifTool — універсальний інструмент для читання/запису метаданих
+exiftool photo.jpg
+exiftool -GPSPosition photo.jpg       # Тільки GPS-координати
+exiftool -all= photo.jpg              # Видалити всі метадані
+
+# exifLooter — масовий збір EXIF з веб-сайтів
+exiflooter -u https://target.com      # Збір фотографій та їх EXIF</code></pre>
+
+        <p><strong>Зворотний пошук зображень</strong> — пошук однакових або подібних зображень в інтернеті:</p>
+        <ul>
+          <li><strong>Google Images</strong> (images.google.com) — завантажте зображення або вставте URL для пошуку</li>
+          <li><strong>TinEye</strong> (tineye.com) — спеціалізований сервіс зворотного пошуку; показує, де зображення було вперше опубліковано</li>
+          <li><strong>Yandex Images</strong> (yandex.com/images) — особливо ефективний для пошуку осіб та зображень з пострадянського простору</li>
+        </ul>
+        <p><strong>Геолокація за фотографією</strong> — визначення місця зйомки без GPS-даних за візуальними підказками: написи на вивісках, номерні знаки автомобілів, рельєф місцевості, архітектура будівель, тіні (визначення часу доби та широти). Сервіс <strong>GeoGuessr</strong> та OSINT-спільнота активно практикують ці навички.</p>
+
+        <h3>Реальний приклад: атака на MGM Resorts та Caesars (2023)</h3>
+        <p>У вересні 2023 року група <strong>Scattered Spider</strong> (UNC3944) здійснила одну з найвідоміших атак, що почалася саме з OSINT-розвідки в соціальних мережах:</p>
+        <ol>
+          <li><strong>LinkedIn-розвідка</strong> — зловмисники дослідили профілі працівників MGM Resorts та Caesars Entertainment, визначивши працівників IT-відділу та служби підтримки</li>
+          <li><strong>Соціальна інженерія</strong> — використовуючи зібрану інформацію, зловмисники зателефонували до IT-підтримки, видаючи себе за працівника, та переконали скинути MFA (багатофакторну аутентифікацію)</li>
+          <li><strong>Результат</strong> — Caesars заплатив $15 мільйонів викупу; MGM зазнав збитків на понад $100 мільйонів; казино працювали в обмеженому режимі протягом тижнів</li>
+        </ol>
+        <p>Цей випадок наочно демонструє, як інформація з відкритих джерел стає відправною точкою для критичних атак.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.7 Веб-розвідка та метадані                                -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.7 Веб-розвідка та метадані</h2>
+        <p>Веб-розвідка зосереджена на аналізі самого веб-додатку та пов'язаної з ним інфраструктури. Кожен веб-сайт залишає велику кількість інформаційних слідів у заголовках, вихідному коді, конфігураційних файлах та історичних архівах.</p>
+
+        <h3>Визначення технологій (Technology Fingerprinting)</h3>
+        <p>Знання технологічного стеку цілі дозволяє звузити вектори атаки та підібрати відповідні експлойти:</p>
+        <ul>
+          <li><strong>Wappalyzer</strong> — розширення для браузера (Chrome, Firefox), яке автоматично визначає технології сайту: CMS (WordPress, Joomla, Drupal), фреймворки (React, Angular, Django), серверне ПЗ (Nginx, Apache), CDN (Cloudflare, Akamai), аналітику (Google Analytics, Matomo)</li>
+          <li><strong>BuiltWith</strong> (builtwith.com) — онлайн-сервіс для пасивного визначення технологій; надає детальний звіт без жодного запиту до цільового сервера; зберігає історію зміни технологій</li>
+          <li><strong>WhatWeb</strong> — CLI-інструмент для визначення технологій із різними рівнями агресивності:</li>
+        </ul>
+        <pre><code># WhatWeb — визначення технологій
+whatweb example.com                    # Стандартний режим
+whatweb -a 3 example.com               # Агресивний режим (більше запитів)
+whatweb -v example.com                 # Детальний вивід
+
+# Рівні агресивності (-a):
+# 1 — Passive (один запит, аналіз відповіді)
+# 3 — Aggressive (додаткові запити для уточнення)
+# 4 — Heavy (максимальна кількість запитів)
+
+# Сканування списку цілей
+whatweb -i targets.txt --log-json results.json</code></pre>
+
+        <h3>Wayback Machine</h3>
+        <p><strong>Wayback Machine</strong> (web.archive.org) — це проект Internet Archive, який зберігає <strong>понад 866 мільярдів</strong> веб-сторінок. Для OSINT це безцінний ресурс:</p>
+        <ul>
+          <li><strong>Відновлення видаленого контенту</strong> — сторінки, які були видалені з сайту, часто залишаються в архіві</li>
+          <li><strong>Пошук старої контактної інформації</strong> — email-адреси, імена працівників, які раніше були на сайті</li>
+          <li><strong>Аналіз зміни технологій</strong> — як змінювався стек технологій з часом</li>
+          <li><strong>Виявлення старих піддоменів та посилань</strong> — внутрішні URL, які більше не активні</li>
+        </ul>
+        <pre><code># waybackurls — збір усіх URL, збережених у Wayback Machine
+# Встановлення
+go install github.com/tomnomnom/waybackurls@latest
+
+# Збір URL
+waybackurls example.com
+
+# Фільтрація результатів для пошуку цікавих файлів
+waybackurls example.com | grep -E "\.(js|json|xml|config|env|sql|bak|old)$"
+
+# Пошук API-ендпоінтів
+waybackurls example.com | grep -i "api"
+
+# Пошук параметрів (потенційні точки ін'єкції)
+waybackurls example.com | grep "="</code></pre>
+
+        <h3>Аналіз robots.txt та sitemap.xml</h3>
+        <p>Файли <code>robots.txt</code> та <code>sitemap.xml</code> призначені для пошукових систем, але розкривають внутрішню структуру сайту:</p>
+        <p><strong>robots.txt</strong> — вказує пошуковим роботам, які директорії не слід індексувати. Парадоксально, це часто розкриває найцікавіші директорії:</p>
+        <pre><code># Приклад robots.txt
+User-agent: *
+Disallow: /admin/
+Disallow: /api/v1/internal/
+Disallow: /backup/
+Disallow: /config/
+Disallow: /wp-admin/
+Disallow: /phpmyadmin/
+Disallow: /staging/
+Disallow: /.git/
+Sitemap: https://example.com/sitemap.xml</code></pre>
+        <p>Кожен рядок <code>Disallow</code> — це потенційна ціль для подальшого дослідження: адміністративні панелі, резервні копії, конфігураційні файли, API-ендпоінти.</p>
+        <p><strong>sitemap.xml</strong> — містить повний перелік сторінок для індексації, включаючи ті, що не мають посилань з інших сторінок:</p>
+        <pre><code># Перегляд robots.txt
+curl -s https://example.com/robots.txt
+
+# Перегляд sitemap.xml
+curl -s https://example.com/sitemap.xml
+
+# Пошук додаткових sitemap-файлів
+curl -s https://example.com/sitemap_index.xml</code></pre>
+
+        <h3>Аналіз HTTP-заголовків</h3>
+        <p>HTTP-заголовки відповіді сервера часто розкривають технологічну інформацію:</p>
+        <pre><code># Перегляд заголовків відповіді
+curl -I https://example.com
+
+# Приклад виводу з інформативними заголовками:
+# HTTP/2 200
+# Server: nginx/1.18.0
+# X-Powered-By: PHP/7.4.33
+# X-AspNet-Version: 4.0.30319
+# X-Generator: WordPress 6.4.2
+# Set-Cookie: PHPSESSID=abc123; path=/</code></pre>
+        <p>Заголовки, що розкривають версії:</p>
+        <ul>
+          <li><strong>Server:</strong> — веб-сервер та його версія (nginx/1.18.0, Apache/2.4.49)</li>
+          <li><strong>X-Powered-By:</strong> — мова програмування або фреймворк (PHP/7.4, ASP.NET, Express)</li>
+          <li><strong>X-Generator:</strong> — CMS та її версія (WordPress 6.4.2, Drupal 10)</li>
+          <li><strong>X-AspNet-Version:</strong> — версія .NET Framework</li>
+        </ul>
+        <p>Знання точних версій серверного ПЗ дозволяє шукати відповідні CVE-вразливості. Наприклад, <code>Apache/2.4.49</code> вразливий до CVE-2021-41773 (path traversal), а <code>nginx</code> певних версій — до різних bypass-вразливостей.</p>
+
+        <h3>Аналіз вихідного коду сторінки</h3>
+        <p>Вихідний HTML-код та JavaScript-файли можуть містити чутливу інформацію:</p>
+        <ul>
+          <li><strong>HTML-коментарі</strong> — розробники часто залишають коментарі з TODO, іменами, внутрішніми посиланнями:
+            <code>&lt;!-- TODO: видалити перед продакшном --&gt;</code>,
+            <code>&lt;!-- Admin panel: /secret-admin --&gt;</code>
+          </li>
+          <li><strong>Приховані поля форм</strong> — <code>&lt;input type="hidden" name="debug" value="true"&gt;</code>, <code>&lt;input type="hidden" name="admin_email" value="admin@corp.com"&gt;</code></li>
+          <li><strong>JavaScript-змінні</strong> — API-ключі, URL внутрішніх сервісів, конфігурація:
+            <code>const API_KEY = "sk-live-abc123...";</code>,
+            <code>const API_URL = "https://internal-api.corp.com";</code>
+          </li>
+        </ul>
+
+        <h3>Аналіз JavaScript-файлів</h3>
+        <p>JavaScript-файли є особливо цінним джерелом інформації, адже вони часто містять логіку взаємодії з API, ендпоінти та конфігурацію:</p>
+        <ul>
+          <li><strong>JSluice</strong> — витягує URL, ендпоінти та секрети з JavaScript-файлів</li>
+          <li><strong>JShunter</strong> — автоматизований пошук чутливої інформації у JS-файлах</li>
+          <li><strong>LinkFinder</strong> — пошук ендпоінтів та їхніх параметрів у JS-файлах</li>
+        </ul>
+        <pre><code># LinkFinder — пошук ендпоінтів у JavaScript
+python3 linkfinder.py -i https://example.com/js/app.js -o results.html
+
+# JSluice — аналіз JS-файлів
+cat app.js | jsluice urls                # Витягти URL
+cat app.js | jsluice secrets             # Шукати секрети (API keys, tokens)
+
+# JShunter — масовий аналіз
+echo "example.com" | jshunter</code></pre>
+
+        <h3>Метадані документів</h3>
+        <p>Публічно доступні документи (PDF, DOCX, XLSX, PPTX) містять метадані, що розкривають інформацію про організацію:</p>
+        <ul>
+          <li><strong>Автор документа</strong> — ім'я користувача Windows, під яким було створено файл</li>
+          <li><strong>Програмне забезпечення</strong> — Microsoft Office 2019, LibreOffice, Adobe Acrobat (розкриває ОС та ПЗ організації)</li>
+          <li><strong>Внутрішні шляхи</strong> — <code>C:\Users\jsmith\Documents\...</code> (розкриває формат імен та структуру директорій)</li>
+          <li><strong>Принтери та мережеві ресурси</strong> — імена принтерів, мережеві шляхи</li>
+        </ul>
+        <p>Інструменти для збору та аналізу метаданих:</p>
+        <pre><code># FOCA (Windows) — автоматизований збір документів з сайту та аналіз метаданих
+# Завантажити з: github.com/ElevenPaths/FOCA
+# Підтримує: PDF, DOC(X), XLS(X), PPT(X), SVG, EPS
+
+# ExifTool — універсальний аналізатор метаданих
+exiftool document.pdf
+exiftool -Author -Creator -Producer document.pdf
+
+# Metagoofil — збір документів з Google та витяг метаданих
+metagoofil -d example.com -t pdf,doc,xls,ppt -l 100 -o /tmp/meta_results
+# -d  Домен
+# -t  Типи файлів
+# -l  Кількість результатів пошуку
+# -o  Директорія для результатів
+
+# Масовий аналіз зібраних документів
+exiftool -r /tmp/meta_results/ | grep -i "author\|creator\|producer"</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 3.8 Методологія OSINT та OPSEC                             -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>3.8 Методологія OSINT та OPSEC</h2>
+        <p>Ефективний OSINT-процес потребує структурованого підходу. Хаотичний збір інформації призводить до пропущених даних, дублювання зусиль та нечітких результатів. У цьому розділі розглянемо систематичну методологію розвідки, структуру звіту та практики операційної безпеки (OPSEC).</p>
+
+        <h3>Фази OSINT-методології</h3>
+        <p>Методологія OSINT для пентесту складається з п'яти послідовних фаз:</p>
+        <ol>
+          <li><strong>Planning (Планування)</strong> — визначення цілей, обсягу дослідження, доступних ресурсів та обмежень. Ключове питання: "Що саме ми хочемо дізнатися?" Визначити категорії інформації, які потрібно зібрати.</li>
+          <li><strong>Passive Reconnaissance (Пасивна розвідка)</strong> — збір інформації без прямого контакту з ціллю: Whois, DNS через публічні резолвери, Google Dorking, соціальні мережі, Shodan, Certificate Transparency, метадані документів.</li>
+          <li><strong>Active Reconnaissance (Активна розвідка)</strong> — збір інформації через прямий контакт з ціллю (потребує авторизації): DNS zone transfer, сканування портів, brute-force піддоменів, веб-сканування, fingerprinting.</li>
+          <li><strong>Analysis (Аналіз)</strong> — систематизація та кореляція зібраних даних. Побудова карти інфраструктури, виявлення зв'язків, визначення потенційних точок входу та вразливих сервісів.</li>
+          <li><strong>Reporting (Звітування)</strong> — документування всіх знахідок у структурованому звіті з рекомендаціями для замовника.</li>
+        </ol>
+
+        <h3>OSINT-чеклист</h3>
+        <p>Систематичний чеклист для розвідки, що охоплює всі ключові категорії інформації:</p>
+        <p><strong>Доменна розвідка (Domain Intelligence):</strong></p>
+        <ul>
+          <li>Whois-дані основного домену та пов'язаних доменів</li>
+          <li>DNS-записи: A, AAAA, MX, NS, TXT, CNAME, SOA, SRV</li>
+          <li>Піддомени (Certificate Transparency, brute-force, пошукові системи)</li>
+          <li>ASN та IP-діапазони організації</li>
+          <li>Історичні DNS та Whois записи</li>
+          <li>Зворотний DNS для IP-діапазонів</li>
+        </ul>
+        <p><strong>Публічна експозиція (Public Exposure):</strong></p>
+        <ul>
+          <li>Shodan / Censys — відкриті порти, сервіси, банери</li>
+          <li>Google Dorking — чутливі файли, помилки, адмін-панелі</li>
+          <li>robots.txt / sitemap.xml — приховані директорії</li>
+          <li>Wayback Machine — видалений контент, старі версії</li>
+          <li>Have I Been Pwned — витоки даних</li>
+          <li>GitHub / GitLab — витоки коду, ключів API, конфігурацій</li>
+        </ul>
+        <p><strong>Люди та соціальні мережі (People / Social):</strong></p>
+        <ul>
+          <li>LinkedIn — працівники, посади, технологічний стек з вакансій</li>
+          <li>Email-адреси — Hunter.io, Phonebook.cz, theHarvester</li>
+          <li>Username enumeration — Sherlock, social-analyzer</li>
+          <li>Фото-розвідка — EXIF, зворотний пошук зображень</li>
+        </ul>
+        <p><strong>Технологічний стек (Tech Stack):</strong></p>
+        <ul>
+          <li>Wappalyzer / WhatWeb / BuiltWith — CMS, фреймворки, сервери</li>
+          <li>HTTP-заголовки — версії ПЗ</li>
+          <li>JavaScript-аналіз — API-ендпоінти, ключі, конфігурація</li>
+          <li>SSL/TLS-сертифікати — видавець, SAN, термін дії</li>
+        </ul>
+        <p><strong>Документи (Documents):</strong></p>
+        <ul>
+          <li>Публічні документи (PDF, DOC, XLS) — метадані, автори, шляхи</li>
+          <li>Metagoofil / FOCA — масовий збір та аналіз</li>
+          <li>Презентації та звіти — внутрішня інформація, імена, процеси</li>
+        </ul>
+
+        <h3>Структура OSINT-звіту</h3>
+        <p>Результати розвідки оформлюються у структурований звіт, який стає основою для подальших етапів пентесту:</p>
+        <ol>
+          <li><strong>Executive Summary (Резюме для керівництва)</strong> — короткий огляд ключових знахідок на 1-2 сторінки; мова, зрозуміла нетехнічному керівництву; основні ризики та рекомендації</li>
+          <li><strong>Methodology (Методологія)</strong> — які інструменти та техніки використовувалися; хронологія дослідження; обмеження та scope</li>
+          <li><strong>Detailed Findings (Детальні знахідки)</strong> — структуровані за категоріями:
+            <ul>
+              <li>Доменна інфраструктура (домени, піддомени, IP-адреси, ASN)</li>
+              <li>Публічно доступні сервіси (порти, версії, вразливості)</li>
+              <li>Витоки інформації (документи, email, облікові дані у витоках)</li>
+              <li>Працівники та соціальний профіль</li>
+              <li>Технологічний стек та потенційні вразливості</li>
+            </ul>
+          </li>
+          <li><strong>Recommendations (Рекомендації)</strong> — конкретні кроки для зменшення поверхні атаки; пріоритизація за рівнем критичності</li>
+        </ol>
+
+        <h3>OPSEC (Operational Security)</h3>
+        <p><strong>OPSEC</strong> — це дисципліна захисту власних операцій під час проведення розвідки. Пентестер має залишити мінімальний слід та захистити свою ідентичність:</p>
+        <p><strong>Ізоляція ідентичності:</strong></p>
+        <ul>
+          <li>Використовувати окремі email-адреси та акаунти для OSINT-діяльності, не пов'язані з реальною особою</li>
+          <li><strong>Sock puppets</strong> — фейкові профілі у соціальних мережах для дослідження; повинні мати реалістичну історію, фото (згенеровані AI), зв'язки</li>
+          <li>Окремий браузер або профіль без авторизованих сесій</li>
+        </ul>
+        <p><strong>Мережева анонімність:</strong></p>
+        <ul>
+          <li><strong>VPN</strong> — маскує реальну IP-адресу; обирати провайдера з no-log policy</li>
+          <li><strong>Tor</strong> — маршрутизація через мережу ретрансляторів для максимальної анонімності; повільніше, але набагато важче відстежити</li>
+          <li><strong>Проксі-ланцюги (proxychains)</strong> — маршрутизація через кілька проксі-серверів</li>
+        </ul>
+        <p><strong>Ізольовані середовища:</strong></p>
+        <ul>
+          <li><strong>Whonix</strong> — ОС, що маршрутизує весь трафік через Tor; складається з двох VM: Gateway (Tor-маршрутизатор) та Workstation (робоча станція)</li>
+          <li><strong>Tails</strong> — "амнезійна" ОС, що завантажується з USB; не залишає слідів на хост-системі; весь трафік через Tor</li>
+          <li>Виділені віртуальні машини для кожного проекту</li>
+        </ul>
+        <p><strong>Браузерна гігієна:</strong></p>
+        <ul>
+          <li>Блокування JavaScript за замовчуванням (uBlock Origin, NoScript)</li>
+          <li>Відключення WebRTC (може розкрити реальну IP навіть через VPN)</li>
+          <li>Контроль User-Agent та інших ідентифікаторів браузера</li>
+          <li>Регулярне очищення cookies, localStorage, кешу</li>
+        </ul>
+
+        <h3>Юридичні межі OSINT</h3>
+        <p>Розуміння юридичних меж є критично важливим для етичного хакера:</p>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Приклади</th>
+            <th>Статус</th>
+          </tr>
+          <tr>
+            <td><strong>Легально</strong></td>
+            <td>Пошук у Google, перегляд публічних профілів LinkedIn, Whois-запити, перевірка Have I Been Pwned, аналіз robots.txt</td>
+            <td>Публічно доступна інформація</td>
+          </tr>
+          <tr>
+            <td><strong>Сіра зона</strong></td>
+            <td>Масове завантаження публічних профілів (scraping), збір та агрегація персональних даних, використання витоків даних для аналізу</td>
+            <td>Може порушувати ToS платформ або GDPR</td>
+          </tr>
+          <tr>
+            <td><strong>Нелегально</strong></td>
+            <td>Доступ до закритих акаунтів, використання зламаних облікових даних, перехоплення комунікацій, несанкціоноване сканування</td>
+            <td>Порушення КК України (ст. 361-363), CFAA, Computer Misuse Act</td>
+          </tr>
+        </table>
+
+        <h3>Етичні принципи OSINT</h3>
+        <p>Етичний хакер повинен дотримуватися ряду принципів при проведенні розвідки:</p>
+        <ul>
+          <li><strong>Повага до приватності</strong> — збирати лише ту інформацію, яка необхідна для виконання завдання; не збирати надмірну кількість персональних даних</li>
+          <li><strong>Авторизація</strong> — активна розвідка проводиться лише з письмового дозволу замовника; пасивна розвідка може проводитися в рамках попереднього оцінювання</li>
+          <li><strong>Responsible Disclosure</strong> — якщо в процесі OSINT виявлено критичну вразливість (наприклад, відкриту базу даних), слід повідомити власника</li>
+          <li><strong>Мінімізація даних</strong> — не зберігати персональні дані довше, ніж потрібно для проекту</li>
+          <li><strong>Документування</strong> — вести повний журнал дій, джерел та знахідок для звітності та юридичного захисту</li>
+          <li><strong>GDPR-комплаянс</strong> — якщо збираються дані громадян ЄС, необхідно дотримуватися вимог GDPR щодо обробки персональних даних</li>
+        </ul>
+        <p>Розвідка та OSINT — це могутній інструмент, який надає пентестеру інформаційну перевагу. Проте з великою силою приходить велика відповідальність: кожен спеціаліст з кібербезпеки повинен чітко розуміти юридичні та етичні межі своєї діяльності.</p>
       </section>
 
     </article>

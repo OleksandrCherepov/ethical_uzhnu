@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.2 — DNS-розвідка</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>DNS-розвідка</h1>
+      <div class="subtitle">Тема 3.2 — Збір інформації та розвідка (OSINT)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Типи DNS-записів -->
+    <section class="slide">
+      <h2>Типи DNS-записів</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Тип</th>
+            <th>Призначення</th>
+            <th>Що розкриває</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue"><strong>A</strong></td>
+            <td>Домен → IPv4-адреса</td>
+            <td class="cell-green">IP-адреси серверів, хостинг-провайдер</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>MX</strong></td>
+            <td>Поштові сервери домену</td>
+            <td class="cell-green">Поштова інфраструктура, сторонні сервіси (Google Workspace, Microsoft 365)</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>NS</strong></td>
+            <td>Авторитетні DNS-сервери</td>
+            <td class="cell-yellow">DNS-провайдер, потенційні цілі для zone transfer</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>TXT</strong></td>
+            <td>Текстові дані (SPF, DKIM, DMARC)</td>
+            <td class="cell-green">SPF-записи розкривають діапазони IP, верифікація сервісів</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>CNAME</strong></td>
+            <td>Псевдонім домену</td>
+            <td class="cell-yellow">Зв'язки між доменами, CDN, можливий subdomain takeover</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>SOA</strong></td>
+            <td>Start of Authority</td>
+            <td class="cell-yellow">Email адміністратора, серійний номер зони, таймери оновлення</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>PTR</strong></td>
+            <td>IP → домен (зворотний запис)</td>
+            <td class="cell-green">Зворотне відображення — виявлення інших доменів на IP</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>SRV</strong></td>
+            <td>Сервіси та порти</td>
+            <td class="cell-red">Внутрішні сервіси: SIP, LDAP, XMPP — критична інформація</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: Zone Transfer та Certificate Transparency -->
+    <section class="slide">
+      <h2>Zone Transfer та Certificate Transparency</h2>
+
+      <div class="two-column">
+        <div class="card-red">
+          <h4>AXFR — Zone Transfer</h4>
+          <p>Передача всієї DNS-зони з авторитетного сервера. Розкриває <span class="highlight">повну карту піддоменів</span>.</p>
+          <div class="code-block">
+            <code>
+              <span class="code-comment"># Спроба zone transfer</span><br>
+              <span class="code-function">dig</span> @ns1.example.com example.com <span class="code-keyword">AXFR</span><br><br>
+              <span class="code-comment"># Альтернатива через host</span><br>
+              <span class="code-function">host</span> <span class="code-keyword">-t axfr</span> example.com ns1.example.com
+            </code>
+          </div>
+          <p><strong>Захист:</strong> ACL (обмеження за IP), TSIG (криптографічна автентифікація), заборона для публічних запитів.</p>
+        </div>
+        <div class="card-green">
+          <h4>Certificate Transparency (crt.sh)</h4>
+          <p>Публічні логи SSL/TLS сертифікатів — джерело <span class="highlight">пасивного виявлення піддоменів</span>.</p>
+          <div class="code-block">
+            <code>
+              <span class="code-comment"># Пошук через crt.sh</span><br>
+              <span class="code-function">curl</span> <span class="code-string">"https://crt.sh/?q=%.example.com&output=json"</span><br><br>
+              <span class="code-comment"># Wildcard-пошук</span><br>
+              %.example.com → всі піддомени
+            </code>
+          </div>
+          <p><strong>Переваги:</strong> не генерує трафіку до цілі, повністю пасивний метод, історичні дані.</p>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Увага</h4>
+        <p>Zone transfer без дозволу може бути розцінений як несанкціонований доступ. <strong>Certificate Transparency</strong> — повністю легальний пасивний метод, оскільки логи є публічними за стандартом RFC 6962.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: Інструменти DNS-розвідки -->
+    <section class="slide">
+      <h2>Інструменти DNS-розвідки</h2>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h4>dig — ручні запити</h4>
+          <div class="code-block">
+            <code>
+              <span class="code-comment"># Всі записи</span><br>
+              <span class="code-function">dig</span> example.com <span class="code-keyword">ANY</span><br><br>
+              <span class="code-comment"># MX-записи</span><br>
+              <span class="code-function">dig</span> example.com <span class="code-keyword">MX +short</span><br><br>
+              <span class="code-comment"># Конкретний DNS</span><br>
+              <span class="code-function">dig</span> @8.8.8.8 example.com
+            </code>
+          </div>
+          <p>Стандартний інструмент для точкових запитів з повним контролем параметрів.</p>
+        </div>
+        <div class="card-purple">
+          <h4>dnsenum / dnsrecon</h4>
+          <div class="code-block">
+            <code>
+              <span class="code-function">dnsenum</span> example.com<br><br>
+              <span class="code-function">dnsrecon</span> <span class="code-keyword">-d</span> example.com <span class="code-keyword">-t std,brt</span>
+            </code>
+          </div>
+          <p><strong>dnsenum</strong> — автоматичний збір записів, zone transfer, брутфорс піддоменів. <strong>dnsrecon</strong> — розширена розвідка з підтримкою різних типів сканування.</p>
+        </div>
+        <div class="card-green">
+          <h4>Sublist3r / OWASP Amass</h4>
+          <div class="code-block">
+            <code>
+              <span class="code-function">sublist3r</span> <span class="code-keyword">-d</span> example.com<br><br>
+              <span class="code-function">amass</span> enum <span class="code-keyword">-d</span> example.com <span class="code-keyword">-passive</span>
+            </code>
+          </div>
+          <p><strong>Sublist3r</strong> — пошук через пошукові системи та API. <strong>Amass</strong> — найпотужніший інструмент: API-інтеграції, графова модель, активний та пасивний режими.</p>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>DNS over HTTPS (DoH)</h4>
+        <p>Зростання використання <span class="highlight">DoH</span> (RFC 8484) та <span class="highlight">DoT</span> ускладнює перехоплення DNS-запитів, але не впливає на серверну розвідку — записи DNS залишаються публічними.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>DNS-розвідка розкриває <span class="highlight">інфраструктуру цілі</span> без активного сканування: піддомени, поштові сервери, DNS-провайдери, пов'язані IP-адреси та внутрішні сервіси.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Записи A, MX, NS, TXT, CNAME, SOA, PTR, SRV — кожен розкриває свій аспект інфраструктури</li>
+        <li>Zone Transfer (AXFR) — повна карта зони, якщо сервер некоректно налаштований</li>
+        <li>Certificate Transparency (crt.sh) — пасивне виявлення піддоменів через публічні логи сертифікатів</li>
+        <li>dig, dnsenum, dnsrecon — ручна та автоматизована DNS-розвідка</li>
+        <li>OWASP Amass — найповніший інструмент з графовою моделлю та API-інтеграціями</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>Whois та реєстраційні дані</strong> — як отримати інформацію про власника домену, реєстратора та мережеві блоки.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

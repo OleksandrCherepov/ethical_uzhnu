@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.6 — Розвідка в соціальних мережах</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Розвідка в соціальних мережах</h1>
+      <div class="subtitle">Тема 3.6 — Збір інформації та OSINT</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: LinkedIn та email-розвідка -->
+    <section class="slide">
+      <h2>LinkedIn та email-розвідка</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>LinkedIn OSINT</h4>
+          <ul>
+            <li><strong>Перелік співробітників</strong> — пошук за компанією, посадами, відділами</li>
+            <li><strong>Технології з вакансій</strong> — стек, ОС, хмарні провайдери, SIEM</li>
+            <li><strong>Оргструктура</strong> — ієрархія, ключові особи, IT-команда</li>
+            <li><code>linkedin2username</code> — генерація email-адрес зі списку профілів</li>
+            <li><code>theHarvester -b linkedin</code> — автоматизований збір імен та позицій</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Email Discovery</h4>
+          <ul>
+            <li><strong>Hunter.io</strong> — domain search, верифікація адрес, confidence score (0-100%)</li>
+            <li><strong>Phonebook.cz</strong> — пошук email, доменів та URL за організацією</li>
+            <li><strong>h8mail</strong> — перевірка email у витоках даних (breach databases)</li>
+            <li>Патерни email: <code>ім'я.прізвище@</code>, <code>першалітера.прізвище@</code></li>
+            <li>Валідація через SMTP VRFY та RCPT TO</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Username та фото OSINT -->
+    <section class="slide">
+      <h2>Username та фото OSINT</h2>
+
+      <div class="two-column">
+        <div class="card-purple">
+          <h4>Username OSINT</h4>
+          <ul>
+            <li><strong>Sherlock</strong> — пошук username на <span class="highlight">400+ сайтах</span></li>
+            <li>Команда: <code>sherlock username</code></li>
+            <li><strong>social-analyzer</strong> — аналіз на <span class="highlight">1000+ платформах</span></li>
+            <li>Рейтинг впевненості <strong>0-100</strong> для кожного знайденого профілю</li>
+            <li>Крос-платформна кореляція акаунтів однієї особи</li>
+          </ul>
+        </div>
+        <div class="card-yellow">
+          <h4>Фото OSINT</h4>
+          <ul>
+            <li><strong>ExifTool</strong> — метадані: GPS-координати, камера, дата зйомки</li>
+            <li><strong>exifLooter</strong> — масовий збір EXIF з публічних фото</li>
+            <li><strong>Reverse Image Search:</strong></li>
+            <li>Google Images, TinEye, Yandex Images</li>
+            <li><strong>Візуальна геолокація</strong> — визначення місця за орієнтирами, вивісками, ландшафтом</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Реальний кейс: MGM/Caesars 2023 -->
+    <section class="slide">
+      <h2>Реальний кейс: MGM/Caesars 2023</h2>
+
+      <div class="gradient-box gradient-red">
+        <h4>Scattered Spider — атака через соцмережі</h4>
+        <div class="flow-row">
+          <div class="flow-step">LinkedIn-розвідка IT-персоналу</div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">Соціальна інженерія (vishing)</div>
+          <div class="flow-arrow"></div>
+          <div class="flow-step">Компрометація MGM та Caesars</div>
+        </div>
+        <ul>
+          <li>Група <strong>Scattered Spider</strong> (UNC3944) використала LinkedIn для ідентифікації IT-спеціалістів</li>
+          <li>Зателефонували до служби підтримки, видаючи себе за співробітника</li>
+          <li>Caesars заплатив <span class="highlight">$15 млн</span> викупу</li>
+          <li>MGM зазнав <span class="highlight">$100 млн+</span> збитків від простою</li>
+        </ul>
+      </div>
+
+      <div class="warning-box">
+        <h4>Висновок</h4>
+        <p>Публічна інформація у соціальних мережах = <span class="highlight">повноцінний вектор атаки</span>. Кожен пост, фото чи вакансія може стати частиною розвідки зловмисника.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Соціальні мережі є <span class="highlight">найбагатшим джерелом OSINT</span> — від корпоративної структури та технологій до персональних даних і геолокації.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>LinkedIn — оргструктура, технології, генерація email</li>
+        <li>Hunter.io, Phonebook.cz, h8mail — email-розвідка та витоки</li>
+        <li>Sherlock, social-analyzer — крос-платформний пошук username</li>
+        <li>ExifTool, reverse image search — метадані та геолокація фото</li>
+        <li>Реальні атаки починаються з публічних профілів</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>веб-розвідку</strong> — аналіз веб-застосунків, пошук субдоменів та збір технічної інформації з веб-ресурсів.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

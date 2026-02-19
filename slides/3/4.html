@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.4 — Google Dorking (Google Hacking)</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Google Dorking (Google Hacking)</h1>
+      <div class="subtitle">Тема 3.4 — Розвідка з відкритих джерел (OSINT)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Оператори пошуку Google -->
+    <section class="slide">
+      <h2>Оператори пошуку Google</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Оператор</th>
+            <th>Дія</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>site:</code></td>
+            <td>Пошук лише на вказаному домені</td>
+            <td class="cell-blue"><code>site:example.com admin</code></td>
+          </tr>
+          <tr>
+            <td><code>filetype:</code></td>
+            <td>Пошук файлів конкретного типу</td>
+            <td class="cell-blue"><code>filetype:pdf security policy</code></td>
+          </tr>
+          <tr>
+            <td><code>intitle:</code></td>
+            <td>Слово має бути у заголовку сторінки</td>
+            <td class="cell-blue"><code>intitle:"index of" backup</code></td>
+          </tr>
+          <tr>
+            <td><code>inurl:</code></td>
+            <td>Слово має бути в URL сторінки</td>
+            <td class="cell-blue"><code>inurl:admin login</code></td>
+          </tr>
+          <tr>
+            <td><code>intext:</code></td>
+            <td>Слово має бути в тексті сторінки</td>
+            <td class="cell-blue"><code>intext:"password" filetype:log</code></td>
+          </tr>
+          <tr>
+            <td><code>cache:</code></td>
+            <td>Кешована версія сторінки Google</td>
+            <td class="cell-blue"><code>cache:example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>-</code></td>
+            <td>Виключити слово з результатів</td>
+            <td class="cell-blue"><code>site:example.com -www</code></td>
+          </tr>
+          <tr>
+            <td><code>" "</code></td>
+            <td>Точний збіг фрази</td>
+            <td class="cell-blue"><code>"default password" router</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        <h4>GHDB — Google Hacking Database</h4>
+        <p><span class="highlight">Google Hacking Database</span> від Offensive Security — колекція перевірених дорків для пошуку вразливостей: <strong>exploit-db.com/google-hacking-database</strong>. Категорії: файли з паролями, повідомлення про помилки, відкриті панелі, вразливе ПЗ.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: Практичні дорки -->
+    <section class="slide">
+      <h2>Практичні дорки</h2>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h4>Чутливі файли</h4>
+          <ul>
+            <li><code>filetype:sql "password"</code></li>
+            <li><code>filetype:env DB_PASSWORD</code></li>
+            <li><code>filetype:pdf "confidential"</code></li>
+            <li><code>filetype:log "password"</code></li>
+            <li><code>filetype:xls "username" "password"</code></li>
+          </ul>
+        </div>
+        <div class="card-yellow">
+          <h4>Панелі адміністрування</h4>
+          <ul>
+            <li><code>intitle:"admin login"</code></li>
+            <li><code>inurl:wp-admin</code></li>
+            <li><code>intitle:"Dashboard [Jenkins]"</code></li>
+            <li><code>inurl:/phpmyadmin/</code></li>
+            <li><code>intitle:"Grafana" inurl:login</code></li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h4>Directory Listings</h4>
+          <ul>
+            <li><code>intitle:"index of" password</code></li>
+            <li><code>intitle:"index of" .ssh</code></li>
+            <li><code>intitle:"index of" backup</code></li>
+            <li><code>intitle:"index of" .git</code></li>
+            <li><code>intitle:"index of" wp-content</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Альтернативні пошуковики та правові аспекти -->
+    <section class="slide">
+      <h2>Альтернативні пошуковики та правові аспекти</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Альтернативні пошуковики</h4>
+          <ul>
+            <li><strong>Bing</strong> — підтримує <code>filetype:</code>, <code>site:</code>, <code>intitle:</code>; інша індексація, інші результати</li>
+            <li><strong>DuckDuckGo</strong> — підтримує базові оператори; не персоналізує результати</li>
+            <li><strong>Yandex</strong> — потужна індексація пострадянського простору, оператор <code>mime:</code> замість <code>filetype:</code></li>
+          </ul>
+          <p>Різні пошуковики індексують різний контент — <span class="highlight">комбінуйте для повноти</span>.</p>
+        </div>
+        <div class="card-green">
+          <h4>Правові межі</h4>
+          <ul>
+            <li><strong>Легально:</strong> пошук публічної інформації через пошуковик</li>
+            <li><strong>Легально:</strong> перегляд кешованих сторінок</li>
+            <li><strong>НЕ легально:</strong> використання знайдених credentials для входу</li>
+            <li><strong>НЕ легально:</strong> доступ до систем без дозволу власника</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Увага</h4>
+        <p>Google Dorking = <span class="highlight">легальний пошук</span>, але використання знайдених даних (паролі, токени, ключі) для несанкціонованого доступу = <strong>злочин</strong> (ст. 361 КК України).</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Google Dorking — потужна техніка <span class="highlight">пасивної розвідки</span>, що дозволяє знаходити чутливу інформацію без прямої взаємодії з ціллю, використовуючи лише пошукові системи.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Оператори <code>site:</code>, <code>filetype:</code>, <code>intitle:</code>, <code>inurl:</code> — основа Google Dorking</li>
+        <li>GHDB — готова база дорків від Offensive Security</li>
+        <li>Дорки знаходять файли, панелі, directory listings, credentials</li>
+        <li>Комбінування пошуковиків дає повнішу картину</li>
+        <li>Пошук легальний — несанкціонований доступ ні</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>інструменти OSINT</strong> — Maltego, Shodan, theHarvester та інші спеціалізовані рішення для автоматизованої розвідки.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

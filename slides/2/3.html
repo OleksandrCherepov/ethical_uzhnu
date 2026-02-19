@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.3 — Навігація та робота з файлами</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Навігація та робота з файлами</h1>
+      <div class="subtitle">Тема 2.3 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Basic Navigation & File Viewing -->
+    <section class="slide">
+      <h2>Базова навігація та перегляд файлів</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Навігація</h4>
+<pre class="code-block">pwd                 # поточний каталог
+cd /path            # перехід за абсолютним шляхом
+cd ~                # домашній каталог
+cd -                # попередній каталог
+cd ..               # на рівень вгору
+ls -la              # детальний список + приховані
+ls -lah             # з людиночитаним розміром
+ls -R               # рекурсивний список</pre>
+        </div>
+        <div class="card-green">
+          <h4>Перегляд файлів</h4>
+<pre class="code-block">cat file.txt        # вивести весь вміст
+less file.txt       # посторінковий перегляд
+head -n 20 file.txt # перші 20 рядків
+tail -f /var/log/auth.log
+# моніторинг логів у реальному часі</pre>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>Порада</h4>
+        <p><code>tail -f</code> — незамінний інструмент для <span class="highlight">моніторингу логів</span> під час пентесту.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: File Operations & Search -->
+    <section class="slide">
+      <h2>Операції з файлами та пошук</h2>
+
+      <div class="three-col-grid">
+        <div class="card-purple">
+          <h4>Файлові операції</h4>
+<pre class="code-block">cp source dest
+mv old new
+rm -rf dir/
+mkdir -p path/to/dir
+touch file.txt</pre>
+        </div>
+        <div class="card-yellow">
+          <h4>Пошук</h4>
+<pre class="code-block">find / -name "*.conf"
+find / -perm -4000
+# SUID-файли!
+locate password.txt
+which nmap
+whereis python</pre>
+        </div>
+        <div class="card-pink">
+          <h4>Аналіз файлів</h4>
+<pre class="code-block">file document.pdf
+# визначення типу файлу
+strings binary
+# витяг рядків з бінарника
+stat file.txt
+# метадані файлу</pre>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Важливо для пентесту</h4>
+        <p><code>find / -perm -4000 2>/dev/null</code> — одна з перших команд для <span class="highlight">пошуку привілейованих ескалацій</span>.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: Summary -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Ефективна навігація в терміналі — <span class="highlight">основа роботи пентестера</span>.</p>
+      </div>
+
+      <ul class="checklist">
+        <li><code>pwd</code> / <code>cd</code> / <code>ls</code> — базова навігація</li>
+        <li><code>cat</code> / <code>less</code> / <code>head</code> / <code>tail</code> — перегляд вмісту</li>
+        <li><code>find</code> з <code>-perm -4000</code> — пошук SUID для привілеїв</li>
+        <li><code>strings</code> — витяг тексту з бінарних файлів</li>
+        <li>Підстановочні символи: <code>*</code>, <code>?</code>, <code>[abc]</code></li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>Наступна тема — <strong>система прав доступу та привілеї</strong>.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

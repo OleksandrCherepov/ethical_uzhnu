@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.3 — Whois та доменна розвідка</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Whois та доменна розвідка</h1>
+      <div class="subtitle">Тема 3.3 — Розвідка та збір інформації (OSINT)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Протокол Whois -->
+    <section class="slide">
+      <h2>Протокол Whois</h2>
+
+      <div class="info-box">
+        <h4>Що таке Whois?</h4>
+        <p>Whois (<strong>RFC 3912</strong>) — текстовий протокол запитів до реєстраційних баз даних. Повертає інформацію про <span class="highlight">реєстратора</span>, <span class="highlight">дати реєстрації та закінчення</span>, <span class="highlight">Name Server (NS)</span> та <span class="highlight">контактні дані</span> власника домену.</p>
+      </div>
+
+      <div class="code-block">
+        <pre>
+<span class="code-comment">$ whois example.com</span>
+Domain Name: EXAMPLE.COM
+Registry Domain ID: 2336799_DOMAIN_COM-VRSN
+Registrar: RESERVED-Internet Assigned Numbers Authority
+Updated Date: 2024-08-14T07:01:38Z
+Creation Date: 1995-08-14T04:00:00Z
+Expiry Date: 2025-08-13T04:00:00Z
+Name Server: A.IANA-SERVERS.NET
+Name Server: B.IANA-SERVERS.NET
+Registrant Organization: IANA
+Registrant Email: *** REDACTED ***</pre>
+      </div>
+
+      <div class="warning-box">
+        <h4>Вплив GDPR (2018)</h4>
+        <p>Після впровадження GDPR персональні дані масово приховуються. За дослідженнями, лише <span class="highlight">~27% доменів</span> зберігають email реєстранта у відкритому доступі. Реєстратори замінюють контакти на proxy-сервіси (WhoisGuard, Domains By Proxy).</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: RIR та ASN-розвідка -->
+    <section class="slide">
+      <h2>RIR та ASN-розвідка</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>RIR</th>
+            <th>Рік заснування</th>
+            <th>Регіон</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>RIPE NCC</strong></td>
+            <td class="cell-blue">1992</td>
+            <td>Європа, Центральна Азія, Близький Схід</td>
+          </tr>
+          <tr>
+            <td><strong>ARIN</strong></td>
+            <td class="cell-blue">1997</td>
+            <td>Північна Америка, Карибський басейн</td>
+          </tr>
+          <tr>
+            <td><strong>APNIC</strong></td>
+            <td class="cell-blue">1993</td>
+            <td>Азійсько-Тихоокеанський регіон</td>
+          </tr>
+          <tr>
+            <td><strong>LACNIC</strong></td>
+            <td class="cell-blue">2002</td>
+            <td>Латинська Америка, Карибський басейн</td>
+          </tr>
+          <tr>
+            <td><strong>AfriNIC</strong></td>
+            <td class="cell-blue">2004</td>
+            <td>Африка</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card-purple">
+        <h4>ASN Lookup — інструменти</h4>
+        <ul>
+          <li><strong>bgp.he.net</strong> — Hurricane Electric BGP Toolkit: перегляд ASN, префіксів, пірингу</li>
+          <li><strong>SecurityTrails</strong> — база з <span class="highlight">3+ мільярди DNS-записів</span>, історія змін A/MX/NS</li>
+          <li><strong>DomainTools</strong> — historical Whois: архів змін власників, реєстраторів та NS з 2001 року</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Slide 4: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Whois та RIR-бази дозволяють отримати <span class="highlight">реєстраційні дані</span>, <span class="highlight">мережеву інфраструктуру</span> та <span class="highlight">історичні зміни</span> цільової організації ще до активного сканування.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Whois (RFC 3912) — реєстратор, дати, NS, контакти</li>
+        <li>GDPR суттєво обмежив доступність персональних даних</li>
+        <li>5 RIR покривають усі регіони світу (RIPE NCC — Україна)</li>
+        <li>ASN-розвідка розкриває мережеву топологію цілі</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>Google Dorking</strong> — просунутий пошук за допомогою операторів Google для виявлення вразливої інформації.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

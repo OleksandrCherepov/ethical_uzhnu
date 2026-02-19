@@ -62,20 +62,142 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 3 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 3 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Розвідка (Reconnaissance) та OSINT</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Пасивний збір інформації, використання відкритих джерел, DNS-аналіз, Whois, Google Dorks.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Розвідка (Reconnaissance) є першою та найважливішою фазою тестування на проникнення, на яку досвідчені пентестери витрачають 60-80% загального часу. У цій лекції ми детально вивчимо методи пасивного збору інформації з використанням відкритих джерел (OSINT), DNS-аналіз, протокол Whois, техніки Google Dorking та спеціалізовані інструменти для автоматизованої розвідки.</p>
+        <p>Студенти навчаться використовувати theHarvester, Maltego, Shodan та Recon-ng для автоматизованого збору розвідувальних даних, аналізувати DNS-записи та веб-технології, витягувати метадані з документів, а також дотримуватись належних практик операційної безпеки (OPSEC) під час проведення розвідки.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Що таке розвідка та OSINT</strong> — Пасивна vs активна розвідка, цикл OSINT, правові аспекти</li>
+          <li><strong>DNS-розвідка</strong> — Типи DNS-записів, трансфер зон, Certificate Transparency, dig, Amass</li>
+          <li><strong>Whois та доменна розвідка</strong> — Протокол Whois, вплив GDPR, RIR, ASN, історичні дані</li>
+          <li><strong>Google Dorking</strong> — Оператори пошуку, GHDB, пошук чутливих файлів та панелей</li>
+          <li><strong>Інструменти та фреймворки OSINT</strong> — theHarvester, Maltego, Shodan, Censys, Recon-ng, HIBP</li>
+          <li><strong>Розвідка в соціальних мережах</strong> — LinkedIn, Sherlock, Hunter.io, фото-OSINT, EXIF</li>
+          <li><strong>Веб-розвідка та метадані</strong> — Wappalyzer, Wayback Machine, robots.txt, FOCA, Metagoofil</li>
+          <li><strong>Методологія OSINT та OPSEC</strong> — Чек-лист розвідки, звітування, операційна безпека</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 3</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/3/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.1 — Що таке розвідка та OSINT</h3>
+            <p>Пасивна vs активна розвідка, цикл OSINT</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.2 — DNS-розвідка</h3>
+            <p>DNS-записи, трансфер зон, dig, Amass</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.3 — Whois та доменна розвідка</h3>
+            <p>Протокол Whois, GDPR, RIR, ASN</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.4 — Google Dorking</h3>
+            <p>Оператори пошуку, GHDB, чутливі файли</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.5 — Інструменти та фреймворки OSINT</h3>
+            <p>theHarvester, Maltego, Shodan, Recon-ng</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.6 — Розвідка в соціальних мережах</h3>
+            <p>LinkedIn, Sherlock, Hunter.io, EXIF</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.7 — Веб-розвідка та метадані</h3>
+            <p>Wappalyzer, Wayback Machine, FOCA</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/3/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 3.8 — Методологія OSINT та OPSEC</h3>
+            <p>Чек-лист розвідки, звітування, безпека</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

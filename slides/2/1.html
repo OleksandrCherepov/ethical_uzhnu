@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.1 — Чому Linux є стандартом для пентесту</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Чому Linux є стандартом для пентесту</h1>
+      <div class="subtitle">Тема 2.1 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Kali Linux та Parrot OS -->
+    <section class="slide">
+      <h2>Kali Linux та Parrot OS</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Kali Linux</h4>
+          <ul>
+            <li><strong>Debian-based</strong>, розробник — OffSec</li>
+            <li><strong>600+</strong> попередньо встановлених інструментів</li>
+            <li>Робоче середовище — XFCE</li>
+            <li>Rolling release — завжди актуальні версії</li>
+            <li>Метапакети: <code>kali-linux-default</code>, <code>kali-tools-web</code>, <code>kali-tools-wireless</code></li>
+            <li>Non-root за замовчуванням з 2020 року</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Parrot OS</h4>
+          <ul>
+            <li><strong>Debian-based</strong>, легковагий дистрибутив</li>
+            <li>Робоче середовище — MATE</li>
+            <li><strong>AnonSurf</strong> — вбудована анонімізація трафіку</li>
+            <li>Дві редакції: Security та Home</li>
+            <li>Фокус на приватність та анонімність</li>
+            <li>Менше споживання ресурсів</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>Еволюція</h4>
+        <p><span class="highlight">BackTrack → Kali Linux (2013)</span> — перехід від CD-based дистрибутива до повноцінної rolling release системи з постійними оновленнями та модульною архітектурою.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: Переваги Linux для пентесту -->
+    <section class="slide">
+      <h2>Переваги Linux для пентесту</h2>
+
+      <div class="three-col-grid">
+        <div class="card-purple">
+          <h4>Відкритий код</h4>
+          <p>Повний контроль над системою, можливість аудиту вихідного коду та модифікації під власні потреби.</p>
+        </div>
+        <div class="card-blue">
+          <h4>Потужний термінал</h4>
+          <p>Bash/Zsh, пайпи (<code>|</code>), перенаправлення, автоматизація задач та скриптинг.</p>
+        </div>
+        <div class="card-green">
+          <h4>Нативна підтримка</h4>
+          <p>Більшість інструментів безпеки написані для Linux та працюють нативно без емуляції.</p>
+        </div>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>Kali Linux</th>
+            <th>Parrot OS</th>
+            <th>Windows</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Ціна</strong></td>
+            <td class="cell-green">Безкоштовний</td>
+            <td class="cell-green">Безкоштовний</td>
+            <td class="cell-red">Платний</td>
+          </tr>
+          <tr>
+            <td><strong>Інструменти пентесту</strong></td>
+            <td class="cell-green">600+ вбудованих</td>
+            <td class="cell-green">600+ вбудованих</td>
+            <td class="cell-yellow">Потрібна установка</td>
+          </tr>
+          <tr>
+            <td><strong>Термінал</strong></td>
+            <td class="cell-green">Bash/Zsh (потужний)</td>
+            <td class="cell-green">Bash/Zsh (потужний)</td>
+            <td class="cell-yellow">CMD/PowerShell</td>
+          </tr>
+          <tr>
+            <td><strong>Файлова система</strong></td>
+            <td class="cell-green">/proc, /dev доступ</td>
+            <td class="cell-green">/proc, /dev доступ</td>
+            <td class="cell-red">Обмежений доступ</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Linux є стандартом для пентесту завдяки <span class="highlight">відкритому коду</span>, <span class="highlight">потужному терміналу</span> та <span class="highlight">нативній підтримці інструментів безпеки</span>.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Kali Linux — найпопулярніший дистрибутив для пентесту</li>
+        <li>Parrot OS — легша альтернатива з фокусом на приватність</li>
+        <li>600+ попередньо встановлених інструментів</li>
+        <li>Потужний термінал та скриптинг</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі вивчимо <strong>файлову систему Linux (FHS)</strong> — структуру каталогів та їх призначення.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

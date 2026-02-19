@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.1 — Що таке розвідка та OSINT</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Що таке розвідка та OSINT</h1>
+      <div class="subtitle">Тема 3.1 — Розвідка та OSINT</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Пасивна vs Активна розвідка -->
+    <section class="slide">
+      <h2>Пасивна vs Активна розвідка</h2>
+
+      <div class="info-box">
+        <h4>Ключовий факт</h4>
+        <p>Розвідка займає <span class="highlight">60–80% часу пентесту</span> (PTES, фаза 2 — Intelligence Gathering). Якість розвідки визначає успіх усього тестування.</p>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>Пасивна розвідка</th>
+            <th>Активна розвідка</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Контакт з ціллю</strong></td>
+            <td class="cell-green">Немає прямого контакту</td>
+            <td class="cell-red">Прямий контакт із системами цілі</td>
+          </tr>
+          <tr>
+            <td><strong>Ризик виявлення</strong></td>
+            <td class="cell-green">Мінімальний</td>
+            <td class="cell-red">Високий — залишає сліди в логах</td>
+          </tr>
+          <tr>
+            <td><strong>Законність</strong></td>
+            <td class="cell-green">Зазвичай легальна (публічні дані)</td>
+            <td class="cell-red">Потребує письмового дозволу</td>
+          </tr>
+          <tr>
+            <td><strong>Приклади</strong></td>
+            <td class="cell-green">WHOIS, DNS-записи, Google Dorks, соцмережі</td>
+            <td class="cell-red">Сканування портів, фінгерпринтинг, брутфорс DNS</td>
+          </tr>
+          <tr>
+            <td><strong>Інструменти</strong></td>
+            <td class="cell-green">theHarvester, Maltego, Shodan, Recon-ng</td>
+            <td class="cell-red">Nmap, Nikto, DirBuster, Fierce</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: Цикл OSINT -->
+    <section class="slide">
+      <h2>Цикл OSINT</h2>
+
+      <div class="flow-row">
+        <div class="flow-step">Планування</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">Збір</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">Обробка</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">Аналіз</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">Поширення</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-step">Зворотній зв'язок</div>
+      </div>
+
+      <div class="card-blue">
+        <h4>Походження OSINT</h4>
+        <p>OSINT (Open Source Intelligence) бере початок із <span class="highlight">військової розвідки 1941 року</span>, коли США створили Foreign Broadcast Monitoring Service для аналізу іноземних радіопередач. Формалізована як окрема дисципліна наприкінці <span class="highlight">1980-х років</span> з появою цифрових джерел. Сьогодні OSINT охоплює вебсайти, соціальні мережі, публічні бази даних, супутникові знімки, метадані файлів та багато іншого.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Розвідка та OSINT — це <span class="highlight">фундамент будь-якого пентесту</span>. Пасивний збір інформації з відкритих джерел дозволяє побудувати профіль цілі <span class="highlight">без ризику виявлення</span>.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Розвідка займає 60–80% часу пентесту (PTES, фаза 2)</li>
+        <li>Пасивна розвідка не залишає слідів, активна — потребує дозволу</li>
+        <li>Цикл OSINT: планування, збір, обробка, аналіз, поширення, зворотній зв'язок</li>
+        <li>OSINT-джерела: WHOIS, DNS, соцмережі, Shodan, Google Dorks</li>
+        <li>Інструменти: theHarvester, Maltego, Recon-ng, Shodan</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>DNS-розвідку</strong> — як отримати максимум інформації про інфраструктуру цілі через систему доменних імен.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

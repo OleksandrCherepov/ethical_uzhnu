@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.7 — Веб-розвідка та метадані</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Веб-розвідка та метадані</h1>
+      <div class="subtitle">Тема 3.7 — Розвідка та збір інформації (OSINT)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Фінгерпринтинг технологій -->
+    <section class="slide">
+      <h2>Фінгерпринтинг технологій</h2>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h4>Wappalyzer</h4>
+          <ul>
+            <li>Браузерне розширення (Chrome, Firefox)</li>
+            <li>Виявляє <strong>1000+ технологій</strong> у реальному часі</li>
+            <li>CMS, фреймворки, аналітика, CDN</li>
+            <li>Пасивний аналіз — без запитів до сервера</li>
+            <li>Категорії: JS-бібліотеки, платіжні системи, шрифти</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>BuiltWith</h4>
+          <ul>
+            <li><strong>Пасивний</strong> онлайн-сервіс</li>
+            <li>Історія зміни технологій сайту</li>
+            <li>Конкурентний аналіз — порівняння стеків</li>
+            <li>Профілі технологій за галузями</li>
+            <li>API для масового аналізу</li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h4>WhatWeb</h4>
+          <ul>
+            <li>CLI-інструмент, <strong>900+ плагінів</strong></li>
+            <li>Рівні агресії від 1 (пасивний) до 4 (heavy)</li>
+            <li>Виявляє CMS, сервери, фреймворки, помилки</li>
+          </ul>
+          <div class="code-block">
+            <code>whatweb -a 3 target.com</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Wayback Machine та приховані файли -->
+    <section class="slide">
+      <h2>Wayback Machine та приховані файли</h2>
+
+      <div class="two-column">
+        <div class="card-yellow">
+          <h4>Wayback Machine</h4>
+          <ul>
+            <li><strong>866B+</strong> збережених сторінок</li>
+            <li>Відновлення видаленого контенту</li>
+            <li>Старі сторінки "Про нас" — імена, структура</li>
+            <li>Попередні версії JS/CSS — приховані endpoint'и</li>
+            <li>Забуті піддомени та сервіси</li>
+          </ul>
+          <div class="code-block">
+            <code>waybackurls target.com | sort -u</code>
+          </div>
+        </div>
+        <div class="card-red">
+          <h4>Приховані файли та заголовки</h4>
+          <ul>
+            <li><strong>robots.txt</strong> — список каталогів, які НЕ хочуть індексувати = найцікавіші для розвідки</li>
+            <li><strong>sitemap.xml</strong> — повна структура сайту, всі URL</li>
+            <li><strong>HTTP-заголовки:</strong></li>
+          </ul>
+          <div class="code-block">
+            <code>Server: Apache/2.4.51</code><br>
+            <code>X-Powered-By: PHP/7.4.3</code>
+          </div>
+          <p>Версії ПЗ із заголовків &rarr; пошук відповідних CVE</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Метадані документів -->
+    <section class="slide">
+      <h2>Метадані документів</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Інструменти</h4>
+          <ul>
+            <li><strong>FOCA</strong> — Windows, автоматичний збір та аналіз метаданих</li>
+            <li><strong>ExifTool</strong> — CLI, універсальний для будь-яких форматів</li>
+            <li><strong>Metagoofil</strong> — пошук та завантаження документів з сайту</li>
+          </ul>
+          <div class="code-block">
+            <code>metagoofil -d target.com \<br>  -t pdf,doc -l 100 -n 25</code>
+          </div>
+        </div>
+        <div class="card-green">
+          <h4>Що розкривають метадані</h4>
+          <ul>
+            <li><strong>Імена користувачів</strong> — автори документів</li>
+            <li><strong>Внутрішні шляхи:</strong> <code>\\FILESERVER01\HR\</code></li>
+            <li><strong>ПЗ:</strong> Microsoft Word 2019, Adobe Acrobat</li>
+            <li><strong>Часові зони</strong> — географія офісів</li>
+            <li><strong>Мережеві імена</strong> — принтери, сервери</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Реальна загроза</h4>
+        <p>Один PDF-файл з корпоративного сайту може розкрити <span class="highlight">10+ внутрішніх username</span>, структуру мережевих дисків та версії програмного забезпечення.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Веб-розвідка та аналіз метаданих дозволяють отримати <span class="highlight">детальний профіль інфраструктури</span> цілі без жодного активного сканування портів чи вразливостей.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Фінгерпринтинг технологій — Wappalyzer, BuiltWith, WhatWeb</li>
+        <li>Wayback Machine — відновлення видаленого контенту та старих версій</li>
+        <li>robots.txt, sitemap.xml, HTTP-заголовки — розкриття структури</li>
+        <li>Метадані документів — імена, шляхи, ПЗ, мережеві імена</li>
+        <li>FOCA, ExifTool, Metagoofil — автоматизація збору метаданих</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>методологію розвідки та OPSEC</strong> — як систематизувати зібрану інформацію та залишатися непомітним.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

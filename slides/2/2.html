@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.2 — Файлова система Linux (FHS)</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Файлова система Linux (FHS)</h1>
+      <div class="subtitle">Тема 2.2 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: "Everything is a file" principle + key directories -->
+    <section class="slide">
+      <h2>Принцип "все є файлом" та ключові каталоги</h2>
+
+      <div class="info-box">
+        <h4>Базовий принцип Linux</h4>
+        <p>В Linux <span class="highlight">все є файлом</span> — текстові файли, каталоги, пристрої (<code>/dev/sda</code>), процеси (<code>/proc/PID</code>), мережеві сокети. Це дозволяє працювати з будь-яким ресурсом через єдиний інтерфейс читання/запису.</p>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Каталог</th>
+            <th>Призначення</th>
+            <th>Значення для пентесту</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue"><code>/</code></td>
+            <td>Кореневий каталог, початок ієрархії</td>
+            <td>Точка відліку для всієї файлової системи</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><code>/etc</code></td>
+            <td>Конфігураційні файли системи</td>
+            <td><code>passwd</code>, <code>shadow</code> — облікові записи та хеші</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><code>/home</code></td>
+            <td>Домашні каталоги користувачів</td>
+            <td>SSH-ключі (<code>~/.ssh/</code>), історія команд</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><code>/root</code></td>
+            <td>Домашній каталог root</td>
+            <td>Привілейовані конфігурації та ключі</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><code>/var/log</code></td>
+            <td>Системні логи</td>
+            <td><code>auth.log</code> — спроби аутентифікації</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><code>/tmp</code></td>
+            <td>Тимчасові файли</td>
+            <td>Запис дозволено всім — ескалація привілеїв</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><code>/proc</code></td>
+            <td>Віртуальна ФС, інформація про процеси та ядро</td>
+            <td>Версія ядра, змінні оточення процесів</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><code>/dev</code></td>
+            <td>Файли пристроїв</td>
+            <td><code>/dev/tcp</code> — мережеві з'єднання з Bash</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><code>/bin</code>, <code>/sbin</code></td>
+            <td>Системні бінарні файли</td>
+            <td>Пошук SUID-біт бінарників для ескалації</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: Critical security files -->
+    <section class="slide">
+      <h2>Критичні файли для безпеки</h2>
+
+      <div class="two-column">
+        <div class="card-red">
+          <h4>Файли аутентифікації</h4>
+          <ul>
+            <li><code>/etc/passwd</code> — структура: <code>user:x:UID:GID:info:home:shell</code></li>
+            <li><code>/etc/shadow</code> — хеші паролів, доступ тільки root</li>
+            <li><code>/etc/sudoers</code> — правила привілеїв sudo</li>
+          </ul>
+        </div>
+        <div class="card-yellow">
+          <h4>Файли для моніторингу</h4>
+          <ul>
+            <li><code>/var/log/auth.log</code> — спроби входу в систему</li>
+            <li><code>/proc/version</code> — версія ядра Linux</li>
+            <li><code>/etc/crontab</code> — заплановані задачі</li>
+            <li><code>~/.bash_history</code> — історія команд користувача</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Важливо для пентестера</h4>
+        <p>Це <span class="highlight">перші файли для перевірки</span> після отримання доступу до системи. Вони дозволяють зрозуміти конфігурацію, знайти облікові записи та визначити вектори ескалації привілеїв.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: Summary -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>FHS — Filesystem Hierarchy Standard</h4>
+        <p>Стандартна ієрархія файлової системи, яка є єдиною для всіх Linux-дистрибутивів. Знання структури каталогів — обов'язкова навичка для пентестера.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>"Все є файлом" — базовий принцип Linux</li>
+        <li><code>/etc</code> — конфігурація та аутентифікація</li>
+        <li><code>/var/log</code> — логи для розслідувань</li>
+        <li><code>/tmp</code> та <code>/proc</code> — ключові для ескалації привілеїв</li>
+        <li><code>/etc/passwd</code> і <code>/etc/shadow</code> — перша ціль після компрометації</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>навігацію та роботу з файлами в терміналі</strong>.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

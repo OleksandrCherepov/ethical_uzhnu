@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.6 — Фільтрація тексту та потоки</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Фільтрація тексту та потоки</h1>
+      <div class="subtitle">Тема 2.6 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Потоки та перенаправлення -->
+    <section class="slide">
+      <h2>Потоки та перенаправлення</h2>
+
+      <div class="info-box">
+        <h4>Стандартні потоки</h4>
+        <p>Кожен процес у Linux має 3 стандартних потоки: <span class="highlight">stdin (0)</span> — введення, <span class="highlight">stdout (1)</span> — виведення, <span class="highlight">stderr (2)</span> — помилки.</p>
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-step">stdin (0)</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">Процес</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">stdout (1) / stderr (2)</div>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Оператор</th>
+            <th>Дія</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue"><code>&gt;</code></td>
+            <td>Перезапис файлу</td>
+            <td><code>nmap target &gt; scan.txt</code></td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><code>&gt;&gt;</code></td>
+            <td>Додавання до файлу</td>
+            <td><code>echo "data" &gt;&gt; log.txt</code></td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><code>2&gt;</code></td>
+            <td>Перенаправити помилки</td>
+            <td><code>find / -name x 2&gt; /dev/null</code></td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><code>2&gt;&amp;1</code></td>
+            <td>Об'єднати потоки</td>
+            <td><code>command &gt; all.txt 2&gt;&amp;1</code></td>
+          </tr>
+          <tr>
+            <td class="cell-green"><code>|</code> (pipe)</td>
+            <td>Передати вихід далі</td>
+            <td><code>cat log | grep error</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: grep -->
+    <section class="slide">
+      <h2>grep — пошук за шаблоном</h2>
+
+      <div class="card-blue">
+        <h4>grep — найважливіший інструмент фільтрації тексту</h4>
+        <p>Шукає рядки, що відповідають заданому шаблону (регулярному виразу), у файлах або потоці даних.</p>
+      </div>
+
+      <div class="code-block">
+<pre>
+<span class="code-comment"># Базовий пошук</span>
+<span class="code-function">grep</span> <span class="code-string">"password"</span> config.txt
+
+<span class="code-comment"># Без урахування регістру</span>
+<span class="code-function">grep</span> <span class="code-keyword">-i</span> <span class="code-string">"admin"</span> file.txt
+
+<span class="code-comment"># Рекурсивний пошук</span>
+<span class="code-function">grep</span> <span class="code-keyword">-r</span> <span class="code-string">"API_KEY"</span> /var/www/
+
+<span class="code-comment"># Інвертований (виключити рядки)</span>
+<span class="code-function">grep</span> <span class="code-keyword">-v</span> <span class="code-string">"comment"</span> code.py
+
+<span class="code-comment"># Розширений regex (OR)</span>
+<span class="code-function">grep</span> <span class="code-keyword">-E</span> <span class="code-string">"root|admin"</span> /etc/passwd
+
+<span class="code-comment"># Витягнути IP-адреси з файлу</span>
+<span class="code-function">grep</span> <span class="code-keyword">-o -E</span> <span class="code-string">"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"</span> file
+</pre>
+      </div>
+
+      <div class="warning-box">
+        <h4>Практичне застосування</h4>
+        <p><code>grep -r "password" /var/www/</code> — один з перших кроків після отримання доступу до веб-сервера для пошуку облікових даних у конфігураційних файлах.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: awk та sed -->
+    <section class="slide">
+      <h2>awk та sed</h2>
+
+      <div class="two-column">
+        <div class="card-green">
+          <h4>awk — обробка полів</h4>
+          <div class="code-block">
+<pre>
+<span class="code-comment"># Перше поле</span>
+<span class="code-function">awk</span> <span class="code-string">'{print $1}'</span> access.log
+
+<span class="code-comment"># Користувачі системи</span>
+<span class="code-function">awk</span> <span class="code-keyword">-F:</span> <span class="code-string">'{print $1}'</span> /etc/passwd
+
+<span class="code-comment"># IP невдалих входів</span>
+<span class="code-function">awk</span> <span class="code-string">'/FAILED/ {print $11}'</span> auth.log
+
+<span class="code-comment"># Підрахунок частоти</span>
+| <span class="code-function">sort</span> | <span class="code-function">uniq</span> <span class="code-keyword">-c</span> | <span class="code-function">sort</span> <span class="code-keyword">-rn</span>
+</pre>
+          </div>
+        </div>
+        <div class="card-purple">
+          <h4>sed — потоковий редактор</h4>
+          <div class="code-block">
+<pre>
+<span class="code-comment"># Заміна всіх входжень</span>
+<span class="code-function">sed</span> <span class="code-string">'s/old/new/g'</span> file
+
+<span class="code-comment"># Заміна на місці</span>
+<span class="code-function">sed</span> <span class="code-keyword">-i</span> <span class="code-string">'s/old/new/g'</span> file
+
+<span class="code-comment"># Рядки 10-20</span>
+<span class="code-function">sed</span> <span class="code-keyword">-n</span> <span class="code-string">'10,20p'</span> log
+
+<span class="code-comment"># Видалити коментарі</span>
+<span class="code-function">sed</span> <span class="code-string">'/^#/d'</span> config
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>Комбінування в конвеєр</h4>
+        <p><code>cat access.log | grep "404" | awk '{print $1}' | sort | uniq -c | sort -rn</code> — топ IP-адрес із помилками 404.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p><span class="highlight">grep</span>, <span class="highlight">awk</span>, <span class="highlight">sed</span> + пайпи = потужний конвеєр обробки тексту для аналізу логів, пошуку вразливостей та створення звітів.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>Три потоки: stdin, stdout, stderr</li>
+        <li>Пайпи (<code>|</code>) — ланцюжки обробки</li>
+        <li>grep — пошук тексту за шаблоном</li>
+        <li>awk — витяг полів та обробка даних</li>
+        <li>sed — потоковий пошук та заміна</li>
+        <li><code>sort | uniq -c | sort -rn</code> — підрахунок частоти</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>мережеві утиліти та налаштування</strong> в Linux.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

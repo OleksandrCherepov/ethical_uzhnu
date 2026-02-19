@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.5 — Інструменти та фреймворки OSINT</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Інструменти та фреймворки OSINT</h1>
+      <div class="subtitle">Тема 3.5 — Розвідка з відкритих джерел</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: theHarvester та Maltego -->
+    <section class="slide">
+      <h2>theHarvester та Maltego</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>theHarvester</h4>
+          <ul>
+            <li><strong>38+ джерел</strong> даних для збору інформації</li>
+            <li>Збір email-адрес, субдоменів, IP-адрес, URL</li>
+            <li>Інтеграція з пошуковими системами та API</li>
+          </ul>
+          <div class="code-block">
+            <code><span class="code-comment"># Пошук по всіх джерелах</span></code>
+            <code>theHarvester -d example.com <span class="code-string">-b all</span></code>
+            <code><span class="code-comment"># Тільки Google</span></code>
+            <code>theHarvester -d example.com <span class="code-string">-b google</span></code>
+            <code><span class="code-comment"># LinkedIn профілі</span></code>
+            <code>theHarvester -d example.com <span class="code-string">-b linkedin</span></code>
+          </div>
+        </div>
+        <div class="card-purple">
+          <h4>Maltego</h4>
+          <ul>
+            <li><strong>Візуальний аналіз зв'язків</strong> між сутностями</li>
+            <li>Три ключові концепції: <span class="highlight">Entities</span>, <span class="highlight">Transforms</span>, <span class="highlight">Graphs</span></li>
+            <li>Автоматичне збагачення даних через трансформації</li>
+            <li>Побудова графів зв'язків між людьми, доменами, IP</li>
+          </ul>
+          <div class="info-box">
+            <p><strong>CE (Community Edition)</strong> — безкоштовна, обмежена кількість трансформацій. <strong>Pro</strong> — повний функціонал, комерційна ліцензія.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Shodan та Censys -->
+    <section class="slide">
+      <h2>Shodan та Censys</h2>
+
+      <div class="two-column">
+        <div class="card-red">
+          <h4>Shodan</h4>
+          <ul>
+            <li><strong>Пошукова система для IoT</strong> та підключених пристроїв</li>
+            <li>Збір банерів сервісів (HTTP, FTP, SSH, SMTP)</li>
+            <li>Виявлення вразливих систем та конфігурацій</li>
+          </ul>
+          <div class="code-block">
+            <code><span class="code-keyword">port:</span>3389 <span class="code-keyword">country:</span>UA</code>
+            <code><span class="code-keyword">product:</span>MySQL <span class="code-keyword">hostname:</span>.gov.ua</code>
+            <code><span class="code-keyword">org:</span>"Company Name"</code>
+            <code><span class="code-keyword">net:</span>192.168.0.0/16</code>
+          </div>
+        </div>
+        <div class="card-green">
+          <h4>Censys</h4>
+          <ul>
+            <li><strong>100% покриття</strong> IPv4-простору за тиждень (vs 57% у Shodan)</li>
+            <li>Виявляє у <strong>8 разів більше сервісів</strong> на хост</li>
+            <li>Глибокий аналіз TLS/SSL сертифікатів</li>
+            <li>Фокус на криптографічному стані Інтернету</li>
+          </ul>
+        </div>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>Shodan</th>
+            <th>Censys</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Покриття</strong></td>
+            <td class="cell-yellow">~57% IPv4 за тиждень</td>
+            <td class="cell-green">~100% IPv4 за тиждень</td>
+          </tr>
+          <tr>
+            <td><strong>Швидкість</strong></td>
+            <td class="cell-green">Швидкий пошук, великий індекс</td>
+            <td class="cell-yellow">Повільніший, глибше сканування</td>
+          </tr>
+          <tr>
+            <td><strong>Фокус</strong></td>
+            <td class="cell-blue">IoT, банери, вразливості</td>
+            <td class="cell-purple">Сертифікати, TLS, криптографія</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: Recon-ng, SpiderFoot та HIBP -->
+    <section class="slide">
+      <h2>Recon-ng, SpiderFoot та HIBP</h2>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h4>Recon-ng</h4>
+          <ul>
+            <li>Інтерфейс у стилі <span class="highlight">Metasploit</span></li>
+            <li><strong>Workspaces</strong> — ізоляція проєктів</li>
+            <li><strong>Modules</strong> — recon, reporting, import, exploit</li>
+            <li>Вбудована <strong>БД</strong> для зберігання результатів</li>
+            <li>Marketplace для встановлення модулів</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>SpiderFoot</h4>
+          <ul>
+            <li><strong>100+ модулів</strong> збору даних</li>
+            <li><span class="highlight">Автокореляція</span> результатів між модулями</li>
+            <li>Зручний <strong>Web UI</strong> для візуалізації</li>
+            <li>Підтримка CLI та автоматизації</li>
+            <li>Інтеграція з зовнішніми API</li>
+          </ul>
+        </div>
+        <div class="card-yellow">
+          <h4>Have I Been Pwned</h4>
+          <ul>
+            <li>Перевірка email на <strong>витоки даних</strong></li>
+            <li><strong>Pwned Passwords</strong> — база скомпрометованих паролів</li>
+            <li>API для автоматизованих перевірок</li>
+            <li>Synthient 2025: <span class="highlight">1.9 млрд</span> облікових записів у витоках</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Екосистема OSINT-інструментів</h4>
+        <p>Комбінація спеціалізованих інструментів дозволяє побудувати <span class="highlight">повну картину цілі</span> — від доменів та IP до людей та витоків даних.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>theHarvester та Maltego — збір та візуалізація зв'язків</li>
+        <li>Shodan та Censys — пошук пристроїв та сервісів в Інтернеті</li>
+        <li>Recon-ng та SpiderFoot — фреймворки автоматизації розвідки</li>
+        <li>Have I Been Pwned — перевірка витоків облікових записів</li>
+        <li>Кожен інструмент має свою нішу — використовуйте їх разом</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>розвідку в соціальних мережах</strong> — SOCMINT, інструменти та методи аналізу публічних профілів.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

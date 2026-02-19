@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 2.4 — Права доступу та користувачі</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="2">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Права доступу та користувачі</h1>
+      <div class="subtitle">Тема 2.4 — Linux та командний рядок для хакера</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: rwx system -->
+    <section class="slide">
+      <h2>Система прав rwx</h2>
+
+      <div class="info-box">
+        <h4>Три набори прав</h4>
+        <p>Кожен файл має три набори прав: <span class="highlight">User</span> (власник), <span class="highlight">Group</span> (група), <span class="highlight">Other</span> (решта). Кожен набір складається з: <strong>r</strong> (read = 4), <strong>w</strong> (write = 2), <strong>x</strong> (execute = 1).</p>
+      </div>
+
+      <div class="code-block">
+$ ls -la script.sh
+-rwxr-xr-x  1  root  root  1234  Jan 15  script.sh
+ │├─┤├─┤├─┤
+ │ U   G   O
+ │
+ тип файлу (- файл, d каталог, l посилання)</div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Числове значення</th>
+            <th>Права</th>
+            <th>Приклад використання</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-green"><strong>7</strong></td>
+            <td>rwx — повний доступ</td>
+            <td>Скрипти, виконувані програми</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>6</strong></td>
+            <td>rw- — читання/запис</td>
+            <td>Конфігураційні файли</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>5</strong></td>
+            <td>r-x — читання/виконання</td>
+            <td>Системні каталоги</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>4</strong></td>
+            <td>r-- — тільки читання</td>
+            <td>Логи, документація</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>0</strong></td>
+            <td>--- — без доступу</td>
+            <td>Приватні файли</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: chmod & chown -->
+    <section class="slide">
+      <h2>chmod та chown</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>chmod (числовий режим)</h4>
+          <div class="code-block">
+chmod 755 script.sh   # rwxr-xr-x
+chmod 644 file.txt    # rw-r--r--
+chmod 600 id_rsa      # rw-------
+chmod 777 open.sh     # rwxrwxrwx</div>
+          <p>Три цифри = User + Group + Other</p>
+        </div>
+        <div class="card-green">
+          <h4>chmod (символьний режим)</h4>
+          <div class="code-block">
+chmod +x script.sh    # додати виконання
+chmod u+w file        # власнику + запис
+chmod g-w file        # групі - запис
+chmod o-r file        # іншим - читання
+chmod a+r file        # усім + читання</div>
+          <p>u = user, g = group, o = other, a = all</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+<span class="code-comment"># Зміна власника та групи файлу</span>
+<span class="code-function">chown</span> user:group file.txt
+<span class="code-function">chown</span> -R www-data:www-data /var/www/
+<span class="code-function">chown</span> --reference=ref_file target_file</div>
+    </section>
+
+    <!-- Slide 4: SUID, SGID, Sticky Bit -->
+    <section class="slide">
+      <h2>SUID, SGID, Sticky Bit — ключ до ескалації</h2>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h4>SUID (4000)</h4>
+          <p>Файл виконується від імені <span class="highlight">ВЛАСНИКА</span></p>
+          <div class="code-block">
+find / -perm -4000 \
+  2>/dev/null</div>
+          <p>Приклад: <code>/usr/bin/passwd</code> має SUID — звичайний користувач змінює пароль у <code>/etc/shadow</code></p>
+        </div>
+        <div class="card-yellow">
+          <h4>SGID (2000)</h4>
+          <p>Файл виконується від імені <span class="highlight">ГРУПИ</span></p>
+          <div class="code-block">
+find / -perm -2000 \
+  2>/dev/null</div>
+          <p>На каталогах: нові файли автоматично успадковують групу каталогу</p>
+        </div>
+        <div class="card-purple">
+          <h4>Sticky Bit (1000)</h4>
+          <p>Тільки <span class="highlight">власник</span> може видалити файл</p>
+          <div class="code-block">
+ls -ld /tmp
+drwxrwxrwt ...</div>
+          <p>Приклад: <code>/tmp</code> має sticky bit (<strong>t</strong> в кінці прав)</p>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>GTFOBins (gtfobins.github.io)</h4>
+        <p>База SUID-бінарників для ескалації привілеїв. Якщо <code>bash</code>, <code>find</code>, <code>vim</code>, <code>less</code>, <code>cp</code>, <code>nmap</code> мають SUID — це шлях до <span class="highlight">root</span>.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Summary -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p>Система прав Linux — це одночасно <span class="highlight">захист</span> і <span class="highlight">вектор атаки</span>. Неправильно налаштовані SUID — одна з найпоширеніших причин ескалації привілеїв.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>rwx = read / write / execute для User / Group / Other</li>
+        <li>chmod 755, 644, 600 — найпоширеніші комбінації</li>
+        <li>SUID (4000) — виконання від імені власника файлу</li>
+        <li>find / -perm -4000 — перша команда після компрометації</li>
+        <li>GTFOBins — довідник SUID-ескалацій</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Далі</h4>
+        <p>У наступній темі розглянемо <strong>управління пакетами та сервісами</strong>.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>

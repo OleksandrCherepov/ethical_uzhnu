@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 3.8 — Методологія OSINT та OPSEC</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="3">
+
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Методологія OSINT та OPSEC</h1>
+      <div class="subtitle">Тема 3.8 — Розвідка з відкритих джерел</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Методологія OSINT -->
+    <section class="slide">
+      <h2>Методологія OSINT</h2>
+
+      <div class="flow-row">
+        <div class="flow-step">Планування</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Пасивний збір</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Активний збір</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Аналіз</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Звітування</div>
+      </div>
+
+      <ul class="checklist">
+        <li><strong>Domain Intelligence</strong> — WHOIS, DNS-записи, субдомени, історія змін</li>
+        <li><strong>Public Exposure</strong> — витоки даних, paste-сайти, кешовані сторінки</li>
+        <li><strong>People & Social</strong> — профілі співробітників, соцмережі, публікації</li>
+        <li><strong>Tech Stack</strong> — технології, фреймворки, версії серверів, CMS</li>
+        <li><strong>Documents</strong> — метадані файлів, публічні звіти, презентації</li>
+      </ul>
+    </section>
+
+    <!-- Slide 3: Структура звіту -->
+    <section class="slide">
+      <h2>Структура звіту OSINT</h2>
+
+      <div class="two-column">
+        <div class="card-blue">
+          <h4>Executive Summary</h4>
+          <ul>
+            <li><strong>Scope</strong> — межі та цілі розвідки</li>
+            <li><strong>Ключові знахідки</strong> — топ-5 критичних результатів</li>
+            <li><strong>Оцінка ризику</strong> — загальний рівень загрози</li>
+            <li><strong>Рекомендації</strong> — пріоритетні дії для замовника</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h4>Детальні знахідки</h4>
+          <ul>
+            <li><strong>Категоризація</strong> — за серйозністю (Critical → Low)</li>
+            <li><strong>Докази</strong> — скріншоти, URL, метадані</li>
+            <li><strong>Пояснення ризику</strong> — як це може бути використано</li>
+            <li><strong>Рекомендації</strong> — конкретні кроки для усунення</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>Запам'ятайте</h4>
+        <p><span class="highlight">Звіт — головний продукт розвідки.</span> Без якісного звіту вся зібрана інформація залишається даремною. Замовник оцінює роботу за звітом, а не за кількістю використаних інструментів.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: OPSEC — операційна безпека -->
+    <section class="slide">
+      <h2>OPSEC — операційна безпека</h2>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h4>Анонімність</h4>
+          <ul>
+            <li>VPN з no-log політикою</li>
+            <li>Tor Browser для веб-розвідки</li>
+            <li>Whonix / Tails OS</li>
+            <li>Окремі віртуальні машини</li>
+            <li>Мережевий трафік через проксі</li>
+          </ul>
+        </div>
+        <div class="card-yellow">
+          <h4>Ідентичність</h4>
+          <ul>
+            <li>Alias / псевдоніми для операцій</li>
+            <li>Окремі акаунти для розвідки</li>
+            <li>Burner phones для верифікації</li>
+            <li>Тимчасові email-адреси</li>
+            <li>Ніколи не змішувати з особистим</li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h4>Браузер</h4>
+          <ul>
+            <li>Disable WebRTC (витік IP)</li>
+            <li>Block third-party cookies</li>
+            <li>uBlock Origin — блокування трекерів</li>
+            <li>NoScript — контроль JavaScript</li>
+            <li>Регулярне очищення кешу</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>Типова помилка</h4>
+        <p><span class="highlight">Використання особистих акаунтів для розвідки</span> — найпоширеніша OPSEC-помилка. Один вхід з робочого профілю може розкрити вашу особу та скомпрометувати всю операцію.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <h4>Головна ідея</h4>
+        <p><span class="highlight">Розвідка — фундамент кожного пентесту.</span> Якість зібраної інформації визначає ефективність усіх наступних етапів тестування на проникнення.</p>
+      </div>
+
+      <ul class="checklist">
+        <li>OSINT-методологія: планування → збір → аналіз → звітування</li>
+        <li>Перевіряйте 5 категорій: домени, витоки, люди, технології, документи</li>
+        <li>Звіт — головний продукт розвідки, структуруйте за серйозністю</li>
+        <li>OPSEC = анонімність + окрема ідентичність + захищений браузер</li>
+        <li>Ніколи не використовуйте особисті акаунти для розвідки</li>
+        <li>Документуйте кожен крок — це захист і для вас, і для замовника</li>
+      </ul>
+
+      <div class="info-box">
+        <h4>Завершення лекції 3</h4>
+        <p>Це завершує лекцію 3 — <strong>Розвідка та збір інформації (OSINT)</strong>. Далі — лекція 4: <strong>Сканування мережі та Enumeration</strong>.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+
+  <script src="../../js/slides.js"></script>
+
+</body>
+</html>
