@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.1 — Від розвідки до сканування</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Від розвідки до сканування</h1>
+      <div class="subtitle">Тема 4.1 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Місце сканування у PTES -->
+    <section class="slide">
+      <h2>Місце сканування у методології PTES</h2>
+
+      <div class="flow-row" style="margin: 2rem 0;">
+        <div class="flow-step">
+          <div class="step-number">1</div>
+          <div class="step-title">Pre-engagement</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">2</div>
+          <div class="step-title">Intelligence Gathering</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">3</div>
+          <div class="step-title">Threat Modeling</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step" style="background: var(--accent); color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+          <div class="step-number" style="background: rgba(255,255,255,0.2);">4</div>
+          <div class="step-title"><strong>Vulnerability Analysis</strong></div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">5</div>
+          <div class="step-title">Exploitation</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">6</div>
+          <div class="step-title">Post-Exploitation</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">7</div>
+          <div class="step-title">Reporting</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Перехід від пасивного до активного:</strong> Сканування — це фаза 4 (Vulnerability Analysis), де ми переходимо від пасивної розвідки (Лекція 3) до активного зондування цільових систем. Це перший контакт із мережею жертви.
+      </div>
+    </section>
+
+    <!-- Slide 3: Три етапи активного сканування -->
+    <section class="slide">
+      <h2>Три етапи активного сканування</h2>
+
+      <div class="three-col-grid" style="margin: 2rem 0;">
+        <div class="card-blue">
+          <h3>1. Host Discovery</h3>
+          <p><strong>Виявлення хостів</strong></p>
+          <p>Визначити, які IP-адреси в цільовій мережі активні та відповідають на запити</p>
+          <ul style="margin-top: 1rem; font-size: 0.9em;">
+            <li>ICMP ping sweep</li>
+            <li>ARP scanning</li>
+            <li>TCP/UDP probes</li>
+          </ul>
+        </div>
+
+        <div class="card-green">
+          <h3>2. Port Scanning</h3>
+          <p><strong>Сканування портів</strong></p>
+          <p>Визначити, які TCP/UDP порти відкриті на знайдених хостах і які сервіси на них працюють</p>
+          <ul style="margin-top: 1rem; font-size: 0.9em;">
+            <li>TCP SYN/Connect scan</li>
+            <li>UDP scan</li>
+            <li>Service detection</li>
+          </ul>
+        </div>
+
+        <div class="card-purple">
+          <h3>3. Enumeration</h3>
+          <p><strong>Перелічення</strong></p>
+          <p>Отримати детальну інформацію про сервіси: версії ПЗ, користувачів, конфігурації, ресурси</p>
+          <ul style="margin-top: 1rem; font-size: 0.9em;">
+            <li>Banner grabbing</li>
+            <li>OS fingerprinting</li>
+            <li>Service enumeration</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>⚠️ Правові вимоги:</strong> Сканування без письмового дозволу може порушувати закони (Computer Fraud and Abuse Act у США, Будапештська конвенція про кіберзлочинність). Завжди отримуйте правовий дозвіл перед тестуванням!
+      </div>
+    </section>
+
+    <!-- Slide 4: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок теми 4.1</h2>
+
+      <div class="success-box" style="margin-bottom: 2rem;">
+        <strong>Ключова ідея:</strong> Сканування — це структурований процес переходу від знання "що існує" (розвідка) до "як воно працює і які вразливості має" (аналіз). Це критична фаза для планування експлуатації.
+      </div>
+
+      <div class="checklist">
+        <div class="check-item">✓ Сканування — фаза 4 методології PTES (Vulnerability Analysis)</div>
+        <div class="check-item">✓ Перехід від пасивної розвідки до активної взаємодії з мережею</div>
+        <div class="check-item">✓ Три послідовні етапи: Host Discovery → Port Scanning → Enumeration</div>
+        <div class="check-item">✓ Кожен етап звужує фокус і збільшує деталізацію інформації</div>
+        <div class="check-item">✓ Активне сканування залишає сліди — потрібен правовий дозвіл</div>
+        <div class="check-item">✓ Результати сканування формують карту атаки для наступних фаз</div>
+      </div>
+
+      <div class="info-box" style="margin-top: 2rem;">
+        <strong>Наступна тема 4.2:</strong> TCP/IP та мережеві протоколи — технічна основа для розуміння роботи сканерів
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

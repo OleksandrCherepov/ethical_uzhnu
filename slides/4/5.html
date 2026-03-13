@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.5 — Визначення сервісів та ОС</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Визначення сервісів та ОС</h1>
+      <div class="subtitle">Тема 4.5 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Service Version Detection -->
+    <section class="slide">
+      <h2>Детекція версій сервісів (-sV)</h2>
+      <div class="info-box">
+        Після виявлення відкритих портів, наступний крок — визначити ЩО саме працює: назва сервісу, версія, конфігурація.
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-step">NULL probe</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Банер?</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Ні</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Проби з nmap-service-probes</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Regex порівняння</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Результат</div>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Як працює -sV</h3>
+            <ul>
+              <li>Надсилає порожній пакет (NULL probe) — чекає банер</li>
+              <li>Якщо сервіс мовчить — надсилає спеціальні проби</li>
+              <li>Порівнює відповідь з базою regex-сигнатур</li>
+              <li>Визначає: додаток, версію, hostname, ОС</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Рівні інтенсивності</h3>
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Параметр</th>
+                  <th>Рівень</th>
+                  <th>Опис</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="highlight">--version-light</span></td>
+                  <td>2</td>
+                  <td>Швидко, мало проб</td>
+                </tr>
+                <tr>
+                  <td>(default)</td>
+                  <td>7</td>
+                  <td>Збалансований</td>
+                </tr>
+                <tr>
+                  <td><span class="highlight">--version-all</span></td>
+                  <td>9</td>
+                  <td>Максимум, повільно</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="code-keyword">nmap</span> <span class="code-function">-sV</span> <span class="code-function">--version-intensity</span> <span class="code-string">5</span> 192.168.1.100
+      </div>
+    </section>
+
+    <!-- Slide 3: OS Fingerprinting -->
+    <section class="slide">
+      <h2>Фінгерпринтинг ОС (-O)</h2>
+      <div class="info-box">
+        TCP/IP стек кожної ОС має унікальні характеристики — як відбитки пальців.
+      </div>
+
+      <div class="card-purple">
+        <h3>Проби, які надсилає Nmap</h3>
+        <ul>
+          <li><strong>6× SYN</strong> до відкритого порту (аналіз ISN, IP ID, timestamps)</li>
+          <li><strong>2× ICMP Echo</strong> (різні параметри)</li>
+          <li><strong>6× TCP</strong> з різними прапорцями (T2-T7) до відкритих/закритих портів</li>
+          <li><strong>1× UDP</strong> до закритого порту</li>
+        </ul>
+      </div>
+
+      <h3>Індикатори ОС</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Параметр</th>
+            <th>Linux</th>
+            <th>Windows</th>
+            <th>Cisco</th>
+            <th>Solaris</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>TTL</strong></td>
+            <td class="cell-blue">64</td>
+            <td class="cell-green">128</td>
+            <td class="cell-yellow">255</td>
+            <td class="cell-yellow">255</td>
+          </tr>
+          <tr>
+            <td><strong>Window Size</strong></td>
+            <td class="cell-blue">Varies</td>
+            <td class="cell-green">8192/65535</td>
+            <td class="cell-yellow">4128</td>
+            <td class="cell-purple">8760</td>
+          </tr>
+          <tr>
+            <td><strong>DF bit</strong></td>
+            <td class="cell-green">Так</td>
+            <td class="cell-green">Так</td>
+            <td class="cell-red">Ні</td>
+            <td class="cell-green">Так</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <span class="code-keyword">nmap</span> <span class="code-function">-O</span> <span class="code-function">--osscan-guess</span> 192.168.1.100
+      </div>
+    </section>
+
+    <!-- Slide 4: Banner Grabbing -->
+    <section class="slide">
+      <h2>Банер-граббінг</h2>
+      <div class="info-box">
+        Банер-граббінг — найпростіший спосіб ідентифікації сервісу: підключитися і прочитати привітання.
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>Netcat</h3>
+          <div class="code-block">
+            <span class="code-keyword">nc</span> <span class="code-function">-nv</span> 192.168.1.100 <span class="code-string">22</span><br>
+            <span class="code-keyword">nc</span> <span class="code-function">-nv</span> 192.168.1.100 <span class="code-string">80</span>
+          </div>
+        </div>
+
+        <div class="card-green">
+          <h3>Telnet</h3>
+          <div class="code-block">
+            <span class="code-keyword">telnet</span> 192.168.1.100 <span class="code-string">25</span>
+          </div>
+        </div>
+
+        <div class="card-purple">
+          <h3>curl (HTTP)</h3>
+          <div class="code-block">
+            <span class="code-keyword">curl</span> <span class="code-function">-I</span> http://192.168.1.100
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Увага!</strong> Банери можуть бути підробленими! Адміністратори часто змінюють банери для дезінформації. Завжди перевіряйте кількома методами.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

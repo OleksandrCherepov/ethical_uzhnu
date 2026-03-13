@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 4: Сканування мережі та Enumeration — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 4: Сканування мережі та Enumeration — активне сканування, TCP/IP, Nmap, NSE, Enumeration, обхід захисту.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 4. Сканування мережі та Enumeration — Основи етичного хакінгу</title>
@@ -62,20 +62,142 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 4 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 4 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Сканування мережі та Enumeration</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Активне сканування, протоколи TCP/IP, визначення відкритих портів, версій сервісів та ОС.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Ця лекція присвячена активному скануванню мережі — ключовому етапу переходу від пасивної розвідки до безпосередньої взаємодії з цільовими системами. Студенти опанують фундаментальні принципи TCP/IP, які експлуатуються під час сканування, навчаться майстерно використовувати Nmap як основний інструмент пентестера, зрозуміють механізми визначення версій сервісів та операційних систем, дослідять можливості Nmap Scripting Engine (NSE) для автоматизованого аудиту безпеки.</p>
+        <p>Друга частина лекції зосереджена на практиці enumeration — збиранні детальної інформації про специфічні сервіси (SMB, SNMP, DNS, LDAP, NFS, SMTP) для виявлення вразливостей. Ми також вивчимо техніки обходу систем виявлення вторгнень (IDS), методи фрагментації пакетів, використання декоїв та тайминг-стратегій, а також розглянемо сучасні високошвидкісні альтернативи Nmap (Masscan, RustScan) для масштабного сканування.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Від розвідки до сканування</strong> — Місце сканування у методології PTES, етапи активного сканування, правові аспекти</li>
+          <li><strong>Основи TCP/IP для сканування</strong> — TCP-рукостискання, прапорці TCP, UDP, ICMP, ключові порти та сервіси</li>
+          <li><strong>Типи сканування портів</strong> — SYN, Connect, UDP, FIN, Xmas, Null, ACK, Idle/Zombie, стани портів</li>
+          <li><strong>Nmap: головний інструмент сканування</strong> — Виявлення хостів, специфікація портів, тайминг, формати виводу</li>
+          <li><strong>Визначення сервісів та ОС</strong> — Детекція версій (-sV), фінгерпринтинг ОС (-O), банер-граббінг</li>
+          <li><strong>Nmap Scripting Engine (NSE)</strong> — Категорії скриптів, ключові скрипти, автоматизація аудиту</li>
+          <li><strong>Enumeration: збір детальної інформації</strong> — SMB, SNMP, DNS, LDAP, NFS, SMTP, NetBIOS, веб-сервери</li>
+          <li><strong>Обхід захисту та методологія</strong> — Фрагментація, декої, тайминг, Masscan, RustScan, чек-лист сканування</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 4</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/4/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.1 — Від розвідки до сканування</h3>
+            <p>Методологія PTES, етапи активного сканування</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.2 — Основи TCP/IP для сканування</h3>
+            <p>TCP-рукостискання, прапорці, UDP, ICMP</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.3 — Типи сканування портів</h3>
+            <p>SYN, Connect, UDP, FIN, Xmas, ACK, Idle</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.4 — Nmap: головний інструмент</h3>
+            <p>Виявлення хостів, специфікація портів, вивід</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.5 — Визначення сервісів та ОС</h3>
+            <p>Детекція версій, фінгерпринтинг, банери</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.6 — Nmap Scripting Engine (NSE)</h3>
+            <p>Категорії скриптів, автоматизація аудиту</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.7 — Enumeration: збір детальної інформації</h3>
+            <p>SMB, SNMP, DNS, LDAP, NFS, SMTP</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/4/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 4.8 — Обхід захисту та методологія</h3>
+            <p>IDS-обхід, Masscan, RustScan, чек-лист</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

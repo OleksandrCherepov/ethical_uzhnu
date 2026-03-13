@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 4: Сканування мережі та Enumeration — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 4: Сканування мережі та Enumeration — повний текст. TCP/IP, типи сканування портів, Nmap, NSE, Enumeration протоколів, обхід захисту та методологія.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 4. Сканування мережі та Enumeration</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,18 +69,846 @@
       <h1>Сканування мережі та Enumeration</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 4.1 Від розвідки до сканування                               -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>4.1 Від розвідки до сканування: місце у методології пентесту</h2>
+
+        <p>У попередній лекції ми розглянули <strong>пасивну розвідку</strong> (OSINT) — збір інформації без прямого контакту з ціллю. Тепер ми переходимо до принципово іншого етапу: <strong>активного сканування</strong>. Це момент, коли пентестер вперше безпосередньо взаємодіє з цільовими системами, надсилаючи їм пакети та аналізуючи відповіді.</p>
+
+        <p>Згідно зі стандартом <strong>PTES</strong> (Penetration Testing Execution Standard), сканування мережі відноситься до четвертої фази — <strong>Vulnerability Analysis</strong> (Аналіз вразливостей). Ця фаза є мостом між збором розвідданих та їх експлуатацією.</p>
+
+        <h3>Фази PTES</h3>
+        <ol>
+          <li>Pre-engagement Interactions — домовленості та scope</li>
+          <li>Intelligence Gathering — пасивна розвідка (Лекція 3)</li>
+          <li>Threat Modeling — моделювання загроз</li>
+          <li><strong>Vulnerability Analysis — сканування та enumeration (ця лекція)</strong></li>
+          <li>Exploitation — експлуатація вразливостей</li>
+          <li>Post-Exploitation — дії після отримання доступу</li>
+          <li>Reporting — звітування</li>
+        </ol>
+
+        <h3>Три етапи активного сканування</h3>
+        <p>Активне сканування складається з трьох послідовних етапів, кожен з яких звужує фокус:</p>
+        <table>
+          <tr>
+            <th>Етап</th>
+            <th>Мета</th>
+            <th>Що отримуємо</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>1. Host Discovery</strong></td>
+            <td>Знайти живі хости в мережі</td>
+            <td>Список активних IP-адрес</td>
+            <td><code>nmap -sn 192.168.1.0/24</code></td>
+          </tr>
+          <tr>
+            <td><strong>2. Port Scanning</strong></td>
+            <td>Знайти відкриті порти на кожному хості</td>
+            <td>Список відкритих портів та сервісів</td>
+            <td><code>nmap -sS -p- target</code></td>
+          </tr>
+          <tr>
+            <td><strong>3. Enumeration</strong></td>
+            <td>Отримати детальну інформацію про сервіси</td>
+            <td>Версії, користувачі, ресурси, конфігурації</td>
+            <td><code>enum4linux -a target</code></td>
+          </tr>
+        </table>
+
+        <h3>Правові аспекти сканування</h3>
+        <p>На відміну від пасивної розвідки, активне сканування <strong>залишає сліди</strong> у логах цільових систем та може бути зафіксоване IDS/IPS. Тому:</p>
+        <ul>
+          <li><strong>Обов'язковий письмовий дозвіл</strong> — сканування без авторизації може порушувати закони (Computer Fraud and Abuse Act у США, Будапештська конвенція в ЄС, Кримінальний кодекс України ст. 361)</li>
+          <li><strong>Scope</strong> — чітко визначені IP-діапазони, порти та методи</li>
+          <li><strong>Rate limiting</strong> — обмеження швидкості для уникнення DoS-ефекту</li>
+          <li><strong>Документування</strong> — фіксація всіх дій із часовими мітками</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.2 Основи TCP/IP для сканування                             -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.2 Основи TCP/IP для сканування</h2>
+
+        <p>Щоб зрозуміти, як працює сканування портів, необхідно знати базові механізми протоколів TCP, UDP та ICMP. Саме особливості цих протоколів експлуатуються різними типами сканування.</p>
+
+        <h3>TCP трьохстороннє рукостискання (Three-Way Handshake)</h3>
+        <p>Протокол TCP (Transmission Control Protocol, RFC 793) встановлює надійне з'єднання через три кроки:</p>
+        <ol>
+          <li><strong>SYN</strong> — клієнт надсилає сегмент із прапорцем SYN та випадковим Initial Sequence Number (ISN), наприклад <code>SEQ=1000</code></li>
+          <li><strong>SYN-ACK</strong> — сервер відповідає прапорцями SYN+ACK, власним ISN (<code>SEQ=5000</code>) та підтвердженням (<code>ACK=1001</code>)</li>
+          <li><strong>ACK</strong> — клієнт надсилає ACK (<code>ACK=5001</code>), завершуючи з'єднання</li>
+        </ol>
+
+        <p><strong>Експлуатація у скануванні:</strong></p>
+        <ul>
+          <li><strong>TCP Connect scan (-sT)</strong> — завершує повне рукостискання. Якщо отримано SYN-ACK → порт відкритий; RST → порт закритий. Логується цільовою системою.</li>
+          <li><strong>SYN scan (-sS)</strong> — надсилає SYN, отримує SYN-ACK (відкритий) або RST (закритий), після чого одразу надсилає RST для розриву — ніколи не завершує рукостискання. Називається «напіввідкритий» або «stealth» scan.</li>
+        </ul>
+
+        <h3>Прапорці TCP</h3>
+        <p>Заголовок TCP містить 6 основних прапорців, кожен з яких використовується у різних типах сканування:</p>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Функція</th>
+            <th>Роль у скануванні</th>
+          </tr>
+          <tr>
+            <td><strong>SYN</strong></td>
+            <td>Ініціалізація з'єднання</td>
+            <td>SYN scan (-sS), Connect scan (-sT)</td>
+          </tr>
+          <tr>
+            <td><strong>ACK</strong></td>
+            <td>Підтвердження отримання</td>
+            <td>ACK scan (-sA) — маппінг фаєрволів</td>
+          </tr>
+          <tr>
+            <td><strong>FIN</strong></td>
+            <td>Завершення з'єднання</td>
+            <td>FIN scan (-sF)</td>
+          </tr>
+          <tr>
+            <td><strong>RST</strong></td>
+            <td>Скидання з'єднання</td>
+            <td>Індикатор закритого порту у відповіді</td>
+          </tr>
+          <tr>
+            <td><strong>PSH</strong></td>
+            <td>Негайна доставка даних</td>
+            <td>Xmas scan (FIN+PSH+URG)</td>
+          </tr>
+          <tr>
+            <td><strong>URG</strong></td>
+            <td>Пріоритетна обробка</td>
+            <td>Xmas scan (-sX)</td>
+          </tr>
+        </table>
+
+        <p><strong>Логіка за RFC 793:</strong> якщо закритий порт отримує пакет без прапорця RST, він відповідає RST. Якщо відкритий порт отримує пакет FIN/NULL/Xmas (без SYN, RST, ACK), він мовчки його відкидає. На цьому базуються FIN, Null та Xmas скани. Однак <strong>Windows, Cisco та BSDI</strong> порушують RFC 793 і надсилають RST незалежно від стану порту, що робить ці скани ненадійними проти цих ОС.</p>
+
+        <h3>Протокол UDP</h3>
+        <p>UDP (User Datagram Protocol) — протокол без встановлення з'єднання. Це створює фундаментальні проблеми для сканування:</p>
+        <ul>
+          <li><strong>Відсутність відповіді</strong> від відкритого UDP-порту — це нормальна поведінка (сервіс просто не відповідає на неочікувані дані)</li>
+          <li><strong>ICMP Port Unreachable</strong> (Type 3, Code 3) — єдиний надійний індикатор <strong>закритого</strong> порту</li>
+          <li><strong>Rate limiting:</strong> Linux обмежує ICMP unreachable до ~1/сек, тому повне сканування 65535 портів займає <strong>18+ годин</strong></li>
+          <li>Результат «немає відповіді» = <code>open|filtered</code> — неоднозначний (може бути відкритий або заблокований фаєрволом)</li>
+          <li><strong>Протокольно-специфічні payload'и</strong> підвищують точність — база Nmap <code>nmap-service-probes</code> містить UDP-payload'и для DNS, SNMP, DHCP тощо</li>
+        </ul>
+
+        <h3>ICMP для Host Discovery</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>ICMP Type</th>
+            <th>Опис</th>
+            <th>Надійність</th>
+          </tr>
+          <tr>
+            <td><strong>Echo Request/Reply</strong></td>
+            <td>Type 8 / Type 0</td>
+            <td>Класичний ping</td>
+            <td>Часто блокується фаєрволами</td>
+          </tr>
+          <tr>
+            <td><strong>Timestamp</strong></td>
+            <td>Type 13 / Type 14</td>
+            <td>Запит часової мітки</td>
+            <td>Менш фільтрується, добра альтернатива</td>
+          </tr>
+          <tr>
+            <td><strong>Address Mask</strong></td>
+            <td>Type 17 / Type 18</td>
+            <td>Запит маски підмережі</td>
+            <td>Рідко відповідають</td>
+          </tr>
+          <tr>
+            <td><strong>ARP Ping</strong></td>
+            <td>—</td>
+            <td>ARP-запит у локальній мережі</td>
+            <td>Найнадійніший (неможливо заблокувати)</td>
+          </tr>
+        </table>
+
+        <p>Крім ICMP, Nmap використовує <strong>TCP SYN ping</strong> (<code>-PS443</code>), <strong>TCP ACK ping</strong> (<code>-PA80</code>) та <strong>UDP ping</strong> (<code>-PU40125</code>) для обходу фаєрволів, що блокують ICMP.</p>
+
+        <h3>Ключові порти та сервіси</h3>
+        <table>
+          <tr>
+            <th>Порт</th>
+            <th>Протокол</th>
+            <th>Сервіс</th>
+            <th>Ризики безпеки</th>
+          </tr>
+          <tr><td>20/21</td><td>TCP</td><td>FTP</td><td>Анонімний доступ, cleartext паролі</td></tr>
+          <tr><td>22</td><td>TCP</td><td>SSH</td><td>Брутфорс, застарілі версії</td></tr>
+          <tr><td>23</td><td>TCP</td><td>Telnet</td><td>Cleartext, принципово небезпечний</td></tr>
+          <tr><td>25</td><td>TCP</td><td>SMTP</td><td>Перелічення користувачів (VRFY/EXPN), open relay</td></tr>
+          <tr><td>53</td><td>TCP/UDP</td><td>DNS</td><td>Zone transfer (AXFR), DNS amplification</td></tr>
+          <tr><td>80</td><td>TCP</td><td>HTTP</td><td>SQLi, XSS, CSRF, directory traversal</td></tr>
+          <tr><td>110</td><td>TCP</td><td>POP3</td><td>Cleartext паролі</td></tr>
+          <tr><td>111</td><td>TCP/UDP</td><td>RPCbind</td><td>NFS enumeration, RPC-сервіси</td></tr>
+          <tr><td>135</td><td>TCP</td><td>MS-RPC</td><td>Remote code execution, WMI</td></tr>
+          <tr><td>137-139</td><td>TCP/UDP</td><td>NetBIOS</td><td>Null sessions, share enumeration</td></tr>
+          <tr><td>143</td><td>TCP</td><td>IMAP</td><td>Cleartext паролі</td></tr>
+          <tr><td>161/162</td><td>UDP</td><td>SNMP</td><td>Default community strings (public/private)</td></tr>
+          <tr><td>389</td><td>TCP</td><td>LDAP</td><td>Directory enumeration, LDAP injection</td></tr>
+          <tr><td>443</td><td>TCP</td><td>HTTPS</td><td>SSL/TLS вразливості, misconfiguration</td></tr>
+          <tr><td>445</td><td>TCP</td><td>SMB</td><td>EternalBlue (MS17-010), ransomware вектор</td></tr>
+          <tr><td>1433</td><td>TCP</td><td>MS-SQL</td><td>Брутфорс, xp_cmdshell</td></tr>
+          <tr><td>2049</td><td>TCP/UDP</td><td>NFS</td><td>no_root_squash, UID impersonation</td></tr>
+          <tr><td>3306</td><td>TCP</td><td>MySQL</td><td>Брутфорс, UDF exploitation</td></tr>
+          <tr><td>3389</td><td>TCP</td><td>RDP</td><td>BlueKeep (CVE-2019-0708), брутфорс</td></tr>
+          <tr><td>5432</td><td>TCP</td><td>PostgreSQL</td><td>Брутфорс, COPY TO command</td></tr>
+          <tr><td>5900</td><td>TCP</td><td>VNC</td><td>Слабка автентифікація, без шифрування</td></tr>
+          <tr><td>5985/5986</td><td>TCP</td><td>WinRM</td><td>Remote PowerShell, lateral movement</td></tr>
+          <tr><td>6379</td><td>TCP</td><td>Redis</td><td>Без автентифікації за замовчуванням, RCE</td></tr>
+          <tr><td>8080</td><td>TCP</td><td>HTTP Alt</td><td>Адмін-панелі, проксі</td></tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.3 Типи сканування портів                                   -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.3 Типи сканування портів</h2>
+
+        <h3>TCP Connect Scan (-sT)</h3>
+        <p>Використовує системний виклик <code>connect()</code> для повного TCP-рукостискання:</p>
+        <ul>
+          <li><strong>Відкритий порт:</strong> SYN → SYN-ACK → ACK (з'єднання встановлено, потім закрито)</li>
+          <li><strong>Закритий порт:</strong> SYN → RST</li>
+          <li><strong>Filtered:</strong> немає відповіді або ICMP unreachable</li>
+        </ul>
+        <p><strong>Переваги:</strong> не потребує root/admin привілеїв; працює на всіх платформах. <strong>Недоліки:</strong> найповільніший TCP-скан; повністю логується; легко виявляється IDS.</p>
+        <pre><code>nmap -sT 192.168.1.100</code></pre>
+
+        <h3>SYN Scan / Stealth Scan (-sS)</h3>
+        <p>Дефолтний тип сканування при запуску від root/admin. Надсилає SYN, аналізує відповідь, одразу надсилає RST — ніколи не завершує рукостискання:</p>
+        <ul>
+          <li><strong>Відкритий порт:</strong> SYN → SYN-ACK → RST (від сканера)</li>
+          <li><strong>Закритий порт:</strong> SYN → RST (від цілі)</li>
+          <li><strong>Filtered:</strong> немає відповіді після ретрансмісій, або ICMP Type 3</li>
+        </ul>
+        <p><strong>Переваги:</strong> швидкий (тисячі портів/сек); відносно стелсовий; розрізняє open/closed/filtered. <strong>Недоліки:</strong> потребує raw packet привілеїв; сучасні IDS легко виявляють.</p>
+        <pre><code>nmap -sS 192.168.1.100</code></pre>
+
+        <h3>UDP Scan (-sU)</h3>
+        <p>Надсилає UDP-пакети (порожні або з протокольно-специфічними payload'ами):</p>
+        <ul>
+          <li><strong>Open:</strong> отримано UDP-відповідь</li>
+          <li><strong>Closed:</strong> ICMP Port Unreachable (Type 3, Code 3)</li>
+          <li><strong>Filtered:</strong> інші ICMP unreachable (Codes 1, 2, 9, 10, 13)</li>
+          <li><strong>Open|Filtered:</strong> немає відповіді (неоднозначно)</li>
+        </ul>
+        <p><strong>Головна проблема:</strong> rate-limited ICMP відповіді роблять повне сканування надзвичайно повільним. <strong>Рекомендація:</strong> комбінувати з <code>-sV</code> і сканувати конкретні порти.</p>
+        <pre><code>nmap -sU -p 53,111,161,500 192.168.1.100</code></pre>
+
+        <h3>FIN Scan (-sF)</h3>
+        <p>Надсилає TCP-пакет лише з прапорцем FIN. За RFC 793: закритий порт надсилає RST, відкритий мовчки відкидає пакет.</p>
+        <ul>
+          <li><strong>Open|Filtered:</strong> немає відповіді</li>
+          <li><strong>Closed:</strong> отримано RST</li>
+        </ul>
+        <p><strong>Перевага:</strong> може обходити нестатичні (stateless) фаєрволи. <strong>Обмеження:</strong> не працює на Windows (надсилає RST незалежно від стану).</p>
+
+        <h3>Xmas Scan (-sX)</h3>
+        <p>Встановлює прапорці FIN + PSH + URG — «загоряється як різдвяна ялинка». Та ж логіка що й FIN scan: RST = закритий, тиша = open|filtered. Незвична комбінація прапорців може збити з пантелику прості фільтри.</p>
+
+        <h3>Null Scan (-sN)</h3>
+        <p>Надсилає TCP-пакет з <strong>нульовими прапорцями</strong> (жодний не встановлений). Мінімальний пакет. Та ж RFC 793 логіка, ті ж обмеження на Windows.</p>
+
+        <h3>ACK Scan (-sA)</h3>
+        <p>Надсилає пакет лише з прапорцем ACK. <strong>Ніколи не визначає відкриті порти</strong> — цей скан маппить правила фаєрвола:</p>
+        <ul>
+          <li><strong>Unfiltered:</strong> отримано RST (порт доступний, але open/closed невідомо)</li>
+          <li><strong>Filtered:</strong> немає відповіді або ICMP unreachable (фаєрвол блокує)</li>
+        </ul>
+        <p><strong>Використання:</strong> визначити, чи фаєрвол є stateful або stateless; які порти проходять через фаєрвол.</p>
+
+        <h3>Idle / Zombie Scan (-sI)</h3>
+        <p>Найстелсовіший тип сканування — жоден пакет від вашої реальної IP-адреси не досягає цілі. Використовує «зомбі» — хост із передбачуваним інкрементальним IP ID.</p>
+        <p><strong>Механізм (3 кроки на кожен порт):</strong></p>
+        <ol>
+          <li><strong>Probe zombie:</strong> надіслати SYN-ACK до зомбі, отримати RST. Записати поточний IP ID (наприклад, <code>IPID=31337</code>)</li>
+          <li><strong>Forge SYN:</strong> надіслати SYN до цільового порту зі spoofed source IP = zombie. Якщо порт відкритий: ціль → SYN-ACK → zombie → RST (IP ID +1). Якщо порт закритий: ціль → RST → zombie ігнорує</li>
+          <li><strong>Probe zombie знову:</strong> якщо IP ID збільшився на <strong>2</strong> = порт відкритий. Якщо на <strong>1</strong> = закритий/filtered</li>
+        </ol>
+        <pre><code>nmap -sI zombie.example.com 192.168.1.100</code></pre>
+
+        <h3>Стани портів</h3>
+        <table>
+          <tr>
+            <th>Стан</th>
+            <th>Значення</th>
+          </tr>
+          <tr><td><strong>open</strong></td><td>Додаток активно приймає з'єднання</td></tr>
+          <tr><td><strong>closed</strong></td><td>Порт доступний, але немає додатку; відповідає RST</td></tr>
+          <tr><td><strong>filtered</strong></td><td>Фаєрвол/фільтр блокує — неможливо визначити стан</td></tr>
+          <tr><td><strong>unfiltered</strong></td><td>Доступний (відповідає на ACK), але open/closed невідомо</td></tr>
+          <tr><td><strong>open|filtered</strong></td><td>Немає відповіді — невідомо open чи filtered (UDP, FIN, NULL, Xmas)</td></tr>
+          <tr><td><strong>closed|filtered</strong></td><td>Неможливо визначити — тільки з idle scan</td></tr>
+        </table>
+
+        <h3>Порівняння типів сканування</h3>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Прапорці</th>
+            <th>Root</th>
+            <th>Стелс</th>
+            <th>Windows</th>
+            <th>Визначає open</th>
+          </tr>
+          <tr><td>SYN (-sS)</td><td>SYN</td><td>Так</td><td>Високий</td><td>✓</td><td>Так</td></tr>
+          <tr><td>Connect (-sT)</td><td>Full handshake</td><td>Ні</td><td>Низький</td><td>✓</td><td>Так</td></tr>
+          <tr><td>UDP (-sU)</td><td>UDP</td><td>Так</td><td>Середній</td><td>✓</td><td>Неоднозначно</td></tr>
+          <tr><td>FIN (-sF)</td><td>FIN</td><td>Так</td><td>Високий</td><td>✗</td><td>Ні (open|filtered)</td></tr>
+          <tr><td>Xmas (-sX)</td><td>FIN+PSH+URG</td><td>Так</td><td>Високий</td><td>✗</td><td>Ні (open|filtered)</td></tr>
+          <tr><td>Null (-sN)</td><td>Жодного</td><td>Так</td><td>Високий</td><td>✗</td><td>Ні (open|filtered)</td></tr>
+          <tr><td>ACK (-sA)</td><td>ACK</td><td>Так</td><td>Середній</td><td>✓</td><td>Ні (маппінг FW)</td></tr>
+          <tr><td>Idle (-sI)</td><td>SYN (spoofed)</td><td>Так</td><td>Максимальний</td><td>✓</td><td>Так</td></tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.4 Nmap: головний інструмент сканування                     -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.4 Nmap: головний інструмент сканування</h2>
+
+        <p><strong>Nmap</strong> (Network Mapper) — створений Гордоном «Fyodor» Ліоном у 1997 році. Де-факто стандарт для мережевого сканування, використовується пентестерами, адміністраторами та дослідниками безпеки по всьому світу. Відкритий код, активно підтримується.</p>
+
+        <h3>Методи виявлення хостів (Host Discovery)</h3>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Метод</th>
+            <th>Опис</th>
+          </tr>
+          <tr><td><code>-sn</code></td><td>Ping Scan</td><td>Тільки виявлення хостів, без сканування портів</td></tr>
+          <tr><td><code>-Pn</code></td><td>Skip Ping</td><td>Пропустити виявлення, вважати всі хости активними</td></tr>
+          <tr><td><code>-PS&lt;ports&gt;</code></td><td>TCP SYN Ping</td><td>SYN на вказані порти (дефолт: 80)</td></tr>
+          <tr><td><code>-PA&lt;ports&gt;</code></td><td>TCP ACK Ping</td><td>ACK на вказані порти (обхід stateful FW)</td></tr>
+          <tr><td><code>-PU&lt;ports&gt;</code></td><td>UDP Ping</td><td>UDP на високий порт (дефолт: 40125)</td></tr>
+          <tr><td><code>-PE</code></td><td>ICMP Echo</td><td>Стандартний ping (Type 8)</td></tr>
+          <tr><td><code>-PP</code></td><td>ICMP Timestamp</td><td>Timestamp запит (Type 13)</td></tr>
+          <tr><td><code>-PM</code></td><td>ICMP Address Mask</td><td>Address mask запит (Type 17)</td></tr>
+        </table>
+
+        <p><strong>Дефолтна поведінка:</strong> привілейований користувач: <code>-PE -PS443 -PA80 -PP</code>; непривілейований: TCP SYN до портів 80 та 443 через <code>connect()</code>; у локальній мережі (ethernet): ARP-запити — найнадійніший метод.</p>
+
+        <h3>Специфікація портів</h3>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr><td><code>-p 22,80,443</code></td><td>Конкретні порти</td><td><code>nmap -p 22,80 target</code></td></tr>
+          <tr><td><code>-p 1-1024</code></td><td>Діапазон</td><td><code>nmap -p 1-1024 target</code></td></tr>
+          <tr><td><code>-p-</code></td><td>Усі 65535 портів</td><td><code>nmap -p- target</code></td></tr>
+          <tr><td><code>--top-ports N</code></td><td>Топ-N найпоширеніших</td><td><code>nmap --top-ports 100 target</code></td></tr>
+          <tr><td><code>-F</code></td><td>Fast scan (100 портів)</td><td><code>nmap -F target</code></td></tr>
+        </table>
+
+        <h3>Тайминг-шаблони</h3>
+        <table>
+          <tr>
+            <th>Шаблон</th>
+            <th>Назва</th>
+            <th>Затримка</th>
+            <th>Коли використовувати</th>
+          </tr>
+          <tr><td><code>-T0</code></td><td>Paranoid</td><td>5 хвилин між пробами</td><td>Обхід IDS, надзвичайно повільно</td></tr>
+          <tr><td><code>-T1</code></td><td>Sneaky</td><td>15 секунд</td><td>Обхід IDS</td></tr>
+          <tr><td><code>-T2</code></td><td>Polite</td><td>0.4 секунди</td><td>Зменшення навантаження</td></tr>
+          <tr><td><code>-T3</code></td><td>Normal</td><td>Авто (дефолт)</td><td>Стандартне сканування</td></tr>
+          <tr><td><code>-T4</code></td><td>Aggressive</td><td>Швидко</td><td>Надійні мережі (LAN, broadband)</td></tr>
+          <tr><td><code>-T5</code></td><td>Insane</td><td>Мінімально</td><td>Швидкість за рахунок точності</td></tr>
+        </table>
+
+        <h3>Формати виводу</h3>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Формат</th>
+            <th>Опис</th>
+          </tr>
+          <tr><td><code>-oN file</code></td><td>Normal</td><td>Текстовий, як на екрані</td></tr>
+          <tr><td><code>-oX file</code></td><td>XML</td><td>Для програмної обробки</td></tr>
+          <tr><td><code>-oG file</code></td><td>Grepable</td><td>Один хост на рядок, зручно для grep/awk</td></tr>
+          <tr><td><code>-oA basename</code></td><td>All</td><td>Створює .nmap, .xml, .gnmap одночасно</td></tr>
+        </table>
+
+        <h3>Практичні команди Nmap</h3>
+        <pre><code># 1. Швидке виявлення живих хостів
+nmap -sn 192.168.1.0/24
+
+# 2. Повне сканування однієї цілі
+nmap -sS -sV -O -sC -p- -T4 -oA full_scan 192.168.1.100
+
+# 3. Топ-1000 портів із детекцією сервісів
+nmap -sS -sV -T4 192.168.1.100
+
+# 4. Сканування конкретних портів
+nmap -sS -p 21,22,80,443,445,3389 192.168.1.100
+
+# 5. Агресивний скан (ОС + версії + скрипти + traceroute)
+nmap -A -T4 192.168.1.100
+
+# 6. UDP-сканування цільових портів
+nmap -sU -p 53,67,69,111,123,161,500,514 192.168.1.100
+
+# 7. Стелс-скан з обходом IDS
+nmap -sS -T2 -f --data-length 24 -D RND:5 192.168.1.100
+
+# 8. Вся підмережа, усі порти, зберегти результати
+nmap -sS -p- -T4 --open -oA subnet_scan 10.0.0.0/24
+
+# 9. Оцінка вразливостей
+nmap -sV --script vuln -p- 192.168.1.100
+
+# 10. Скан через фаєрвол (source port 53)
+nmap -sS --source-port 53 -T4 192.168.1.100</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.5 Визначення сервісів та операційних систем                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.5 Визначення сервісів та операційних систем</h2>
+
+        <h3>Детекція версій сервісів (-sV)</h3>
+        <p>Після виявлення відкритих портів наступний крок — визначити, що саме працює: назва додатку, версія, конфігурація. Nmap використовує складний алгоритм:</p>
+        <ol>
+          <li><strong>NULL probe</strong> — порожнє з'єднання. Багато сервісів спонтанно надсилають банери (SSH, FTP, SMTP)</li>
+          <li>Якщо збігу немає — надсилає проби з бази <code>nmap-service-probes</code> у порядку ймовірності</li>
+          <li>Порівнює відповіді з regex-шаблонами для ідентифікації сервісу, додатку, версії, hostname, типу пристрою</li>
+        </ol>
+
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Рівень</th>
+            <th>Опис</th>
+          </tr>
+          <tr><td><code>--version-light</code></td><td>2</td><td>Швидко, мало проб — для масового сканування</td></tr>
+          <tr><td>(дефолт)</td><td>7</td><td>Збалансований — покриває більшість сервісів</td></tr>
+          <tr><td><code>--version-all</code></td><td>9</td><td>Максимум проб — повільно, але найточніше</td></tr>
+        </table>
+
+        <pre><code>nmap -sV --version-intensity 5 192.168.1.100</code></pre>
+
+        <h3>Фінгерпринтинг ОС (-O)</h3>
+        <p>TCP/IP стек кожної ОС має унікальні характеристики — як відбитки пальців. Nmap надсилає серію спеціально сконструйованих пакетів та аналізує відповіді:</p>
+
+        <p><strong>Проби фінгерпринтингу:</strong></p>
+        <ul>
+          <li><strong>SEQ (6 SYN-пакетів)</strong> до відкритого порту з інтервалом 100мс — аналіз ISN, IP ID, TCP timestamps</li>
+          <li><strong>2 ICMP Echo</strong> з різними TOS, кодами та розмірами payload</li>
+          <li><strong>6 TCP-проб (T2-T7)</strong> з різними комбінаціями прапорців до відкритих та закритих портів</li>
+          <li><strong>ECN probe</strong> — SYN з прапорцями CWR+ECE для тестування підтримки ECN</li>
+          <li><strong>UDP probe (U1)</strong> — до закритого порту; аналіз ICMP unreachable відповіді</li>
+        </ul>
+
+        <h3>Індикатори ОС</h3>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Linux</th>
+            <th>Windows</th>
+            <th>Cisco IOS</th>
+            <th>Solaris</th>
+          </tr>
+          <tr><td><strong>Default TTL</strong></td><td>64</td><td>128</td><td>255</td><td>255</td></tr>
+          <tr><td><strong>Window Size</strong></td><td>Varies</td><td>8192/65535</td><td>4128</td><td>8760</td></tr>
+          <tr><td><strong>DF bit</strong></td><td>Так</td><td>Так</td><td>Ні</td><td>Так</td></tr>
+        </table>
+
+        <pre><code>nmap -O --osscan-guess 192.168.1.100</code></pre>
+        <p>Прапорець <code>--osscan-limit</code> пропускає ОС-детекцію для хостів без хоча б 1 відкритого та 1 закритого порту. <code>--osscan-guess</code> дає агресивне вгадування коли точний збіг не знайдено.</p>
+
+        <h3>Банер-граббінг</h3>
+        <p>Найпростіший спосіб ідентифікації сервісу — підключитися та прочитати привітальне повідомлення (банер):</p>
+
+        <pre><code># Netcat — універсальний інструмент
+nc -nv 192.168.1.100 22         # SSH банер
+nc -nv 192.168.1.100 21         # FTP банер
+nc -nv 192.168.1.100 80         # HTTP (потім: GET / HTTP/1.0)
+
+# Telnet
+telnet 192.168.1.100 25         # SMTP банер
+
+# curl (HTTP заголовки)
+curl -I http://192.168.1.100
+
+# Nmap
+nmap -sV --script banner -p 21,22,25,80 192.168.1.100</code></pre>
+
+        <p><strong>Увага:</strong> банери можуть бути підробленими! Адміністратори часто змінюють банери для дезінформації. Завжди перевіряйте кількома методами.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.6 Nmap Scripting Engine (NSE)                               -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.6 Nmap Scripting Engine (NSE)</h2>
+
+        <p><strong>NSE</strong> — потужний скриптовий движок на мові Lua, вбудований у Nmap. Містить понад 600 скриптів для автоматизації аудиту безпеки, перелічення сервісів та пошуку вразливостей. Скрипти зберігаються в <code>/usr/share/nmap/scripts/</code>.</p>
+
+        <h3>Категорії NSE скриптів</h3>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Опис</th>
+            <th>Безпека</th>
+          </tr>
+          <tr><td><strong>auth</strong></td><td>Перевірка обходу автентифікації</td><td>Безпечно</td></tr>
+          <tr><td><strong>broadcast</strong></td><td>Виявлення хостів через broadcast</td><td>Безпечно</td></tr>
+          <tr><td><strong>brute</strong></td><td>Брутфорс облікових даних</td><td>Інтрузивно</td></tr>
+          <tr><td><strong>default</strong></td><td>Стандартні перевірки (запускаються з -sC)</td><td>Безпечно</td></tr>
+          <tr><td><strong>discovery</strong></td><td>Виявлення мережі та сервісів</td><td>Безпечно</td></tr>
+          <tr><td><strong>dos</strong></td><td>Тестування відмови в обслуговуванні</td><td>Небезпечно</td></tr>
+          <tr><td><strong>exploit</strong></td><td>Активна експлуатація вразливостей</td><td>Небезпечно</td></tr>
+          <tr><td><strong>external</strong></td><td>Запити до зовнішніх сервісів</td><td>Безпечно</td></tr>
+          <tr><td><strong>fuzzer</strong></td><td>Відправка непередбачуваних даних</td><td>Небезпечно</td></tr>
+          <tr><td><strong>intrusive</strong></td><td>Може вивести з ладу ціль</td><td>Ризиковано</td></tr>
+          <tr><td><strong>malware</strong></td><td>Виявлення бекдорів та малварі</td><td>Безпечно</td></tr>
+          <tr><td><strong>safe</strong></td><td>Неінтрузивні перевірки</td><td>Безпечно</td></tr>
+          <tr><td><strong>version</strong></td><td>Розширення детекції версій</td><td>Безпечно</td></tr>
+          <tr><td><strong>vuln</strong></td><td>Перевірка відомих CVE</td><td>Зазвичай безпечно</td></tr>
+        </table>
+
+        <h3>Запуск скриптів</h3>
+        <pre><code># Default скрипти (безпечні перевірки)
+nmap -sC 192.168.1.100
+# або еквівалент:
+nmap --script=default 192.168.1.100
+
+# За категорією
+nmap --script vuln 192.168.1.100
+
+# Конкретний скрипт
+nmap --script smb-vuln-ms17-010 -p 445 192.168.1.100
+
+# Кілька скриптів
+nmap --script "smb-enum-shares,smb-enum-users" -p 445 192.168.1.100
+
+# З аргументами
+nmap --script dns-zone-transfer --script-args dns-zone-transfer.domain=example.com -p 53 192.168.1.100</code></pre>
+
+        <h3>Ключові NSE скрипти</h3>
+        <table>
+          <tr>
+            <th>Скрипт</th>
+            <th>Порт</th>
+            <th>Призначення</th>
+          </tr>
+          <tr><td><code>vulners</code></td><td>будь-який</td><td>Звірка версій сервісів із базою CVE</td></tr>
+          <tr><td><code>smb-vuln-ms17-010</code></td><td>445</td><td>Перевірка EternalBlue</td></tr>
+          <tr><td><code>http-enum</code></td><td>80/443</td><td>Пошук прихованих директорій та файлів</td></tr>
+          <tr><td><code>ssl-enum-ciphers</code></td><td>443</td><td>Перелічення SSL/TLS шифрів</td></tr>
+          <tr><td><code>smb-enum-shares</code></td><td>445</td><td>Перелічення SMB-шар</td></tr>
+          <tr><td><code>smb-enum-users</code></td><td>445</td><td>Перелічення SMB-користувачів</td></tr>
+          <tr><td><code>dns-zone-transfer</code></td><td>53</td><td>Спроба DNS zone transfer (AXFR)</td></tr>
+          <tr><td><code>smtp-enum-users</code></td><td>25</td><td>Перелічення SMTP-користувачів</td></tr>
+          <tr><td><code>ssh-brute</code></td><td>22</td><td>Брутфорс SSH (категорія brute)</td></tr>
+          <tr><td><code>snmp-brute</code></td><td>161</td><td>Підбір SNMP community strings</td></tr>
+          <tr><td><code>banner</code></td><td>будь-який</td><td>Захоплення банерів сервісів</td></tr>
+        </table>
+
+        <pre><code># Комбінація для повного аудиту
+nmap -sS -sV -sC --script vuln -p- -T4 -oA audit 192.168.1.100</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.7 Enumeration: збір детальної інформації                    -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.7 Enumeration: збір детальної інформації</h2>
+
+        <p><strong>Enumeration</strong> (перелічення) — це процес глибокого збору інформації з виявлених сервісів. На відміну від сканування, яке визначає «що відкрито», enumeration відповідає на питання «що саме там працює і як це можна використати». Кожен відкритий сервіс — потенційний вектор атаки.</p>
+
+        <h3>SMB Enumeration (порти 139, 445)</h3>
+        <p>Server Message Block — протокол файлового та принтерного обміну у Windows-мережах. Один із найважливіших векторів атаки.</p>
+
+        <pre><code># enum4linux — комплексний інструмент (обгортка rpcclient + smbclient + nmblookup)
+enum4linux -a 192.168.1.100              # Повне перелічення
+enum4linux -U 192.168.1.100              # Користувачі
+enum4linux -S 192.168.1.100              # Шари (shares)
+enum4linux -P 192.168.1.100              # Політика паролів
+
+# smbclient — прямий доступ до SMB
+smbclient -L //192.168.1.100 -N          # Список шар (null session)
+smbclient //192.168.1.100/share -U user  # Підключення до шари
+
+# Nmap NSE
+nmap -p445 --script smb-enum-shares,smb-enum-users 192.168.1.100
+nmap -p445 --script smb-vuln-ms17-010 192.168.1.100
+nmap -p445 --script smb-os-discovery 192.168.1.100
+
+# rpcclient — RPC-перелічення
+rpcclient -U "" -N 192.168.1.100        # Null session
+# > enumdomusers                         # Користувачі домену
+# > enumdomgroups                        # Групи домену</code></pre>
+
+        <p><strong>Null Session</strong> — неавтентифіковане з'єднання до SMB, яке дозволяє отримати NetBIOS-імена, шари, користувачів та групи без пароля.</p>
+
+        <h3>SNMP Enumeration (порт 161 UDP)</h3>
+        <p>Simple Network Management Protocol — часто залишається з дефолтними community strings (<code>public</code> для читання, <code>private</code> для запису).</p>
+
+        <pre><code># snmpwalk — рекурсивний обхід MIB-дерева
+snmpwalk -v 2c -c public 192.168.1.100          # Повний обхід
+snmpwalk -v 2c -c public 192.168.1.100 system   # Тільки системна інформація
+
+# Конкретні OID для цінної інформації
+snmpwalk -v 2c -c public target 1.3.6.1.2.1.25.4.2.1.2    # Запущені процеси
+snmpwalk -v 2c -c public target 1.3.6.1.2.1.25.6.3.1.2    # Встановлене ПЗ
+snmpwalk -v 2c -c public target 1.3.6.1.2.1.2.2.1.2       # Мережеві інтерфейси
+
+# onesixtyone — брутфорс community strings
+onesixtyone -c community_strings.txt 192.168.1.100
+
+# Nmap
+nmap -sU -p161 --script snmp-brute,snmp-info 192.168.1.100</code></pre>
+
+        <table>
+          <tr>
+            <th>OID</th>
+            <th>Інформація</th>
+          </tr>
+          <tr><td><code>1.3.6.1.2.1.1.1.0</code></td><td>Опис системи</td></tr>
+          <tr><td><code>1.3.6.1.2.1.1.3.0</code></td><td>Uptime системи</td></tr>
+          <tr><td><code>1.3.6.1.2.1.1.5.0</code></td><td>Ім'я системи</td></tr>
+          <tr><td><code>1.3.6.1.2.1.25.4.2.1.2</code></td><td>Запущені процеси</td></tr>
+          <tr><td><code>1.3.6.1.2.1.25.6.3.1.2</code></td><td>Встановлене ПЗ</td></tr>
+          <tr><td><code>1.3.6.1.2.1.6.13.1.3</code></td><td>Відкриті TCP-порти</td></tr>
+        </table>
+
+        <p><strong>SNMPv1/v2c</strong> надсилають community strings у cleartext. <strong>SNMPv3</strong> додає шифрування та автентифікацію.</p>
+
+        <h3>DNS Enumeration (порт 53)</h3>
+        <pre><code># Zone transfer (AXFR) — повна копія зони DNS
+dig axfr example.com @ns1.example.com
+host -t axfr example.com ns1.example.com
+
+# Запити конкретних записів
+dig example.com ANY              # Всі записи
+dig example.com MX               # Поштові сервери
+dig example.com NS               # Name-сервери
+dig -x 192.168.1.100             # Зворотний DNS
+
+# Автоматизовані інструменти
+dnsrecon -d example.com -t axfr   # Zone transfer
+dnsrecon -d example.com -t brt    # Брутфорс субдоменів
+fierce --domain example.com       # Словникова атака + zone transfer
+
+# Nmap
+nmap -p53 --script dns-zone-transfer --script-args dns-zone-transfer.domain=example.com ns1.example.com
+nmap -p53 --script dns-brute example.com</code></pre>
+
+        <p><strong>Вразливість zone transfer:</strong> AXFR не має вбудованої автентифікації — будь-який клієнт може запросити повну копію зонного файлу. Правильно налаштовані DNS-сервери обмежують AXFR лише авторизованим вторинним серверам.</p>
+
+        <h3>LDAP Enumeration (порти 389, 636)</h3>
+        <pre><code># Анонімний LDAP-запит
+ldapsearch -x -H ldap://192.168.1.100 -b "dc=example,dc=com" "(objectClass=*)"
+
+# Перелічення користувачів
+ldapsearch -x -H ldap://192.168.1.100 -b "dc=example,dc=com" "(objectClass=user)" sAMAccountName mail
+
+# Пошук Domain Admins
+ldapsearch -x -H ldap://192.168.1.100 -b "dc=example,dc=com" "(&(objectClass=group)(cn=Domain Admins))" member
+
+# Service Principal Names (для Kerberoasting)
+ldapsearch -x -H ldap://192.168.1.100 -b "dc=example,dc=com" "(servicePrincipalName=*)" sAMAccountName servicePrincipalName
+
+# Nmap
+nmap -p389 --script ldap-rootdse,ldap-search 192.168.1.100</code></pre>
+
+        <h3>NFS Enumeration (порти 111, 2049)</h3>
+        <pre><code># Список експортованих шар
+showmount -e 192.168.1.100
+
+# RPC-сервіси
+rpcinfo -p 192.168.1.100
+
+# Монтування NFS-шари
+mount -t nfs 192.168.1.100:/share /mnt/nfs
+
+# Nmap
+nmap -p111,2049 --script nfs-ls,nfs-statfs,nfs-showmount 192.168.1.100</code></pre>
+        <p><strong>Ключова вразливість:</strong> опція <code>no_root_squash</code> у <code>/etc/exports</code> дозволяє root на клієнті бути root на сервері. Також можливе UID-підроблення у NFSv3 та нижче.</p>
+
+        <h3>SMTP Enumeration (порт 25)</h3>
+        <pre><code># Ручна перевірка через telnet/netcat
+telnet 192.168.1.100 25
+  HELO test
+  VRFY admin           # 252 = існує, 550 = невідомий
+  EXPN admins          # Розгорнути список розсилки
+  RCPT TO:admin@example.com   # 250 = валідний, 550 = невалідний
+
+# Автоматизований інструмент
+smtp-user-enum -M VRFY -U users.txt -t 192.168.1.100
+smtp-user-enum -M RCPT -U users.txt -t 192.168.1.100
+
+# Nmap
+nmap -p25 --script smtp-enum-users,smtp-commands,smtp-open-relay 192.168.1.100</code></pre>
+        <p><strong>RCPT TO</strong> — найбільш корисний метод, бо VRFY та EXPN часто вимкнені, а RCPT TO не можна вимкнути без порушення доставки пошти.</p>
+
+        <h3>NetBIOS Enumeration (порти 137-139)</h3>
+        <pre><code># nbtscan — масове сканування NetBIOS імен
+nbtscan 192.168.1.0/24          # Скан підмережі
+nbtscan -r 192.168.1.100        # Один хост з деталями
+
+# Nmap
+nmap -sU -p137 --script nbstat 192.168.1.100</code></pre>
+
+        <p><strong>NetBIOS Name Suffixes:</strong></p>
+        <table>
+          <tr>
+            <th>Суфікс</th>
+            <th>Сервіс</th>
+          </tr>
+          <tr><td><code>&lt;00&gt;</code></td><td>Workstation Service</td></tr>
+          <tr><td><code>&lt;03&gt;</code></td><td>Messenger Service (залогінений користувач)</td></tr>
+          <tr><td><code>&lt;20&gt;</code></td><td>Server Service (файловий обмін)</td></tr>
+          <tr><td><code>&lt;1B&gt;</code></td><td>Domain Master Browser</td></tr>
+          <tr><td><code>&lt;1D&gt;</code></td><td>Master Browser</td></tr>
+        </table>
+
+        <h3>Веб-сервер Enumeration</h3>
+        <pre><code># Nikto — сканер веб-вразливостей (6700+ перевірок)
+nikto -h http://192.168.1.100
+nikto -h https://192.168.1.100 -ssl
+
+# Gobuster — брутфорс директорій та файлів
+gobuster dir -u http://192.168.1.100 -w /usr/share/wordlists/dirb/common.txt
+gobuster dir -u http://192.168.1.100 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,html,txt
+
+# dirb — альтернатива Gobuster
+dirb http://192.168.1.100
+
+# whatweb — визначення веб-технологій
+whatweb http://192.168.1.100</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 4.8 Обхід захисту та методологія сканування                   -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>4.8 Обхід захисту та методологія сканування</h2>
+
+        <h3>Як IDS/IPS виявляють сканування</h3>
+        <table>
+          <tr>
+            <th>Тип скану</th>
+            <th>Сигнатура IDS</th>
+          </tr>
+          <tr><td><strong>SYN scan</strong></td><td>Великий обсяг SYN без завершення рукостискання; SYN → RST</td></tr>
+          <tr><td><strong>Connect scan</strong></td><td>Короткоживучі TCP-сесії, відкриті та одразу закриті</td></tr>
+          <tr><td><strong>FIN/NULL/Xmas</strong></td><td>Пакети з незвичними комбінаціями прапорців</td></tr>
+          <tr><td><strong>ACK scan</strong></td><td>Несанкціоновані ACK до невстановлених з'єднань</td></tr>
+          <tr><td><strong>UDP scan</strong></td><td>Великий обсяг UDP + шквал ICMP unreachable</td></tr>
+          <tr><td><strong>Idle scan</strong></td><td>Найважче виявити — IDS бачить трафік від зомбі, не від сканера</td></tr>
+        </table>
+        <p>Snort за замовчуванням алертує при <strong>15+ портів/сек</strong> від одного джерела. Повільні скани нижче цього порогу проходять непоміченими.</p>
+
+        <h3>Техніки обходу</h3>
+
+        <p><strong>Фрагментація</strong> — розбиває TCP-заголовок на кілька IP-фрагментів. Деякі фаєрволи не вміють їх збирати:</p>
+        <pre><code>nmap -f 192.168.1.100                    # 8-байтні фрагменти
+nmap -f -f 192.168.1.100                 # 16-байтні
+nmap --mtu 24 192.168.1.100              # Кастомний MTU (кратний 8)</code></pre>
+
+        <p><strong>Декої (Decoys)</strong> — ціль бачить SYN від багатьох IP і не може визначити реальний сканер:</p>
+        <pre><code>nmap -D 10.0.0.1,10.0.0.2,ME,10.0.0.3 192.168.1.100
+nmap -D RND:10 192.168.1.100             # 10 випадкових IP</code></pre>
+
+        <p><strong>Тайминг</strong> — уповільнення для обходу порогових значень IDS:</p>
+        <pre><code>nmap -T0 192.168.1.100                   # 5 хв між пробами
+nmap --scan-delay 5s 192.168.1.100       # 5-секундна затримка
+nmap --max-rate 1 192.168.1.100          # 1 пакет/сек</code></pre>
+
+        <p><strong>Маскування джерела</strong> — деякі фаєрволи довіряють трафіку з DNS (53) або HTTP (80):</p>
+        <pre><code>nmap --source-port 53 192.168.1.100      # Маскування під DNS
+nmap -g 80 192.168.1.100                 # Маскування під HTTP</code></pre>
+
+        <p><strong>Padding та MAC-спуфінг:</strong></p>
+        <pre><code>nmap --data-length 25 192.168.1.100      # Рандомний padding
+nmap --spoof-mac 0 192.168.1.100         # Випадковий MAC (тільки LAN)
+nmap --spoof-mac Apple 192.168.1.100     # Рандомний Apple MAC</code></pre>
+
+        <p><strong>Bad Checksum</strong> — справжні TCP/IP стеки відкидають пакети з невірною контрольною сумою. Фаєрволи/IDS, що відповідають на такі пакети, виявляють свою присутність:</p>
+        <pre><code>nmap --badsum 192.168.1.100</code></pre>
+
+        <p><strong>Комбінований стелс-скан:</strong></p>
+        <pre><code>nmap -sS -T1 -f --data-length 24 -D RND:5 --source-port 53 --spoof-mac 0 -Pn 192.168.1.100</code></pre>
+
+        <h3>Альтернативні інструменти сканування</h3>
+
+        <table>
+          <tr>
+            <th>Характеристика</th>
+            <th>Nmap</th>
+            <th>Masscan</th>
+            <th>RustScan</th>
+          </tr>
+          <tr><td><strong>Швидкість</strong></td><td>Тисячі портів/сек</td><td>10M пакетів/сек</td><td>65535 портів за ~3 сек</td></tr>
+          <tr><td><strong>Детекція сервісів</strong></td><td>Так (-sV)</td><td>Тільки банери</td><td>Передає в Nmap</td></tr>
+          <tr><td><strong>ОС фінгерпринт</strong></td><td>Так (-O)</td><td>Ні</td><td>Через Nmap</td></tr>
+          <tr><td><strong>NSE скрипти</strong></td><td>600+</td><td>Ні</td><td>Через Nmap</td></tr>
+          <tr><td><strong>Найкраще для</strong></td><td>Детальний аналіз</td><td>Масштабне виявлення</td><td>Швидкий скан + Nmap</td></tr>
+        </table>
+
+        <p><strong>Оптимальний workflow:</strong> Masscan/RustScan для швидкого виявлення відкритих портів → Nmap для детального аналізу:</p>
+        <pre><code># Masscan → Nmap
+masscan 192.168.1.0/24 -p- --rate 10000 -oG discovered.gnmap
+nmap -sV -sC -p &lt;порти&gt; &lt;хости&gt;
+
+# RustScan → Nmap (автоматично)
+rustscan -a 192.168.1.100 -- -sV -sC
+
+# hping3 — крафтинг пакетів
+hping3 -S 192.168.1.100 -p 80 -c 1         # Одиночний SYN
+hping3 -S 192.168.1.100 --scan 1-1024       # Скан діапазону</code></pre>
+
+        <h3>Методологія сканування (PTES)</h3>
+        <p>Рекомендована послідовність підфаз сканування — від широкого до вузького:</p>
+        <ol>
+          <li><strong>Network Sweep</strong> — знайти живі хости: <code>nmap -sn 192.168.1.0/24</code></li>
+          <li><strong>Port Scanning</strong> — знайти відкриті порти: <code>nmap -sS -p- -T4 target</code></li>
+          <li><strong>Service Enumeration</strong> — визначити версії: <code>nmap -sV -sC target</code></li>
+          <li><strong>OS Fingerprinting</strong> — визначити ОС: <code>nmap -O target</code></li>
+          <li><strong>Vulnerability Assessment</strong> — перевірити CVE: <code>nmap --script vuln target</code></li>
+          <li><strong>Deep Enumeration</strong> — протокольно-специфічні інструменти: <code>enum4linux</code>, <code>snmpwalk</code>, <code>gobuster</code> тощо</li>
+        </ol>
+
+        <h3>Документування та звітування</h3>
+        <ul>
+          <li><strong>Завжди зберігайте результати</strong> — використовуйте <code>-oA</code> для збереження у всіх форматах</li>
+          <li><strong>Часові мітки</strong> — фіксуйте час кожного сканування</li>
+          <li><strong>Скріншоти</strong> — документуйте ключові знахідки</li>
+          <li><strong>Структура звіту:</strong> хост → відкриті порти → сервіси → вразливості → рекомендації</li>
+          <li><strong>Класифікація ризиків:</strong> Critical / High / Medium / Low / Informational</li>
+        </ul>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/3.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/5.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="3.html" class="nav-btn">&larr; Попередня</a>
+      <a href="5.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>

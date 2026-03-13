@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.2 — Основи TCP/IP для сканування</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Основи TCP/IP для сканування</h1>
+      <div class="subtitle">Тема 4.2 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: TCP Three-Way Handshake -->
+    <section class="slide">
+      <h2>TCP трьохстороннє рукостискання</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="flow-row">
+            <div class="flow-step card-blue">
+              <strong>Client</strong>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step card-gray">
+              <strong>SYN</strong><br>
+              <small>SEQ=1000</small>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step card-green">
+              <strong>Server</strong>
+            </div>
+          </div>
+          <div class="flow-row">
+            <div class="flow-step card-blue">
+              <strong>Client</strong>
+            </div>
+            <div class="flow-arrow">←</div>
+            <div class="flow-step card-gray">
+              <strong>SYN-ACK</strong><br>
+              <small>SEQ=5000<br>ACK=1001</small>
+            </div>
+            <div class="flow-arrow">←</div>
+            <div class="flow-step card-green">
+              <strong>Server</strong>
+            </div>
+          </div>
+          <div class="flow-row">
+            <div class="flow-step card-blue">
+              <strong>Client</strong>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step card-gray">
+              <strong>ACK</strong><br>
+              <small>ACK=5001</small>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step card-green">
+              <strong>Server</strong>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="info-box">
+            <h3>Як сканування експлуатує це</h3>
+            <p><strong>SYN scan (-sS):</strong></p>
+            <ul>
+              <li>Відправляє SYN</li>
+              <li>Отримує SYN-ACK (відкритий) або RST (закритий)</li>
+              <li>Відправляє RST — ніколи не завершує з'єднання</li>
+              <li>«Напів-відкрите» сканування, менше логується</li>
+            </ul>
+            <p><strong>Connect scan (-sT):</strong></p>
+            <ul>
+              <li>Завершує повне рукостискання</li>
+              <li>Використовує системний виклик connect()</li>
+              <li>Не потребує привілеїв root</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: TCP Flags -->
+    <section class="slide">
+      <h2>Прапорці TCP</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Прапорець</th>
+            <th>Функція</th>
+            <th>Використання у скануванні</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue"><strong>SYN</strong></td>
+            <td>Ініціалізація з'єднання</td>
+            <td>SYN scan (-sS), Connect scan (-sT)</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><strong>ACK</strong></td>
+            <td>Підтвердження отримання</td>
+            <td>ACK scan (-sA) — маппінг фаєрволів</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>FIN</strong></td>
+            <td>Завершення з'єднання</td>
+            <td>FIN scan (-sF)</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>RST</strong></td>
+            <td>Скидання з'єднання</td>
+            <td>Індикатор закритого порту</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>PSH</strong></td>
+            <td>Негайна доставка</td>
+            <td>Xmas scan (FIN+PSH+URG)</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>URG</strong></td>
+            <td>Пріоритетні дані</td>
+            <td>Xmas scan (-sX)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-blue" style="margin-top: 20px;">
+        <p><strong>За RFC 793:</strong> закритий порт відповідає RST на пакет без SYN/RST/ACK. Відкритий порт мовчки відкидає — на цьому базуються FIN/NULL/Xmas скани.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: UDP and ICMP -->
+    <section class="slide">
+      <h2>UDP та ICMP</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>UDP</h3>
+            <ul>
+              <li><strong>Без з'єднання,</strong> без рукостискання</li>
+              <li>Немає відповіді = <span class="highlight">open|filtered</span> (неоднозначно)</li>
+              <li>ICMP Port Unreachable = <strong>closed</strong></li>
+              <li><strong>Rate limiting:</strong> Linux обмежує ~1 ICMP/сек → повне сканування = 18+ годин</li>
+              <li>Протокольно-специфічні payload'и підвищують точність</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>ICMP для Host Discovery</h3>
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Тип</th>
+                  <th>Метод</th>
+                  <th>Надійність</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="cell-blue"><strong>Echo (Type 8/0)</strong></td>
+                  <td>Класичний ping</td>
+                  <td class="cell-red">Часто блокується</td>
+                </tr>
+                <tr>
+                  <td class="cell-green"><strong>Timestamp (Type 13/14)</strong></td>
+                  <td>Запит часу</td>
+                  <td class="cell-yellow">Менше фільтрується</td>
+                </tr>
+                <tr>
+                  <td class="cell-purple"><strong>ARP</strong></td>
+                  <td>На локальній мережі</td>
+                  <td class="cell-green">Найнадійніший</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Key Ports -->
+    <section class="slide">
+      <h2>Ключові порти</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Порт</th>
+            <th>Протокол</th>
+            <th>Сервіс</th>
+            <th>Безпека</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-red"><strong>21</strong></td>
+            <td>TCP</td>
+            <td>FTP</td>
+            <td>Анонімний доступ, cleartext</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>22</strong></td>
+            <td>TCP</td>
+            <td>SSH</td>
+            <td>Брутфорс, ключова автентифікація</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>25</strong></td>
+            <td>TCP</td>
+            <td>SMTP</td>
+            <td>Перелічення користувачів (VRFY)</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>53</strong></td>
+            <td>TCP/UDP</td>
+            <td>DNS</td>
+            <td>Zone transfer, DNS amplification</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>80</strong></td>
+            <td>TCP</td>
+            <td>HTTP</td>
+            <td>SQLi, XSS, CSRF</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>110</strong></td>
+            <td>TCP</td>
+            <td>POP3</td>
+            <td>Cleartext паролі</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>135</strong></td>
+            <td>TCP</td>
+            <td>MS-RPC</td>
+            <td>RCE, WMI</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>139/445</strong></td>
+            <td>TCP</td>
+            <td>SMB</td>
+            <td>EternalBlue (MS17-010)</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>161</strong></td>
+            <td>UDP</td>
+            <td>SNMP</td>
+            <td>Default community strings</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>389</strong></td>
+            <td>TCP</td>
+            <td>LDAP</td>
+            <td>Перелічення AD</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>443</strong></td>
+            <td>TCP</td>
+            <td>HTTPS</td>
+            <td>SSL/TLS вразливості</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>1433</strong></td>
+            <td>TCP</td>
+            <td>MSSQL</td>
+            <td>xp_cmdshell</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>3306</strong></td>
+            <td>TCP</td>
+            <td>MySQL</td>
+            <td>Брутфорс</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>3389</strong></td>
+            <td>TCP</td>
+            <td>RDP</td>
+            <td>BlueKeep (CVE-2019-0708)</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>5900</strong></td>
+            <td>TCP</td>
+            <td>VNC</td>
+            <td>Слабка автентифікація</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

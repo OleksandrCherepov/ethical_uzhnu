@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.6 — Nmap Scripting Engine (NSE)</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Nmap Scripting Engine (NSE)</h1>
+      <div class="subtitle">Тема 4.6 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Категорії NSE скриптів -->
+    <section class="slide">
+      <h2>Категорії NSE скриптів</h2>
+      <div class="info-box">
+        <strong>NSE</strong> — потужний скриптовий движок на Lua. Понад 600 скриптів для автоматизації аудиту, перелічення та пошуку вразливостей.
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Категорія</th>
+            <th>Опис</th>
+            <th>Безпека</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>auth</td>
+            <td>Обхід автентифікації</td>
+            <td class="cell-green">Безпечно</td>
+          </tr>
+          <tr>
+            <td>broadcast</td>
+            <td>Виявлення через broadcast</td>
+            <td class="cell-green">Безпечно</td>
+          </tr>
+          <tr>
+            <td>brute</td>
+            <td>Брутфорс паролів</td>
+            <td class="cell-yellow">Інтрузивно</td>
+          </tr>
+          <tr>
+            <td>default</td>
+            <td>Стандартні перевірки (-sC)</td>
+            <td class="cell-green">Безпечно</td>
+          </tr>
+          <tr>
+            <td>discovery</td>
+            <td>Виявлення сервісів</td>
+            <td class="cell-green">Безпечно</td>
+          </tr>
+          <tr>
+            <td>dos</td>
+            <td>Тестування DoS</td>
+            <td class="cell-red">Небезпечно</td>
+          </tr>
+          <tr>
+            <td>exploit</td>
+            <td>Активна експлуатація</td>
+            <td class="cell-red">Небезпечно</td>
+          </tr>
+          <tr>
+            <td>fuzzer</td>
+            <td>Відправка непередбачуваних даних</td>
+            <td class="cell-red">Небезпечно</td>
+          </tr>
+          <tr>
+            <td>intrusive</td>
+            <td>Може вивести з ладу</td>
+            <td class="cell-yellow">Ризиковано</td>
+          </tr>
+          <tr>
+            <td>safe</td>
+            <td>Безпечні перевірки</td>
+            <td class="cell-green">Безпечно</td>
+          </tr>
+          <tr>
+            <td>vuln</td>
+            <td>Перевірка відомих CVE</td>
+            <td class="cell-green">Зазвичай безпечно</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: Ключові NSE скрипти -->
+    <section class="slide">
+      <h2>Ключові NSE скрипти</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Пошук вразливостей</h3>
+            <div class="code-block">
+              <code>nmap --script vuln target</code><br>
+              <code>nmap -p445 --script smb-vuln-ms17-010 target</code><br>
+              <code>nmap -sV --script vulners target</code>
+            </div>
+          </div>
+
+          <div class="card-blue">
+            <h3>Перелічення SMB</h3>
+            <div class="code-block">
+              <code>nmap -p445 --script smb-enum-shares,smb-enum-users target</code>
+            </div>
+          </div>
+
+          <div class="card-green">
+            <h3>Веб та SSL</h3>
+            <div class="code-block">
+              <code>nmap -p80 --script http-enum target</code><br>
+              <code>nmap -p443 --script ssl-enum-ciphers target</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>DNS та SMTP</h3>
+            <div class="code-block">
+              <code>nmap -p53 --script dns-zone-transfer --script-args dns-zone-transfer.domain=example.com target</code><br><br>
+              <code>nmap -p25 --script smtp-enum-users target</code>
+            </div>
+          </div>
+
+          <div class="info-box" style="margin-top: 20px;">
+            <p><span class="highlight">-sC = --script=default</span> — запускає всі «безпечні» скрипти</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+      <div class="success-box">
+        <strong>NSE перетворює Nmap із сканера портів на повноцінний фреймворк для аудиту безпеки.</strong>
+      </div>
+      <ul class="checklist">
+        <li><strong>-sC</strong> запускає default скрипти (безпечні перевірки)</li>
+        <li><strong>--script vuln</strong> — пошук відомих вразливостей (CVE)</li>
+        <li><strong>--script vulners</strong> — звірка версій із базою CVE</li>
+        <li><strong>smb-vuln-ms17-010</strong> — перевірка EternalBlue</li>
+        <li><strong>http-enum</strong> — пошук прихованих директорій та файлів</li>
+        <li><strong>Завжди перевіряйте категорію скрипта перед запуском!</strong></li>
+      </ul>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

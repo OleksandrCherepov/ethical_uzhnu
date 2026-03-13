@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.7 — Enumeration: збір детальної інформації</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Enumeration: збір детальної інформації</h1>
+      <div class="subtitle">Тема 4.7 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: SMB and NetBIOS Enumeration -->
+    <section class="slide">
+      <h2>SMB та NetBIOS Enumeration</h2>
+
+      <div class="info-box">
+        <strong>Enumeration</strong> — глибокий збір інформації з виявлених сервісів: користувачі, ресурси, конфігурації, вразливості.
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-blue">
+            <h3>SMB Enumeration (порти 139, 445)</h3>
+            <ul>
+              <li><strong>enum4linux</strong> — обгортка для rpcclient + smbclient</li>
+              <li><strong>Null Session</strong> — автентифікація без пароля</li>
+              <li><strong>Що отримуємо:</strong> користувачі, групи, шари, політика паролів</li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Повний аудит SMB</span>
+enum4linux -a <span class="code-string">192.168.1.100</span>
+
+<span class="code-comment"># Список шар без автентифікації</span>
+smbclient -L <span class="code-string">//target</span> -N</code></pre>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-purple">
+            <h3>NetBIOS (порти 137-139)</h3>
+            <ul>
+              <li><strong>nbtscan</strong> — масове сканування NetBIOS імен</li>
+              <li><strong>Суфікси:</strong>
+                <ul>
+                  <li>&lt;00&gt; = Workstation</li>
+                  <li>&lt;03&gt; = User</li>
+                  <li>&lt;20&gt; = Server</li>
+                  <li>&lt;1B&gt; = Domain Controller</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Сканування підмережі</span>
+nbtscan <span class="code-string">192.168.1.0/24</span>
+
+<span class="code-comment"># Nmap NSE скрипт</span>
+nmap -sU -p137 --script nbstat target</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: SNMP and DNS Enumeration -->
+    <section class="slide">
+      <h2>SNMP та DNS Enumeration</h2>
+
+      <div class="two-column">
+        <div>
+          <div class="card-green">
+            <h3>SNMP (порт 161 UDP)</h3>
+            <ul>
+              <li><strong>Community strings:</strong> "public" (read), "private" (write)</li>
+              <li><strong>snmpwalk</strong> — обхід MIB-дерева</li>
+              <li><strong>Інформація:</strong> процеси, ПЗ, інтерфейси, відкриті порти</li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Обхід SNMP-дерева</span>
+snmpwalk -v <span class="code-string">2c</span> -c <span class="code-string">public</span> target
+
+<span class="code-comment"># Брутфорс community strings</span>
+onesixtyone -c wordlist.txt target</code></pre>
+          </div>
+
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>OID</th>
+                <th>Інформація</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-blue">1.3.6.1.2.1.1.1.0</td>
+                <td>Опис системи</td>
+              </tr>
+              <tr>
+                <td class="cell-green">1.3.6.1.2.1.25.4.2.1.2</td>
+                <td>Запущені процеси</td>
+              </tr>
+              <tr>
+                <td class="cell-yellow">1.3.6.1.2.1.25.6.3.1.2</td>
+                <td>Встановлене ПЗ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <div class="card-yellow">
+            <h3>DNS (порт 53)</h3>
+            <ul>
+              <li><strong>Zone Transfer (AXFR)</strong> — повна копія зони</li>
+              <li><strong>dnsrecon</strong> — автоматизована DNS-розвідка</li>
+              <li><strong>fierce</strong> — словникова атака на субдомени</li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Спроба zone transfer</span>
+dig axfr example.com @ns1.example.com
+
+<span class="code-comment"># Автоматична DNS-розвідка</span>
+dnsrecon -d example.com -t axfr</code></pre>
+          </div>
+
+          <div class="warning-box">
+            <strong>Увага!</strong> Правильно налаштований DNS-сервер обмежує AXFR лише авторизованим серверам. Але багато хто забуває це зробити.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: LDAP, NFS, SMTP Enumeration -->
+    <section class="slide">
+      <h2>LDAP, NFS, SMTP Enumeration</h2>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>LDAP (порти 389, 636)</h3>
+          <ul>
+            <li><strong>Active Directory:</strong> користувачі, групи, SPN (Kerberoasting)</li>
+            <li><strong>ldapsearch</strong> — анонімний запит</li>
+          </ul>
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Анонімний LDAP-запит</span>
+ldapsearch -x \
+  -H ldap://target \
+  -b <span class="code-string">"dc=example,dc=com"</span></code></pre>
+          </div>
+        </div>
+
+        <div class="card-green">
+          <h3>NFS (порти 111, 2049)</h3>
+          <ul>
+            <li><strong>showmount</strong> — список експортованих шар</li>
+            <li><strong>no_root_squash</strong> — небезпечна конфігурація</li>
+          </ul>
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Експортовані NFS-шари</span>
+showmount -e 192.168.1.100</code></pre>
+          </div>
+        </div>
+
+        <div class="card-red">
+          <h3>SMTP (порт 25)</h3>
+          <ul>
+            <li><strong>VRFY</strong> — перевірити існування користувача</li>
+            <li><strong>RCPT TO</strong> — валідація email (не можна вимкнути!)</li>
+          </ul>
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Enum користувачів SMTP</span>
+smtp-user-enum \
+  -M VRFY \
+  -U users.txt \
+  -t target</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Web Enumeration and Summary -->
+    <section class="slide">
+      <h2>Веб-сервери та підсумок</h2>
+
+      <div class="card-purple">
+        <h3>Веб-enumeration</h3>
+        <ul>
+          <li><strong>Nikto:</strong> сканер веб-вразливостей (6700+ перевірок)</li>
+          <li><strong>Gobuster:</strong> брутфорс директорій та файлів</li>
+          <li><strong>whatweb:</strong> визначення веб-технологій</li>
+        </ul>
+      </div>
+
+      <div class="code-block">
+        <pre><code><span class="code-comment"># Сканування веб-вразливостей</span>
+nikto -h http://target
+
+<span class="code-comment"># Брутфорс директорій</span>
+gobuster dir -u http://target \
+  -w /usr/share/wordlists/dirb/common.txt</code></pre>
+      </div>
+
+      <div class="success-box">
+        <strong>Ключова думка:</strong> Enumeration — ключ до знаходження точок входу. Кожен відкритий сервіс — потенційний вектор атаки.
+      </div>
+
+      <div class="checklist">
+        <h3>Протоколи для enumeration:</h3>
+        <ul>
+          <li>SMB/NetBIOS — користувачі, шари, політики</li>
+          <li>SNMP — системна інформація, процеси, ПЗ</li>
+          <li>DNS — zone transfer, субдомени</li>
+          <li>LDAP — структура Active Directory</li>
+          <li>NFS — експортовані файлові системи</li>
+          <li>SMTP — валідація користувачів</li>
+          <li>HTTP/HTTPS — директорії, технології, вразливості</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

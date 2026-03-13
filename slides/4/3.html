@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.3 — Типи сканування портів</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Типи сканування портів</h1>
+      <div class="subtitle">Тема 4.3 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: SYN та Connect скани -->
+    <section class="slide">
+      <h2>SYN та Connect скани</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>SYN Scan (-sS)</h3>
+            <ul>
+              <li>"Напіввідкритий" / stealth scan</li>
+              <li>Flow: SYN → SYN-ACK → RST (не завершує рукостискання)</li>
+              <li><strong>Open:</strong> отримує SYN-ACK</li>
+              <li><strong>Closed:</strong> отримує RST</li>
+              <li>Потребує root/admin</li>
+              <li>Швидкий, менш помітний</li>
+              <li><span class="highlight">Дефолтний скан для root</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Connect Scan (-sT)</h3>
+            <ul>
+              <li>Повне TCP-рукостискання через connect()</li>
+              <li><strong>Open:</strong> SYN → SYN-ACK → ACK</li>
+              <li><strong>Closed:</strong> SYN → RST</li>
+              <li>НЕ потребує root</li>
+              <li>Повільніший, повністю логується</li>
+              <li><span class="highlight">Єдиний варіант без привілеїв</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Спеціальні типи сканів -->
+    <section class="slide">
+      <h2>Спеціальні типи сканів</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>FIN Scan (-sF)</h3>
+            <p>Лише прапорець FIN</p>
+            <ul>
+              <li><strong>Closed:</strong> RST</li>
+              <li><strong>Open:</strong> тиша</li>
+              <li>Не працює на Windows!</li>
+            </ul>
+          </div>
+          <div class="card-red">
+            <h3>Xmas Scan (-sX)</h3>
+            <p>FIN+PSH+URG ("різдвяна ялинка")</p>
+            <ul>
+              <li>Та ж логіка що FIN</li>
+              <li>Незвична комбінація обходить прості фільтри</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-gray">
+            <h3>Null Scan (-sN)</h3>
+            <p>Жодного прапорця</p>
+            <ul>
+              <li>Та ж RFC 793 логіка</li>
+              <li>Мінімальний пакет</li>
+            </ul>
+          </div>
+          <div class="card-yellow">
+            <h3>ACK Scan (-sA)</h3>
+            <p>Лише ACK</p>
+            <ul>
+              <li>НЕ визначає open/closed!</li>
+              <li>Маппінг правил фаєрвола</li>
+              <li><strong>Unfiltered:</strong> RST отримано</li>
+              <li><strong>Filtered:</strong> тиша</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box">
+        <strong>Увага:</strong> FIN/Xmas/Null працюють лише проти RFC 793-сумісних систем. Windows, Cisco, BSDI відправляють RST незалежно від стану порту.
+      </div>
+    </section>
+
+    <!-- Slide 4: Idle (Zombie) Scan -->
+    <section class="slide">
+      <h2>Idle (Zombie) Scan</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>Крок 1</strong>
+          <p>Probe zombie → отримати поточний IP ID<br>(наприклад, 31337)</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <strong>Крок 2</strong>
+          <p>Надіслати SYN до цілі зі spoofed IP = zombie</p>
+          <ul style="font-size: 0.85em; text-align: left; margin-top: 0.5em;">
+            <li><strong>Порт відкритий:</strong> ціль → SYN-ACK → zombie → RST (IP ID +1)</li>
+            <li><strong>Порт закритий:</strong> ціль → RST → zombie ігнорує</li>
+          </ul>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <strong>Крок 3</strong>
+          <p>Probe zombie знову → якщо IP ID збільшився на 2 = порт відкритий, на 1 = закритий</p>
+        </div>
+      </div>
+      <div class="card-green">
+        <p style="text-align: center; margin: 0;"><strong>Найстелсовіший тип сканування</strong> — жоден пакет від вашої реальної IP не досягає цілі!</p>
+      </div>
+      <div class="code-block">
+        <code>nmap -sI zombie.example.com target.com</code>
+      </div>
+    </section>
+
+    <!-- Slide 5: Стани портів — підсумкова таблиця -->
+    <section class="slide">
+      <h2>Стани портів — підсумкова таблиця</h2>
+      <h3 style="margin-top: 1.5em; margin-bottom: 0.5em;">Можливі стани портів</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Стан</th>
+            <th>Значення</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-green"><strong>open</strong></td>
+            <td>Додаток приймає з'єднання</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>closed</strong></td>
+            <td>Доступний, але немає додатку. RST у відповідь</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>filtered</strong></td>
+            <td>Фаєрвол блокує — неможливо визначити</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>unfiltered</strong></td>
+            <td>Доступний (відповідає на ACK), але open/closed невідомо</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>open|filtered</strong></td>
+            <td>Немає відповіді — невідомо open чи filtered</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>closed|filtered</strong></td>
+            <td>Тільки з idle scan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top: 1.5em; margin-bottom: 0.5em;">Порівняння типів сканування</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Тип</th>
+            <th>Прапорці</th>
+            <th>Root</th>
+            <th>Стелс</th>
+            <th>Windows</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SYN (-sS)</strong></td>
+            <td>SYN</td>
+            <td class="cell-red">Так</td>
+            <td class="cell-green">Високий</td>
+            <td class="cell-green">✓</td>
+          </tr>
+          <tr>
+            <td><strong>Connect (-sT)</strong></td>
+            <td>Full</td>
+            <td class="cell-green">Ні</td>
+            <td class="cell-red">Низький</td>
+            <td class="cell-green">✓</td>
+          </tr>
+          <tr>
+            <td><strong>FIN (-sF)</strong></td>
+            <td>FIN</td>
+            <td class="cell-red">Так</td>
+            <td class="cell-green">Високий</td>
+            <td class="cell-red">✗</td>
+          </tr>
+          <tr>
+            <td><strong>Xmas (-sX)</strong></td>
+            <td>FIN+PSH+URG</td>
+            <td class="cell-red">Так</td>
+            <td class="cell-green">Високий</td>
+            <td class="cell-red">✗</td>
+          </tr>
+          <tr>
+            <td><strong>Null (-sN)</strong></td>
+            <td>—</td>
+            <td class="cell-red">Так</td>
+            <td class="cell-green">Високий</td>
+            <td class="cell-red">✗</td>
+          </tr>
+          <tr>
+            <td><strong>ACK (-sA)</strong></td>
+            <td>ACK</td>
+            <td class="cell-red">Так</td>
+            <td class="cell-yellow">Середній</td>
+            <td class="cell-green">✓</td>
+          </tr>
+          <tr>
+            <td><strong>Idle (-sI)</strong></td>
+            <td>SYN</td>
+            <td class="cell-red">Так</td>
+            <td class="cell-blue">Максимальний</td>
+            <td class="cell-green">✓</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

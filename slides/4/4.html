@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.4 — Nmap: головний інструмент сканування</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Nmap: головний інструмент сканування</h1>
+      <div class="subtitle">Тема 4.4 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Host Discovery -->
+    <section class="slide">
+      <h2>Виявлення хостів (Host Discovery)</h2>
+
+      <div class="info-box">
+        <strong>Nmap (Network Mapper)</strong> — створений Гордоном «Fyodor» Ліоном у 1997 році. Де-факто стандарт для мережевого сканування.
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Прапорець</th>
+            <th>Метод</th>
+            <th>Опис</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue"><code>-sn</code></td>
+            <td>Ping Scan</td>
+            <td>Тільки виявлення, без сканування портів</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><code>-Pn</code></td>
+            <td>Skip Ping</td>
+            <td>Пропустити виявлення, сканувати всі</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><code>-PS443</code></td>
+            <td>TCP SYN Ping</td>
+            <td>SYN на вказаний порт</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><code>-PA80</code></td>
+            <td>TCP ACK Ping</td>
+            <td>ACK на вказаний порт</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><code>-PU</code></td>
+            <td>UDP Ping</td>
+            <td>UDP на високий порт</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><code>-PE</code></td>
+            <td>ICMP Echo</td>
+            <td>Класичний ping (Type 8)</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><code>-PP</code></td>
+            <td>ICMP Timestamp</td>
+            <td>Timestamp запит (Type 13)</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><code>-PR</code></td>
+            <td>ARP Ping</td>
+            <td>Найнадійніший у локальній мережі</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <span class="code-comment"># Швидке виявлення хостів</span><br>
+        nmap -sn <span class="code-string">192.168.1.0/24</span>
+      </div>
+    </section>
+
+    <!-- Slide 3: Port Specification and Timing -->
+    <section class="slide">
+      <h2>Специфікація портів та тайминг</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Порти</h3>
+            <table>
+              <tbody>
+                <tr>
+                  <td><code>-p 22,80,443</code></td>
+                  <td>Конкретні порти</td>
+                </tr>
+                <tr>
+                  <td><code>-p 1-1024</code></td>
+                  <td>Діапазон</td>
+                </tr>
+                <tr>
+                  <td><code>-p-</code></td>
+                  <td>Усі 65535 портів</td>
+                </tr>
+                <tr>
+                  <td><code>--top-ports 100</code></td>
+                  <td>Топ-100 найпоширеніших</td>
+                </tr>
+                <tr>
+                  <td><code>-F</code></td>
+                  <td>Швидкий (100 портів)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="column">
+          <h3>Тайминг-шаблони</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Шаблон</th>
+                <th>Назва</th>
+                <th>Затримка</th>
+                <th>Коли використовувати</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-red"><code>-T0</code></td>
+                <td>Paranoid</td>
+                <td>5 хв</td>
+                <td>Обхід IDS</td>
+              </tr>
+              <tr>
+                <td class="cell-red"><code>-T1</code></td>
+                <td>Sneaky</td>
+                <td>15 сек</td>
+                <td>Обхід IDS</td>
+              </tr>
+              <tr>
+                <td class="cell-yellow"><code>-T2</code></td>
+                <td>Polite</td>
+                <td>0.4 сек</td>
+                <td>Зменшити навантаження</td>
+              </tr>
+              <tr>
+                <td class="cell-blue"><code>-T3</code></td>
+                <td>Normal</td>
+                <td>Авто</td>
+                <td>Стандарт (дефолт)</td>
+              </tr>
+              <tr>
+                <td class="cell-green"><code>-T4</code></td>
+                <td>Aggressive</td>
+                <td>Швидко</td>
+                <td>Надійна мережа</td>
+              </tr>
+              <tr>
+                <td class="cell-purple"><code>-T5</code></td>
+                <td>Insane</td>
+                <td>Мінімум</td>
+                <td>Швидкість &gt; точність</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        Використовуйте <code>-T4</code> на швидких мережах. <code>-T0/-T1</code> для обходу IDS, але скан всієї підмережі займе години.
+      </div>
+    </section>
+
+    <!-- Slide 4: Output Formats and Practical Commands -->
+    <section class="slide">
+      <h2>Формати виводу та практичні команди</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <h3>Формати виводу</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Прапорець</th>
+                <th>Формат</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-blue"><code>-oN file</code></td>
+                <td>Normal (текстовий)</td>
+              </tr>
+              <tr>
+                <td class="cell-green"><code>-oX file</code></td>
+                <td>XML (для програм)</td>
+              </tr>
+              <tr>
+                <td class="cell-yellow"><code>-oG file</code></td>
+                <td>Grepable (для grep/awk)</td>
+              </tr>
+              <tr>
+                <td class="cell-purple"><code>-oA base</code></td>
+                <td>Усі три формати</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="column">
+          <h3>Ключові команди</h3>
+          <div class="code-block">
+            <span class="code-comment"># 1. Швидке виявлення мережі</span><br>
+            nmap -sn <span class="code-string">192.168.1.0/24</span><br><br>
+
+            <span class="code-comment"># 2. Повне сканування цілі</span><br>
+            nmap -sS -sV -O -sC -p- -T4 <span class="code-string">target</span><br><br>
+
+            <span class="code-comment"># 3. Топ-1000 портів + версії</span><br>
+            nmap -sS -sV -T4 <span class="code-string">target</span><br><br>
+
+            <span class="code-comment"># 4. Агресивний скан</span><br>
+            nmap -A -T4 <span class="code-string">target</span><br><br>
+
+            <span class="code-comment"># 5. UDP сервіси</span><br>
+            nmap -sU -p <span class="code-string">53,161,500</span> <span class="code-string">target</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Summary -->
+    <section class="slide">
+      <h2>Підсумок</h2>
+
+      <div class="success-box">
+        <strong>Nmap</strong> — це швейцарський ніж для мережевого сканування. Комбінація <code>-sS -sV -O -sC -T4</code> покриває більшість потреб.
+      </div>
+
+      <ul class="checklist">
+        <li><strong>Host discovery:</strong> <code>-sn</code> для мережі, <code>-Pn</code> якщо фаєрвол блокує ping</li>
+        <li><strong>Port scanning:</strong> <code>-sS</code> (SYN) дефолтний, <code>-p-</code> для повного сканування</li>
+        <li><strong>Тайминг:</strong> <code>-T4</code> для швидких мереж, <code>-T1</code> для стелсу</li>
+        <li><strong>Вивід:</strong> завжди зберігайте результати (<code>-oA</code>)</li>
+        <li><strong>Агресивний режим:</strong> <code>-A</code> = <code>-sV</code> + <code>-O</code> + <code>-sC</code> + traceroute</li>
+      </ul>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

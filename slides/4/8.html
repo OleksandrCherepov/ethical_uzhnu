@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 4.8 — Обхід захисту та методологія</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="4">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Обхід захисту та методологія</h1>
+      <div class="subtitle">Тема 4.8 — Сканування мережі та Enumeration</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Техніки обходу IDS/фаєрволів -->
+    <section class="slide">
+      <h2>Техніки обходу IDS/фаєрволів</h2>
+
+      <div class="info-box">
+        Сучасні IDS (Snort) алертують при 15+ просканованих портів/сек від одного джерела. Існують техніки обходу.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Фрагментація</h3>
+            <div class="code-block">
+nmap -f target              <span class="code-comment"># 8-байтні фрагменти</span>
+nmap --mtu 24 target        <span class="code-comment"># Кастомний MTU</span>
+            </div>
+            <p>Розбиває TCP-заголовок на фрагменти. Деякі фаєрволи не вміють збирати.</p>
+          </div>
+
+          <div class="card-green">
+            <h3>Декої (Decoys)</h3>
+            <div class="code-block">
+nmap -D RND:10 target       <span class="code-comment"># 10 випадкових IP</span>
+nmap -D 10.0.0.1,ME,10.0.0.2 target
+            </div>
+            <p>Ціль бачить SYN від багатьох IP — не може визначити реальний.</p>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Тайминг</h3>
+            <div class="code-block">
+nmap -T0 target             <span class="code-comment"># 5 хв між пробами</span>
+nmap --scan-delay 5s target <span class="code-comment"># 5-сек затримка</span>
+nmap --max-rate 1 target    <span class="code-comment"># 1 пакет/сек</span>
+            </div>
+          </div>
+
+          <div class="card-purple">
+            <h3>Маскування джерела</h3>
+            <div class="code-block">
+nmap --source-port 53 target  <span class="code-comment"># Маскування під DNS</span>
+nmap --data-length 25 target  <span class="code-comment"># Рандомний padding</span>
+nmap --spoof-mac 0 target     <span class="code-comment"># Випадковий MAC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Альтернативні інструменти -->
+    <section class="slide">
+      <h2>Альтернативні інструменти</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Характеристика</th>
+            <th>Nmap</th>
+            <th>Masscan</th>
+            <th>RustScan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Швидкість</strong></td>
+            <td class="cell-yellow">Тисячі портів/сек</td>
+            <td class="cell-green">10M пакетів/сек</td>
+            <td class="cell-green">65535 портів за ~3с</td>
+          </tr>
+          <tr>
+            <td><strong>Детекція сервісів</strong></td>
+            <td class="cell-green">Так (-sV)</td>
+            <td class="cell-red">Тільки банери</td>
+            <td class="cell-yellow">Передає в Nmap</td>
+          </tr>
+          <tr>
+            <td><strong>ОС фінгерпринт</strong></td>
+            <td class="cell-green">Так (-O)</td>
+            <td class="cell-red">Ні</td>
+            <td class="cell-yellow">Через Nmap</td>
+          </tr>
+          <tr>
+            <td><strong>NSE скрипти</strong></td>
+            <td class="cell-green">600+</td>
+            <td class="cell-red">Ні</td>
+            <td class="cell-yellow">Через Nmap</td>
+          </tr>
+          <tr>
+            <td><strong>Найкраще для</strong></td>
+            <td class="cell-blue">Детальний аналіз</td>
+            <td class="cell-blue">Масштабне виявлення</td>
+            <td class="cell-blue">Швидкий скан + Nmap</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box">
+        Оптимальний workflow: Masscan/RustScan для швидкого виявлення відкритих портів → Nmap для детального аналізу знайденого.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="code-block">
+<span class="code-comment"># Швидке виявлення → детальний аналіз</span>
+masscan 192.168.1.0/24 -p- --rate 10000 -oG discovered.gnmap
+nmap -sV -sC -p &lt;порти&gt; &lt;хости&gt;
+
+<span class="code-comment"># Або за допомогою RustScan</span>
+rustscan -a target -- -sV -sC
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>hping3 — крафтинг пакетів</h3>
+            <div class="code-block">
+hping3 -S target -p 80 -c 1         <span class="code-comment"># Одиночний SYN</span>
+hping3 -S target --scan 1-1024      <span class="code-comment"># Скан діапазону</span>
+hping3 -S -A target -p 80           <span class="code-comment"># SYN+ACK тест</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Методологія сканування (PTES) -->
+    <section class="slide">
+      <h2>Методологія сканування (PTES)</h2>
+
+      <div class="flow-row">
+        <div class="flow-step">1. Network Sweep</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">2. Port Scanning</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">3. Service Enum</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">4. OS Fingerprint</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">5. Vuln Assessment</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">6. Deep Enum</div>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <div class="three-col-grid">
+          <div class="card-blue">
+            <h3>1. Network Sweep</h3>
+            <div class="code-block">
+nmap -sn 192.168.1.0/24
+            </div>
+            <p>Виявлення живих хостів</p>
+          </div>
+
+          <div class="card-green">
+            <h3>2. Port Scanning</h3>
+            <div class="code-block">
+nmap -sS -p- -T4 target
+            </div>
+            <p>Скан всіх портів</p>
+          </div>
+
+          <div class="card-purple">
+            <h3>3. Service Enum</h3>
+            <div class="code-block">
+nmap -sV -sC target
+            </div>
+            <p>Визначення сервісів</p>
+          </div>
+        </div>
+
+        <div class="three-col-grid" style="margin-top: 1rem;">
+          <div class="card-yellow">
+            <h3>4. OS Fingerprint</h3>
+            <div class="code-block">
+nmap -O target
+            </div>
+            <p>Визначення ОС</p>
+          </div>
+
+          <div class="card-red">
+            <h3>5. Vuln Assessment</h3>
+            <div class="code-block">
+nmap --script vuln target
+            </div>
+            <p>Пошук вразливостей</p>
+          </div>
+
+          <div class="card-blue">
+            <h3>6. Deep Enum</h3>
+            <div class="code-block">
+enum4linux, snmpwalk,
+gobuster...
+            </div>
+            <p>Детальне перерахування</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок лекції 4 -->
+    <section class="slide">
+      <h2>Підсумок лекції 4</h2>
+
+      <div class="success-box">
+        Сканування мережі та Enumeration — це перехід від пасивної розвідки до активного збору інформації. Правильна методологія: від широкого до вузького, від швидкого до глибокого.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <h3>Ключові теми лекції:</h3>
+          <div class="checklist">
+            <div class="checklist-item">TCP/IP: рукостискання, прапорці, порти — фундамент сканування</div>
+            <div class="checklist-item">Типи сканів: SYN (стелс), Connect (без root), UDP (повільний)</div>
+            <div class="checklist-item">Nmap: host discovery → port scan → version detect → OS fingerprint → NSE</div>
+            <div class="checklist-item">Enumeration: SMB, SNMP, DNS, LDAP, NFS, SMTP, веб</div>
+            <div class="checklist-item">Обхід IDS: фрагментація, декої, тайминг, маскування</div>
+            <div class="checklist-item">Методологія: від широкого до вузького, завжди документувати</div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="info-box">
+            <strong>Далі: Лекція 5 — Фреймворк Metasploit та експлуатація.</strong><br><br>
+            Використаємо результати сканування для реальної атаки!
+          </div>
+
+          <div class="gradient-box gradient-purple" style="margin-top: 1rem;">
+            <h3>Пам'ятайте</h3>
+            <p>Кожен етап сканування залишає сліди в логах. Стелс — не абсолютна анонімність, а зменшення шансів виявлення.</p>
+            <p><strong>Практикуйте тільки в дозволеному середовищі!</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>
