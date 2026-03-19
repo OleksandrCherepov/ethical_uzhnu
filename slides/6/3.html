@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.3 — Офлайн-атаки: John the Ripper та Hashcat</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Офлайн-атаки: John the Ripper та Hashcat</h1>
+      <div class="subtitle">Тема 6.3 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: John the Ripper -->
+    <section class="slide">
+      <h2>John the Ripper</h2>
+      <div class="info-box">
+        <strong>John the Ripper (JtR)</strong> — класичний крекер паролів з 1996 року. Версія Jumbo підтримує 300+ форматів хешів та працює на CPU.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Режими роботи</h3>
+            <ul>
+              <li><strong>Single Crack</strong> — логін, GECOS, мутації</li>
+              <li><strong>Wordlist</strong> — словникова атака з правилами</li>
+              <li><strong>Incremental</strong> — повний перебір за charset</li>
+              <li><strong>External</strong> — кастомні правила на C</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="code-block">
+            <code><span class="code-comment"># Словникова атака</span>
+john --wordlist=rockyou.txt hashes.txt
+
+<span class="code-comment"># З правилами мутації</span>
+john --wordlist=rockyou.txt --rules=best64 hashes.txt
+
+<span class="code-comment"># Incremental (brute-force)</span>
+john --incremental=Alnum hashes.txt
+
+<span class="code-comment"># Показати зламані</span>
+john --show hashes.txt</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-green">
+        <h3>*2john утиліти — конвертація у формат JtR</h3>
+        <div class="three-col-grid">
+          <div><code>zip2john archive.zip &gt; hash.txt</code></div>
+          <div><code>pdf2john doc.pdf &gt; hash.txt</code></div>
+          <div><code>ssh2john id_rsa &gt; hash.txt</code></div>
+          <div><code>rar2john file.rar &gt; hash.txt</code></div>
+          <div><code>keepass2john db.kdbx &gt; hash.txt</code></div>
+          <div><code>office2john doc.docx &gt; hash.txt</code></div>
+          <div><code>wpapcap2john capture.cap &gt; hash.txt</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Hashcat — GPU-прискорений крекінг -->
+    <section class="slide">
+      <h2>Hashcat — GPU-прискорений крекінг</h2>
+      <div class="info-box">
+        <strong>Hashcat</strong> — найшвидший крекер у світі. Використовує GPU (CUDA/OpenCL) для паралельного обчислення мільярдів хешів/сек.
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Режим (-a)</th>
+            <th>Назва</th>
+            <th>Опис</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td>Dictionary</td>
+            <td class="cell-blue">Словникова атака (+ правила -r)</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Combinator</td>
+            <td class="cell-blue">word1 + word2</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Brute-force/Mask</td>
+            <td class="cell-yellow">?u?l?l?l?d?d?d?d</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>Hybrid Dict+Mask</td>
+            <td class="cell-green">словник + ?d?d?d</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>Hybrid Mask+Dict</td>
+            <td class="cell-green">?d?d?d + словник</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <code><span class="code-comment"># MD5 словникова атака</span>
+hashcat -m 0 -a 0 hashes.txt rockyou.txt
+
+<span class="code-comment"># NTLM з правилами</span>
+hashcat -m 1000 -a 0 hashes.txt rockyou.txt -r best64.rule
+
+<span class="code-comment"># Маска: 8 символів (верхній + нижні + цифри)</span>
+hashcat -m 0 -a 3 hashes.txt ?u?l?l?l?l?d?d?d
+
+<span class="code-comment"># Гібридна: словник + 4 цифри</span>
+hashcat -m 0 -a 6 hashes.txt rockyou.txt ?d?d?d?d</code>
+      </div>
+    </section>
+
+    <!-- Slide 4: Hashcat: маски та популярні хеші -->
+    <section class="slide">
+      <h2>Hashcat: маски та популярні хеші</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Символи масок</h3>
+            <ul>
+              <li><code>?l</code> = a-z (нижній регістр)</li>
+              <li><code>?u</code> = A-Z (верхній регістр)</li>
+              <li><code>?d</code> = 0-9 (цифри)</li>
+              <li><code>?s</code> = спецсимволи (!@#$...)</li>
+              <li><code>?a</code> = все (?l?u?d?s)</li>
+              <li><code>?1</code> = кастомний charset (-1 ?l?d)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>-m</th>
+                <th>Формат</th>
+                <th>Приклад</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>0</td>
+                <td>MD5</td>
+                <td class="cell-blue">5f4dcc3b...</td>
+              </tr>
+              <tr>
+                <td>100</td>
+                <td>SHA-1</td>
+                <td class="cell-blue">5baa61e4...</td>
+              </tr>
+              <tr>
+                <td>1000</td>
+                <td>NTLM</td>
+                <td class="cell-green">31d6cfe0...</td>
+              </tr>
+              <tr>
+                <td>1800</td>
+                <td>sha512crypt ($6$)</td>
+                <td class="cell-yellow">$6$rounds$...</td>
+              </tr>
+              <tr>
+                <td>3200</td>
+                <td>bcrypt</td>
+                <td class="cell-yellow">$2b$12$...</td>
+              </tr>
+              <tr>
+                <td>22000</td>
+                <td>WPA-PBKDF2-PMKID+EAPOL</td>
+                <td class="cell-purple">WPA2 handshake</td>
+              </tr>
+              <tr>
+                <td>13400</td>
+                <td>KeePass</td>
+                <td class="cell-purple">$keepass$...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Час крекінгу 8-символьного пароля (a-z+0-9) на RTX 4090:</strong> MD5 — 5 секунд, bcrypt — 27 років. Вибір алгоритму вирішує все!
+      </div>
+    </section>
+
+    <!-- Slide 5: Rainbow Tables та практичний workflow -->
+    <section class="slide">
+      <h2>Rainbow Tables та практичний workflow</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Rainbow Tables</h3>
+            <ul>
+              <li>Попередньо обчислені хеші для пошуку</li>
+              <li>Компроміс час ↔ пам'ять</li>
+              <li>Таблиця для MD5 (a-z, 1-8 символів) ≈ 460 GB</li>
+              <li>Сіль повністю нейтралізує rainbow tables</li>
+              <li>Інструмент: RainbowCrack (rtgen, rtsort, rcrack)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Практичний workflow крекінгу</h3>
+            <ul class="checklist">
+              <li>Ідентифікувати хеш: hashid або hash-identifier</li>
+              <li>Словникова атака: rockyou.txt</li>
+              <li>Словник + правила: best64, d3ad0ne</li>
+              <li>Гібридна: словник + маска</li>
+              <li>Маска з шаблоном: ?u?l?l?l?d?d?d?s</li>
+              <li>Повний перебір: останній варіант</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <code><span class="code-comment"># Ідентифікація хеша</span>
+hashid '5f4dcc3b5aa765d61d8327deb882cf99'
+hash-identifier
+
+<span class="code-comment"># Benchmark GPU</span>
+hashcat -b -m 0</code>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

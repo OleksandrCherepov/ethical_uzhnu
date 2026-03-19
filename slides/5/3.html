@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.3 — Модулі Metasploit</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Модулі Metasploit</h1>
+      <div class="subtitle">Тема 5.3 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Типи модулів -->
+    <section class="slide">
+      <h2>Типи модулів Metasploit</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Тип модуля</th>
+            <th>Кількість</th>
+            <th>Призначення</th>
+            <th>Рівень ризику</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-red"><strong>Exploits</strong></td>
+            <td>~2300+</td>
+            <td>Код для експлуатації вразливостей: remote/local/client-side</td>
+            <td class="cell-red">Високий</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>Auxiliary</strong></td>
+            <td>~1300+</td>
+            <td>Сканери, фазери, спуферы, DoS — без пейлоаду</td>
+            <td class="cell-green">Низький</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>Post</strong></td>
+            <td>~400+</td>
+            <td>Пост-експлуатація: збір інфо, ескалація, pivot</td>
+            <td class="cell-yellow">Середній</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><strong>Payloads</strong></td>
+            <td>~600+</td>
+            <td>Код, що виконується після успішної експлуатації</td>
+            <td class="cell-yellow">Середній</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>Encoders</strong></td>
+            <td>~45+</td>
+            <td>Обфускація пейлоадів для обходу AV/IDS</td>
+            <td class="cell-green">Низький</td>
+          </tr>
+          <tr>
+            <td class="cell-gray"><strong>NOPs</strong></td>
+            <td>~10</td>
+            <td>Заповнення для вирівнювання shellcode</td>
+            <td class="cell-green">Низький</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>Evasion</strong></td>
+            <td>~10</td>
+            <td>Генерація пейлоадів для обходу антивірусів</td>
+            <td class="cell-yellow">Середній</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: Іменування модулів -->
+    <section class="slide">
+      <h2>Іменування модулів</h2>
+      <div class="info-box">
+        <strong>Конвенція імен:</strong> <code>тип/ос/сервіс/назва</code>
+        <p style="margin-top: 0.5em;">Наприклад: <span class="highlight">exploit/windows/smb/ms17_010_eternalblue</span></p>
+      </div>
+
+      <div class="code-block">
+        <code>exploit/windows/smb/ms17_010_eternalblue
+auxiliary/scanner/http/dir_scanner
+post/windows/gather/hashdump
+payload/windows/x64/meterpreter/reverse_tcp
+encoder/x86/shikata_ga_nai
+evasion/windows/windows_defender_exe</code>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Exploit категорії</h3>
+            <ul>
+              <li><strong>windows/</strong> — Windows-специфічні</li>
+              <li><strong>linux/</strong> — Linux системи</li>
+              <li><strong>unix/</strong> — Unix-like системи</li>
+              <li><strong>multi/</strong> — кросплатформені</li>
+              <li><strong>android/</strong> — Android пристрої</li>
+              <li><strong>osx/</strong> — macOS</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Auxiliary категорії</h3>
+            <ul>
+              <li><strong>scanner/</strong> — сканери сервісів</li>
+              <li><strong>admin/</strong> — адміністративні дії</li>
+              <li><strong>fuzzers/</strong> — фазінг протоколів</li>
+              <li><strong>dos/</strong> — DoS атаки</li>
+              <li><strong>gather/</strong> — збір інформації</li>
+              <li><strong>server/</strong> — фейкові сервіси</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Пошук модулів -->
+    <section class="slide">
+      <h2>Пошук модулів</h2>
+      <div class="code-block">
+        <code><span class="code-comment"># Пошук за типом, платформою та сервісом</span>
+search type:exploit platform:windows smb
+
+<span class="code-comment"># Пошук за CVE номером</span>
+search cve:2017-0144
+
+<span class="code-comment"># Пошук за назвою</span>
+search name:eternalblue
+
+<span class="code-comment"># Пошук за автором</span>
+search author:hdm
+
+<span class="code-comment"># Детальна інформація про модуль</span>
+info exploit/windows/smb/ms17_010_eternalblue
+
+<span class="code-comment"># Показати опції модуля</span>
+show options</code>
+      </div>
+
+      <div class="card-purple">
+        <h3>Поради для ефективного пошуку</h3>
+        <ul>
+          <li>Використовуйте <span class="highlight">множинні фільтри</span> для точності: <code>type:</code>, <code>platform:</code>, <code>name:</code></li>
+          <li>CVE пошук — найшвидший спосіб знайти експлойт для конкретної вразливості</li>
+          <li>Команда <code>info</code> показує опис, цілі, опції, посилання, дату</li>
+          <li>Використовуйте <code>grep</code> для фільтрації результатів: <code>search smb | grep 2017</code></li>
+          <li>Перегляд ranking: <code>Excellent</code> → <code>Great</code> → <code>Good</code> → <code>Normal</code></li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

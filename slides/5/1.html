@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.1 — Вступ до експлуатації вразливостей</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Вступ до експлуатації вразливостей</h1>
+      <div class="subtitle">Тема 5.1 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Що таке експлуатація -->
+    <section class="slide">
+      <h2>Що таке експлуатація вразливостей?</h2>
+
+      <div class="info-box" style="margin-bottom: 2rem;">
+        <strong>Визначення:</strong> Експлуатація (exploitation) — це процес використання вразливості в системі для досягнення несанкціонованої мети: виконання коду, підвищення привілеїв, крадіжки даних або порушення доступності.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Вразливість vs Експлойт</h3>
+            <div style="margin-top: 1rem;">
+              <p><strong class="highlight">Вразливість (Vulnerability)</strong></p>
+              <p style="font-size: 0.9em; margin-top: 0.5rem;">Слабке місце в системі: помилка в коді, неправильна конфігурація, застарілий компонент</p>
+            </div>
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(99, 102, 241, 0.2);">
+              <p><strong class="highlight">Експлойт (Exploit)</strong></p>
+              <p style="font-size: 0.9em; margin-top: 0.5rem;">Код або техніка, яка використовує вразливість для компрометації системи</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-red">
+            <h3>Cyber Kill Chain</h3>
+            <div class="flow-row" style="flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+              <div style="padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85em;">1. Reconnaissance</div>
+              <div style="padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85em;">2. Weaponization</div>
+              <div style="padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85em;">3. Delivery</div>
+              <div style="padding: 0.5rem; background: var(--accent); color: white; border-radius: 6px; font-size: 0.85em; font-weight: 600;">4. Exploitation ←</div>
+              <div style="padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85em;">5. Installation</div>
+              <div style="padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85em;">6. Command & Control</div>
+              <div style="padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; font-size: 0.85em;">7. Actions on Objectives</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Місце у методології пентесту -->
+    <section class="slide">
+      <h2>Місце експлуатації у методології PTES</h2>
+
+      <div class="flow-row" style="margin: 2rem 0;">
+        <div class="flow-step">
+          <div class="step-number">1</div>
+          <div class="step-title">Pre-engagement</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">2</div>
+          <div class="step-title">Intelligence Gathering</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">3</div>
+          <div class="step-title">Threat Modeling</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">4</div>
+          <div class="step-title">Vulnerability Analysis</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step" style="background: var(--accent); color: white; transform: scale(1.1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+          <div class="step-number" style="background: rgba(255,255,255,0.2);">5</div>
+          <div class="step-title"><strong>Exploitation</strong></div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">6</div>
+          <div class="step-title">Post-Exploitation</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">7</div>
+          <div class="step-title">Reporting</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Коли відбувається експлуатація:</strong> Після виявлення та аналізу вразливостей (фаза 4), тестувальник намагається підтвердити їх реальний вплив через контрольовану експлуатацію. Мета — отримати доступ до системи для подальшого пост-експлуатаційного аналізу (фаза 6).
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>⚠️ Етичні та правові межі:</strong> Експлуатація дозволена <strong class="highlight">лише з письмовим дозволом</strong> власника системи і в межах визначеного scope. Несанкціонована експлуатація є кримінальним злочином (Computer Fraud and Abuse Act, Будапештська конвенція про кіберзлочинність, КК України ст. 361-363¹).
+      </div>
+    </section>
+
+    <!-- Slide 4: Типи експлойтів -->
+    <section class="slide">
+      <h2>Типи експлойтів</h2>
+
+      <table class="comparison-table" style="margin: 1.5rem 0;">
+        <thead>
+          <tr>
+            <th>Тип</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-red"><strong>Remote</strong></td>
+            <td>Експлуатація через мережу без попереднього доступу</td>
+            <td>EternalBlue (MS17-010), CVE-2021-44228 (Log4Shell)</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>Local</strong></td>
+            <td>Потребує локального доступу до системи</td>
+            <td>Dirty COW (CVE-2016-5195), kernel exploits</td>
+          </tr>
+          <tr>
+            <td class="cell-blue"><strong>Client-side</strong></td>
+            <td>Експлуатує застосунок на машині жертви (браузер, PDF reader)</td>
+            <td>Browser exploits, malicious PDF/Office documents</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>Web</strong></td>
+            <td>Використовує вразливості веб-застосунків</td>
+            <td>SQL Injection, XSS, Remote Code Execution через upload</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><strong>DoS</strong></td>
+            <td>Порушує доступність сервісу (без отримання доступу)</td>
+            <td>Buffer overflow crash, amplification attacks</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>Privilege Escalation</strong></td>
+            <td>Підвищує привілеї з користувача до root/SYSTEM</td>
+            <td>Sudo exploits, Windows token manipulation</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="gradient-box gradient-purple" style="margin-top: 1.5rem;">
+        <h3>Zero-day vs N-day</h3>
+        <div class="two-column" style="gap: 1.5rem; margin-top: 1rem;">
+          <div>
+            <p><strong class="highlight">Zero-day (0day)</strong></p>
+            <p style="font-size: 0.9em; margin-top: 0.5rem;">Вразливість, невідома виробнику. Патч відсутній. Експлойт має максимальну цінність і ефективність.</p>
+          </div>
+          <div>
+            <p><strong class="highlight">N-day</strong></p>
+            <p style="font-size: 0.9em; margin-top: 0.5rem;">Публічна вразливість з доступним патчем. Експлуатується на системах, де патч ще не встановлено (unpatched systems).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Підсумок -->
+    <section class="slide">
+      <h2>Підсумок теми 5.1</h2>
+
+      <div class="success-box" style="margin-bottom: 2rem;">
+        <strong>Ключова ідея:</strong> Експлуатація — це перетворення теоретичної вразливості в реальний доступ до системи. Це критична фаза пентесту, що підтверджує ризики та дозволяє перейти до пост-експлуатаційного аналізу глибини компрометації.
+      </div>
+
+      <div class="checklist">
+        <div class="check-item">✓ Експлуатація — фаза 5 методології PTES (Exploitation)</div>
+        <div class="check-item">✓ Вразливість — це слабке місце; експлойт — код, що його використовує</div>
+        <div class="check-item">✓ Exploitation у Cyber Kill Chain: перехідна точка від підготовки до контролю</div>
+        <div class="check-item">✓ Типи експлойтів: Remote, Local, Client-side, Web, DoS, Privilege Escalation</div>
+        <div class="check-item">✓ Zero-day експлойти (невідомі виробнику) vs N-day (публічні, непатчені)</div>
+        <div class="check-item">✓ Експлуатація дозволена лише з письмовим дозволом і в межах scope</div>
+      </div>
+
+      <div class="info-box" style="margin-top: 2rem;">
+        <strong>Наступна тема 5.2:</strong> Архітектура Metasploit Framework — найпотужніший інструмент для експлуатації вразливостей
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

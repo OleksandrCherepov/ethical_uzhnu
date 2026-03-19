@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 7.8 — Інструменти тестування веб-безпеки</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="7">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Інструменти тестування веб-безпеки</h1>
+      <div class="subtitle">Тема 7.8 — Безпека веб-додатків: OWASP Top 10</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Burp Suite -->
+    <section class="slide">
+      <h2>Burp Suite — головний інструмент пентестера</h2>
+
+      <div class="info-box">
+        <strong>Burp Suite (PortSwigger) — стандарт індустрії для тестування веб-додатків.</strong> Community Edition безкоштовна, Professional — $449/рік.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Основні модулі</h3>
+            <ul>
+              <li><strong>Proxy</strong> — перехоплення та модифікація трафіку</li>
+              <li><strong>Scanner</strong> — автоматичне сканування (Pro)</li>
+              <li><strong>Intruder</strong> — автоматизовані атаки (brute-force, fuzzing)</li>
+              <li><strong>Repeater</strong> — ручне відправлення модифікованих запитів</li>
+              <li><strong>Decoder</strong> — кодування/декодування (Base64, URL, HTML)</li>
+              <li><strong>Comparer</strong> — порівняння відповідей</li>
+              <li><strong>Sequencer</strong> — аналіз якості токенів</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h3>Корисні розширення (BApp Store)</h3>
+            <ul>
+              <li><strong>Autorize</strong> — автоматична перевірка access control</li>
+              <li><strong>Logger++</strong> — розширений журнал запитів</li>
+              <li><strong>JWT Editor</strong> — маніпуляція JWT токенами</li>
+              <li><strong>Active Scan++</strong> — додаткові перевірки сканера</li>
+              <li><strong>Param Miner</strong> — знаходження прихованих параметрів</li>
+              <li><strong>Turbo Intruder</strong> — швидший Intruder (Python)</li>
+              <li><strong>Hackvertor</strong> — конвертація payload encodings</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: OWASP ZAP -->
+    <section class="slide">
+      <h2>OWASP ZAP — безкоштовна альтернатива</h2>
+
+      <div class="info-box">
+        <strong>OWASP ZAP (Zed Attack Proxy) — безкоштовний open-source сканер.</strong> Ідеальний для навчання та DevSecOps (CI/CD інтеграція).
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>Функції ZAP</h3>
+            <ul>
+              <li><strong>Proxy</strong> — перехоплення HTTP/HTTPS</li>
+              <li><strong>Spider</strong> — автоматичний обхід додатку</li>
+              <li><strong>Active Scan</strong> — пошук вразливостей (SQLi, XSS, etc.)</li>
+              <li><strong>Passive Scan</strong> — аналіз трафіку без змін</li>
+              <li><strong>Fuzzer</strong> — автоматичний fuzzing параметрів</li>
+              <li><strong>HUD</strong> — Heads Up Display у браузері</li>
+              <li>API для автоматизації (REST)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="code-block">
+<span class="code-comment"># ZAP у командному рядку</span>
+zap-cli quick-scan http://target.com
+
+<span class="code-comment"># Docker</span>
+docker run -t owasp/zap2docker-stable \
+  zap-full-scan.py -t http://target.com
+
+<span class="code-comment"># API автоматизація (Python)</span>
+from zapv2 import ZAPv2
+zap = ZAPv2(apikey=<span class="code-string">'key'</span>)
+zap.spider.scan(<span class="code-string">'http://target.com'</span>)
+zap.ascan.scan(<span class="code-string">'http://target.com'</span>)
+          </div>
+        </div>
+      </div>
+
+      <table class="comparison-table" style="margin-top: 1.5rem;">
+        <tr>
+          <th>Функція</th>
+          <th>Burp Suite Pro</th>
+          <th>Burp Community</th>
+          <th>OWASP ZAP</th>
+        </tr>
+        <tr>
+          <td>Ціна</td>
+          <td class="cell-red">$449/рік</td>
+          <td class="cell-green">Безкоштовно</td>
+          <td class="cell-green">Безкоштовно</td>
+        </tr>
+        <tr>
+          <td>Сканер</td>
+          <td class="cell-green">Потужний</td>
+          <td class="cell-red">Обмежений</td>
+          <td class="cell-yellow">Хороший</td>
+        </tr>
+        <tr>
+          <td>Розширення</td>
+          <td class="cell-green">BApp Store</td>
+          <td class="cell-green">BApp Store</td>
+          <td class="cell-yellow">Add-ons</td>
+        </tr>
+        <tr>
+          <td>CI/CD</td>
+          <td class="cell-yellow">Через API</td>
+          <td class="cell-red">Ні</td>
+          <td class="cell-green">Docker/API</td>
+        </tr>
+        <tr>
+          <td>Навчання</td>
+          <td class="cell-blue">PortSwigger Academy</td>
+          <td class="cell-blue">PortSwigger Academy</td>
+          <td class="cell-blue">OWASP docs</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Slide 4: Nikto, Gobuster, Nuclei -->
+    <section class="slide">
+      <h2>Nikto, Gobuster та Nuclei</h2>
+
+      <div class="three-col-grid">
+        <div class="card-yellow">
+          <h3>Nikto — сканер веб-сервера</h3>
+          <ul>
+            <li>6,700+ перевірок</li>
+            <li>Дефолтні файли, misconfiguration</li>
+            <li>Застарілі версії серверів</li>
+          </ul>
+
+          <div class="code-block">
+<span class="code-comment"># Базовий скан</span>
+nikto -h http://target.com
+
+<span class="code-comment"># Конкретний порт</span>
+nikto -h target.com -p 8080
+
+<span class="code-comment"># Вивід у HTML</span>
+nikto -h target -o report.html
+          </div>
+        </div>
+
+        <div class="card-green">
+          <h3>Gobuster / Feroxbuster</h3>
+          <ul>
+            <li>Брутфорс директорій та файлів</li>
+            <li>DNS субдомени, vhosts</li>
+          </ul>
+
+          <div class="code-block">
+<span class="code-comment"># Директорії</span>
+gobuster dir \
+  -u http://target.com \
+  -w /usr/share/seclists/\
+Discovery/Web-Content/\
+common.txt
+
+<span class="code-comment"># Субдомени</span>
+gobuster dns -d target.com \
+  -w subdomains.txt
+          </div>
+        </div>
+
+        <div class="card-purple">
+          <h3>Nuclei — template-based scanner</h3>
+          <ul>
+            <li>8000+ шаблонів (CVE, miscfg, exposure)</li>
+            <li>Швидкий, масштабований</li>
+          </ul>
+
+          <div class="code-block">
+<span class="code-comment"># Повний скан</span>
+nuclei -u http://target.com
+
+<span class="code-comment"># За тегом</span>
+nuclei -u target \
+  -tags cve,sqli
+
+<span class="code-comment"># Оновити шаблони</span>
+nuclei -update-templates
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Summary -->
+    <section class="slide">
+      <h2>Підсумок лекції 7</h2>
+
+      <div class="success-box">
+        <strong>Безпека веб-додатків — найактуальніша область кібербезпеки.</strong> OWASP Top 10 — це дорожня карта для пентестера.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <h3>Ключові теми лекції:</h3>
+          <div class="checklist">
+            <div class="checklist-item">HTTP/HTTPS протокол, заголовки, статус-коди</div>
+            <div class="checklist-item">OWASP Top 10 (2021): методологія та еволюція</div>
+            <div class="checklist-item">A01 Broken Access Control: IDOR, privilege escalation</div>
+            <div class="checklist-item">A02 Cryptographic Failures: TLS, хешування, HSTS</div>
+            <div class="checklist-item">A03 Injection: SQLi, Command Injection, XSS</div>
+            <div class="checklist-item">SQL Injection на практиці: UNION, Blind, SQLMap</div>
+            <div class="checklist-item">A04 Insecure Design + A05 Misconfiguration</div>
+            <div class="checklist-item">Інструменти: Burp Suite, ZAP, Nikto, Nuclei</div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="info-box">
+            <strong>Далі: Лекція 8 — OWASP Top 10 (Частина 2).</strong> XSS детально, A06-A10, Burp Suite практика!
+          </div>
+
+          <div class="gradient-box gradient-purple" style="margin-top: 1rem;">
+            <h3>Практика</h3>
+            <p>DVWA, WebGoat, Juice Shop — навчальні платформи</p>
+            <p>PortSwigger Web Security Academy — безкоштовні лаби</p>
+            <p>HackTheBox / TryHackMe — CTF веб-челенджі</p>
+            <p><strong>Ніколи не тестуйте реальні системи без дозволу!</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

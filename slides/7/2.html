@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 7.2 — OWASP Top 10: огляд 2021</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="7">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>OWASP Top 10: огляд 2021</h1>
+      <div class="subtitle">Тема 7.2 — Безпека веб-додатків: OWASP Top 10</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: OWASP Foundation -->
+    <section class="slide">
+      <h2>OWASP Foundation</h2>
+      <div class="info-box">
+        <p><strong>OWASP (Open Worldwide Application Security Project)</strong> — неприбуткова організація, заснована у 2001 році. Місія: покращення безпеки програмного забезпечення через відкриті проекти.</p>
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Ключові проекти OWASP</h3>
+            <ul>
+              <li><strong>Top 10</strong> — класифікація критичних веб-вразливостей</li>
+              <li><strong>ASVS</strong> — стандарт верифікації безпеки</li>
+              <li><strong>Testing Guide</strong> — методологія тестування (v4.2)</li>
+              <li><strong>Cheat Sheet Series</strong> — практичні рекомендації</li>
+              <li><strong>ZAP</strong> — безкоштовний сканер вразливостей</li>
+              <li><strong>SAMM</strong> — модель зрілості безпеки</li>
+              <li><strong>Juice Shop</strong> — навчальний вразливий додаток</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Історія Top 10</h3>
+            <ul>
+              <li><strong>2004</strong> — перша версія</li>
+              <li><strong>2007</strong> — друга ревізія</li>
+              <li><strong>2010</strong> — акцент на ризиках</li>
+              <li><strong>2013</strong> — оновлення методології</li>
+              <li><strong>2017</strong> — data-driven підхід</li>
+              <li><strong>2021</strong> — поточна версія (3 нові категорії)</li>
+              <li><strong>2025</strong> — очікується оновлення</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: OWASP Top 10 2021 повний список -->
+    <section class="slide">
+      <h2>OWASP Top 10 — 2021: повний список</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Категорія</th>
+            <th>CWE</th>
+            <th>Інцидентність</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>A01</strong></td>
+            <td class="cell-red">Broken Access Control</td>
+            <td>34</td>
+            <td>3.81%</td>
+          </tr>
+          <tr>
+            <td><strong>A02</strong></td>
+            <td class="cell-red">Cryptographic Failures</td>
+            <td>29</td>
+            <td>4.49%</td>
+          </tr>
+          <tr>
+            <td><strong>A03</strong></td>
+            <td class="cell-red">Injection</td>
+            <td>33</td>
+            <td>3.37%</td>
+          </tr>
+          <tr>
+            <td><strong>A04</strong></td>
+            <td class="cell-yellow">Insecure Design</td>
+            <td>40</td>
+            <td>3.00%</td>
+          </tr>
+          <tr>
+            <td><strong>A05</strong></td>
+            <td class="cell-yellow">Security Misconfiguration</td>
+            <td>20</td>
+            <td>4.51%</td>
+          </tr>
+          <tr>
+            <td><strong>A06</strong></td>
+            <td class="cell-yellow">Vulnerable Components</td>
+            <td>3</td>
+            <td>8.77%</td>
+          </tr>
+          <tr>
+            <td><strong>A07</strong></td>
+            <td class="cell-blue">Identification Failures</td>
+            <td>22</td>
+            <td>2.55%</td>
+          </tr>
+          <tr>
+            <td><strong>A08</strong></td>
+            <td class="cell-blue">Software Integrity Failures</td>
+            <td>10</td>
+            <td>2.05%</td>
+          </tr>
+          <tr>
+            <td><strong>A09</strong></td>
+            <td class="cell-blue">Logging & Monitoring Failures</td>
+            <td>4</td>
+            <td>6.51%</td>
+          </tr>
+          <tr>
+            <td><strong>A10</strong></td>
+            <td class="cell-blue">SSRF</td>
+            <td>1</td>
+            <td>2.72%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="info-box" style="margin-top: 20px;">
+        <p><strong>94% додатків</strong> тестувалися на порушення контролю доступу. Це №1 вразливість у 2021.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4: Еволюція 2017 → 2021 -->
+    <section class="slide">
+      <h2>Еволюція: 2017 → 2021</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Що змінилось</h3>
+            <ul>
+              <li><strong>A01 Injection (2017) → A03 (2021)</strong> — знизився</li>
+              <li><strong>A05 Broken Access Control (2017) → A01 (2021)</strong> — піднявся!</li>
+              <li><strong>A03 Sensitive Data Exposure → A02 Cryptographic Failures</strong> (перейменовано)</li>
+              <li><strong>A04 XXE → об'єднано з A05 Security Misconfiguration</strong></li>
+              <li><strong>A08 Insecure Deserialization → об'єднано з A08 Software Integrity</strong></li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Нові категорії 2021</h3>
+            <ul>
+              <li><strong>A04 Insecure Design</strong> (НОВА) — помилки архітектури та дизайну</li>
+              <li><strong>A08 Software and Data Integrity Failures</strong> (НОВА) — CI/CD, десеріалізація, залежності</li>
+              <li><strong>A10 SSRF</strong> (НОВА) — Server-Side Request Forgery</li>
+              <li>Об'єднання XSS з Injection (A03)</li>
+              <li>XXE → A05 Security Misconfiguration</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top: 20px;">
+        <p><strong>Головний тренд:</strong> від технічних вразливостей (injection) до архітектурних проблем (insecure design, broken access control).</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Методологія OWASP Top 10 -->
+    <section class="slide">
+      <h2>Методологія OWASP Top 10</h2>
+      <div class="flow-row">
+        <div class="flow-step">Збір даних</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Маппінг CWE</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Аналіз інцидентності</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Ранжування</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Опитування</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Публікація</div>
+      </div>
+      <div class="three-col-grid" style="margin-top: 30px;">
+        <div class="card-blue">
+          <h3>Data-Driven (8 категорій)</h3>
+          <ul>
+            <li>На основі даних від 13+ організацій</li>
+            <li>500,000+ додатків</li>
+            <li>Маппінг CWE до категорій</li>
+            <li>Зважені метрики: exploitability, impact</li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h3>Survey-Driven (2 категорії)</h3>
+          <ul>
+            <li>Опитування спільноти</li>
+            <li>Виявлення нових трендів</li>
+            <li>A04 Insecure Design та A10 SSRF додані через опитування</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h3>Для нашого курсу</h3>
+          <ul>
+            <li><strong>Лекція 7:</strong> A01-A05 (Частина 1)</li>
+            <li><strong>Лекція 8:</strong> A06-A10 + XSS + Burp Suite (Частина 2)</li>
+            <li>Фокус на практичній експлуатації</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

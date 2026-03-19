@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.8 — Захист від атак на паролі</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Захист від атак на паролі</h1>
+      <div class="subtitle">Тема 6.8 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: MFA -->
+    <section class="slide">
+      <h2>Багатофакторна автентифікація (MFA)</h2>
+
+      <div class="info-box">
+        <strong>MFA блокує 99.9% автоматизованих атак на паролі (Microsoft, 2023).</strong> Це єдиний найефективніший захисний механізм.
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-green">
+          <h3>Фактори автентифікації</h3>
+          <ul>
+            <li><strong>Знання</strong> (Something you know): пароль, PIN</li>
+            <li><strong>Володіння</strong> (Something you have): телефон, токен, смарт-карта</li>
+            <li><strong>Біометрія</strong> (Something you are): відбиток, обличчя</li>
+            <li><strong>Місцезнаходження</strong>: IP, геолокація</li>
+          </ul>
+        </div>
+
+        <div class="card-blue">
+          <h3>Типи MFA</h3>
+          <ul>
+            <li><strong>TOTP</strong> (Google Authenticator, Authy): 6-значний код кожні 30 сек</li>
+            <li><strong>Push-сповіщення</strong> (Microsoft Authenticator, Duo): підтвердження на телефоні</li>
+            <li><strong>SMS OTP</strong>: код через SMS (вразливий до SIM-swap!)</li>
+            <li><strong>FIDO2/WebAuthn</strong>: апаратні ключі (YubiKey)</li>
+            <li><strong>Passkeys</strong>: безпарольна автентифікація</li>
+          </ul>
+        </div>
+
+        <div class="card-red">
+          <h3>Атаки на MFA</h3>
+          <ul>
+            <li><strong>MFA Fatigue</strong> (push bombing): багато запитів поки жертва не натисне "дозволити"</li>
+            <li><strong>SIM Swapping</strong>: перехоплення SMS через оператора</li>
+            <li><strong>Evilginx2</strong>: фішинг з перехопленням MFA-токенів (reverse proxy)</li>
+            <li><strong>Real-time phishing</strong>: relay сесії</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Fail2ban and Rate Limiting -->
+    <section class="slide">
+      <h2>Fail2ban, Rate Limiting та Account Lockout</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>Fail2ban</h3>
+            <ul>
+              <li>Моніторить логи на невдалі спроби входу</li>
+              <li>Блокує IP через iptables/nftables</li>
+              <li>Підтримує: SSH, Apache, Nginx, Postfix, vsftpd</li>
+            </ul>
+
+            <div class="code-block">
+<span class="code-comment"># /etc/fail2ban/jail.local</span>
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+findtime = 600
+
+<span class="code-comment"># Перевірка статусу</span>
+fail2ban-client status sshd
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Account Lockout (AD)</h3>
+            <ul>
+              <li>Блокування після N невдалих спроб</li>
+              <li>Типово: 5 спроб → 30 хв lockout</li>
+              <li>Проблема: DoS через навмисне блокування</li>
+              <li>Smart lockout (Azure AD): блокує підозрілі IP, не легітимних</li>
+            </ul>
+
+            <div class="code-block">
+<span class="code-comment"># Windows: Group Policy</span>
+<span class="code-comment"># Account lockout threshold: 5</span>
+<span class="code-comment"># Account lockout duration: 30 min</span>
+<span class="code-comment"># Reset counter after: 15 min</span>
+
+<span class="code-comment"># CAPTCHA після 3 невдалих спроб</span>
+<span class="code-comment"># Progressive delays: 1s, 5s, 30s, 5min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Passkeys and FIDO2 -->
+    <section class="slide">
+      <h2>Passkeys, FIDO2 та безпарольне майбутнє</h2>
+
+      <div class="info-box">
+        <strong>Passkeys (FIDO2/WebAuthn) — заміна паролів.</strong> Google, Apple, Microsoft впровадили підтримку у 2023-2024. Неможливо зафішити або підібрати.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>Як працюють Passkeys</h3>
+            <ul>
+              <li><strong>Публічний ключ</strong> → сервер</li>
+              <li><strong>Приватний ключ</strong> → пристрій (TPM/Secure Enclave)</li>
+              <li><strong>Автентифікація:</strong> біометрія або PIN на пристрої</li>
+              <li><strong>Фішинг-резистентні:</strong> прив'язані до домену</li>
+              <li>Синхронізація між пристроями (iCloud, Google)</li>
+              <li>Стандарт: WebAuthn (W3C) + CTAP2 (FIDO Alliance)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-blue">
+            <h3>Апаратні ключі (YubiKey)</h3>
+            <ul>
+              <li>USB/NFC токен</li>
+              <li>FIDO2/U2F протоколи</li>
+              <li>Підтримка: Google, Microsoft, GitHub, AWS, Facebook</li>
+              <li>Захист від фішингу: криптографічна прив'язка до origin</li>
+              <li>Ціна: $25-70</li>
+              <li>Рекомендація: 2 ключі (основний + резервний)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="gradient-box gradient-green" style="margin-top: 1.5rem;">
+        <h3>Статистика впровадження (2025)</h3>
+        <p><strong>Google:</strong> 400M+ акаунтів з passkeys</p>
+        <p><strong>Microsoft:</strong> passkeys за замовчуванням</p>
+        <p><strong>Apple:</strong> iCloud Keychain passkeys</p>
+        <p><strong>GitHub:</strong> підтримка з 2023</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: Summary -->
+    <section class="slide">
+      <h2>Підсумок лекції 6</h2>
+
+      <div class="success-box">
+        <strong>Атаки на паролі — найпоширеніший вектор початкового доступу.</strong> Розуміння методів атаки необхідне для побудови ефективного захисту.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <h3>Ключові теми лекції:</h3>
+          <div class="checklist">
+            <div class="checklist-item">Хешування паролів: MD5/SHA (швидкі, небезпечні) vs bcrypt/Argon2 (повільні, безпечні)</div>
+            <div class="checklist-item">Офлайн: John the Ripper (CPU), Hashcat (GPU) — мільярди хешів/сек</div>
+            <div class="checklist-item">Онлайн: Hydra, Medusa, Ncrack — брутфорс мережевих сервісів</div>
+            <div class="checklist-item">Словники: rockyou.txt, SecLists, CeWL, CUPP, правила мутації</div>
+            <div class="checklist-item">Wi-Fi: handshake/PMKID → aircrack-ng/hashcat</div>
+            <div class="checklist-item">Credential Stuffing / Password Spraying — масові атаки</div>
+            <div class="checklist-item">Захист: MFA, fail2ban, passkeys, NIST 800-63B</div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="info-box">
+            <strong>Далі: Лекція 7 — Безпека веб-додатків: OWASP Top 10 (Частина 1).</strong> Перехід від мережевих атак до атак на веб-додатки!
+          </div>
+
+          <div class="gradient-box gradient-purple" style="margin-top: 1rem;">
+            <h3>Рекомендації NIST 800-63B</h3>
+            <ul>
+              <li><strong>Довжина > складність</strong> (мінімум 8, рекомендовано 12+)</li>
+              <li>Без обов'язкової ротації</li>
+              <li>Перевірка проти списків витоків</li>
+              <li>Заборона поширених паролів</li>
+              <li>MFA для критичних систем</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

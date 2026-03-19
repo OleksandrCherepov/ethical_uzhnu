@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.1 — Вступ до атак на паролі</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Вступ до атак на паролі</h1>
+      <div class="subtitle">Тема 6.1 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Чому паролі — вразливість №1 -->
+    <section class="slide">
+      <h2>Чому паролі — вразливість №1</h2>
+
+      <div class="info-box" style="margin-bottom: 2rem;">
+        За даними Verizon DBIR 2024, <strong class="highlight">81% зламів пов'язані зі слабкими або викраденими паролями.</strong>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Проблеми паролів</h3>
+            <ul style="margin-top: 1rem; font-size: 0.9em; line-height: 1.6;">
+              <li><strong>Повторне використання</strong> — 65% людей використовують один пароль на кількох сайтах</li>
+              <li><strong>Прості паролі</strong> — "123456" залишається найпопулярнішим паролем у світі</li>
+              <li><strong>Словникові слова</strong> — password, admin, qwerty легко підібрати</li>
+              <li><strong>Соціальна інженерія</strong> — імена домашніх тварин, дати народження</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-blue">
+            <h3>Статистика 2024-2025</h3>
+            <div style="margin-top: 1rem;">
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">10 млрд</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">облікових записів у публічних витоках даних</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">&lt;1 сек</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">середній час злому 6-символьного MD5 паролю</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">59%</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">використовують ім'я або дату народження</div>
+              </div>
+              <div class="stat-item">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">26%</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">використовують багатофакторну автентифікацію (MFA)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Класифікація атак на паролі -->
+    <section class="slide">
+      <h2>Класифікація атак на паролі</h2>
+
+      <table class="comparison-table" style="margin: 1.5rem 0;">
+        <thead>
+          <tr>
+            <th>Тип атаки</th>
+            <th>Метод</th>
+            <th>Швидкість</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Словникова</strong><br><span style="font-size: 0.85em; opacity: 0.7;">(Dictionary)</span></td>
+            <td>Перебір паролів зі списку найпоширеніших слів</td>
+            <td class="cell-green">Висока</td>
+            <td>rockyou.txt, SecLists</td>
+          </tr>
+          <tr>
+            <td><strong>Повний перебір</strong><br><span style="font-size: 0.85em; opacity: 0.7;">(Brute-force)</span></td>
+            <td>Перебір усіх можливих комбінацій символів</td>
+            <td class="cell-red">Низька</td>
+            <td>a..zzzzzzzz</td>
+          </tr>
+          <tr>
+            <td><strong>Гібридна</strong><br><span style="font-size: 0.85em; opacity: 0.7;">(Hybrid)</span></td>
+            <td>Словник + правила мутації</td>
+            <td class="cell-yellow">Середня</td>
+            <td>password → password123, P@ssw0rd</td>
+          </tr>
+          <tr>
+            <td><strong>Rainbow Tables</strong></td>
+            <td>Попередньо обчислені хеші для миттєвого пошуку</td>
+            <td class="cell-green">Миттєва</td>
+            <td>Пошук у таблиці hash→plaintext</td>
+          </tr>
+          <tr>
+            <td><strong>Credential Stuffing</strong></td>
+            <td>Використання витоків даних на інших сервісах</td>
+            <td class="cell-green">Висока</td>
+            <td>email:password з breach → login</td>
+          </tr>
+          <tr>
+            <td><strong>Password Spraying</strong></td>
+            <td>Один популярний пароль на багато акаунтів</td>
+            <td class="cell-yellow">Повільна</td>
+            <td>Spring2025! на всі email домену</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: Онлайн vs Офлайн атаки -->
+    <section class="slide">
+      <h2>Онлайн vs Офлайн атаки</h2>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Онлайн-атаки</h3>
+            <p style="margin-top: 1rem; font-size: 0.9em;"><strong>Визначення:</strong> Атака через мережевий сервіс (SSH, FTP, HTTP форма входу)</p>
+
+            <div style="margin-top: 1.5rem;">
+              <p style="font-size: 0.85em; font-weight: 600; margin-bottom: 0.5rem;">Особливості:</p>
+              <ul style="font-size: 0.85em; line-height: 1.6;">
+                <li>Обмежена швидкість: 10-100 спроб/сек</li>
+                <li>Ризик блокування акаунта</li>
+                <li>Залежить від швидкості мережі</li>
+                <li>Легко виявити в логах</li>
+              </ul>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(245, 158, 11, 0.2);">
+              <p style="font-size: 0.85em; font-weight: 600; margin-bottom: 0.5rem;">Інструменти:</p>
+              <div class="code-block" style="padding: 0.5rem; font-size: 0.75em;">
+                <span class="code-keyword">Hydra</span>, <span class="code-keyword">Medusa</span>, <span class="code-keyword">Ncrack</span>,<br>
+                <span class="code-keyword">Burp Suite Intruder</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>Офлайн-атаки</h3>
+            <p style="margin-top: 1rem; font-size: 0.9em;"><strong>Визначення:</strong> Атака на отриманий хеш паролю (dump бази даних, файл)</p>
+
+            <div style="margin-top: 1.5rem;">
+              <p style="font-size: 0.85em; font-weight: 600; margin-bottom: 0.5rem;">Особливості:</p>
+              <ul style="font-size: 0.85em; line-height: 1.6;">
+                <li>Необмежена швидкість: мільярди хешів/сек на GPU</li>
+                <li>Без ризику виявлення</li>
+                <li>Потрібен попередній доступ до хешу</li>
+                <li>Атака проводиться локально</li>
+              </ul>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(168, 85, 247, 0.2);">
+              <p style="font-size: 0.85em; font-weight: 600; margin-bottom: 0.5rem;">Інструменти:</p>
+              <div class="code-block" style="padding: 0.5rem; font-size: 0.75em;">
+                <span class="code-keyword">Hashcat</span>, <span class="code-keyword">John the Ripper</span>,<br>
+                <span class="code-keyword">RainbowCrack</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 2rem;">
+        <strong>⚠️ Важливо:</strong> Офлайн-атаки набагато небезпечніші: відеокарта RTX 4090 перебирає <strong class="highlight">164 мільярди MD5 хешів на секунду</strong>. Тому сучасні системи використовують повільні алгоритми хешування (bcrypt, scrypt, Argon2), які спеціально сповільнюють брутфорс.
+      </div>
+    </section>
+
+    <!-- Slide 5: Етапи атаки на паролі -->
+    <section class="slide">
+      <h2>Етапи атаки на паролі</h2>
+
+      <div class="flow-row" style="margin: 2rem 0;">
+        <div class="flow-step">
+          <div class="step-number">1</div>
+          <div class="step-title">Розвідка</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">2</div>
+          <div class="step-title">Отримання хешів</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">3</div>
+          <div class="step-title">Ідентифікація формату</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">4</div>
+          <div class="step-title">Вибір стратегії</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">5</div>
+          <div class="step-title">Крекінг</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-number">6</div>
+          <div class="step-title">Використання</div>
+        </div>
+      </div>
+
+      <div class="three-col-grid" style="margin-top: 2rem;">
+        <div class="card-green">
+          <h3>Джерела хешів</h3>
+          <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.6;">
+            <li><code>/etc/shadow</code> (Linux)</li>
+            <li><code>SAM</code> / <code>NTDS.dit</code> (Windows)</li>
+            <li>Dump бази даних (web)</li>
+            <li>WPA handshake (Wi-Fi)</li>
+            <li>Захищені архіви (zip/rar/7z)</li>
+            <li>PDF/Office файли з паролем</li>
+          </ul>
+        </div>
+
+        <div class="card-blue">
+          <h3>Стратегія атаки</h3>
+          <div class="checklist" style="margin-top: 1rem; font-size: 0.85em;">
+            <div class="check-item">✓ Словникова атака (швидко)</div>
+            <div class="check-item">✓ Правила мутації (+123, !@#, 1337)</div>
+            <div class="check-item">✓ Маски (шаблони символів)</div>
+            <div class="check-item">✓ Комбінатор (word1+word2)</div>
+            <div class="check-item">✓ Повний перебір (останній шанс)</div>
+          </div>
+        </div>
+
+        <div class="card-red">
+          <h3>Правові аспекти</h3>
+          <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.6;">
+            <li><strong>Тестування лише з дозволу</strong> (письмовий договір)</li>
+            <li><strong>Документувати scope</strong> — які системи, які методи</li>
+            <li><strong>Не зберігати</strong> зламані паролі клієнтів після тесту</li>
+            <li><strong>Конфіденційність</strong> — результати тільки клієнту</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

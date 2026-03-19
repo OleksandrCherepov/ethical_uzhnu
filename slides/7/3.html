@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 7.3 — A01: Порушення контролю доступу</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="7">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A01: Порушення контролю доступу</h1>
+      <div class="subtitle">Тема 7.3 — Безпека веб-додатків: OWASP Top 10</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Broken Access Control — вразливість №1 -->
+    <section class="slide">
+      <h2>Broken Access Control — вразливість №1</h2>
+      <div class="info-box">
+        <strong>94% усіх веб-додатків мають певну форму порушення контролю доступу.</strong> Це найпоширеніша вразливість OWASP Top 10 2021.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Що це?</h3>
+            <p>Контроль доступу визначає, що користувач <strong>МОЖЕ</strong> робити. Порушення = користувач виходить за межі дозволених дій.</p>
+            <ul>
+              <li><strong>34 CWE</strong> у цій категорії</li>
+              <li><strong>CWE-200</strong>: Exposure of Sensitive Information</li>
+              <li><strong>CWE-284</strong>: Improper Access Control</li>
+              <li><strong>CWE-285</strong>: Improper Authorization</li>
+              <li><strong>CWE-639</strong>: Insecure Direct Object Reference (IDOR)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h3>Типи порушень</h3>
+            <ul>
+              <li><strong>IDOR</strong> (Insecure Direct Object Reference)</li>
+              <li><strong>Вертикальна ескалація привілеїв</strong> (user→admin)</li>
+              <li><strong>Горизонтальна ескалація</strong> (user→інший user)</li>
+              <li><strong>Path traversal</strong> (../../etc/passwd)</li>
+              <li><strong>CORS misconfiguration</strong></li>
+              <li><strong>Forced browsing</strong> (/admin без перевірки)</li>
+              <li><strong>JWT/token manipulation</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: IDOR — Insecure Direct Object Reference -->
+    <section class="slide">
+      <h2>IDOR — Insecure Direct Object Reference</h2>
+      <div class="info-box">
+        <strong>IDOR</strong> — коли додаток використовує ID об'єкта напряму у запиті без перевірки прав. Змінивши ID, можна отримати чужі дані.
+      </div>
+
+      <div class="code-block">
+        <code><span class="code-comment"># Оригінальний запит (ваш профіль)</span>
+GET /api/users/1001/profile HTTP/1.1
+Cookie: session=user_token
+
+<span class="code-comment"># Атака: зміна ID (чужий профіль!)</span>
+GET /api/users/1002/profile HTTP/1.1
+Cookie: session=user_token
+
+<span class="code-comment"># IDOR у POST (зміна чужого пароля)</span>
+POST /api/users/1002/change-password HTTP/1.1
+{"new_password": "hacked123"}</code>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Де шукати IDOR</h3>
+            <ul>
+              <li>URL параметри (?id=, ?user_id=)</li>
+              <li>API endpoints (/users/ID)</li>
+              <li>Приховані поля форм</li>
+              <li>JSON body</li>
+              <li>File download (/files/ID.pdf)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Захист від IDOR</h3>
+            <ul class="checklist">
+              <li>Перевірка прав на бекенді (не лише фронтенді!)</li>
+              <li>UUID замість числових ID</li>
+              <li>Непрямі посилання (mapping)</li>
+              <li>Авторизація на рівні об'єкта</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Privilege Escalation та Path Traversal -->
+    <section class="slide">
+      <h2>Privilege Escalation та Path Traversal</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>Ескалація привілеїв</h3>
+            <p><strong>Вертикальна:</strong> звичайний user → адміністратор</p>
+            <div class="code-block">
+              <code><span class="code-comment"># Зміна ролі через параметр</span>
+POST /api/profile HTTP/1.1
+{"name":"Hacker", "role":"admin"}
+
+<span class="code-comment"># Прихований адмін-ендпоінт</span>
+GET /admin/dashboard HTTP/1.1
+Cookie: session=regular_user
+
+<span class="code-comment"># JWT маніпуляція</span>
+<span class="code-comment"># Змінити payload:</span>
+<span class="code-comment"># {"role":"user"} → {"role":"admin"}</span></code>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>Path Traversal</h3>
+            <p>Вихід за межі дозволеної директорії</p>
+            <div class="code-block">
+              <code><span class="code-comment"># Читання системних файлів</span>
+GET /download?file=../../../etc/passwd
+GET /image?path=....//....//etc/shadow
+
+<span class="code-comment"># Windows</span>
+GET /file?name=..\..\windows\system32\config\SAM
+
+<span class="code-comment"># Null byte (старі системи)</span>
+GET /page?file=../../etc/passwd%00.jpg</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Path traversal = читання БУДЬ-ЯКИХ файлів на сервері:</strong> конфігурації, ключі, бази даних.
+      </div>
+    </section>
+
+    <!-- Slide 5: CORS misconfiguration та захист -->
+    <section class="slide">
+      <h2>CORS misconfiguration та захист</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>CORS помилки</h3>
+            <div class="code-block">
+              <code><span class="code-comment"># Небезпечна конфігурація</span>
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+
+<span class="code-comment"># Відображення Origin без валідації</span>
+Origin: https://evil.com
+→ Access-Control-Allow-Origin: https://evil.com</code>
+            </div>
+            <p>Дозволяє зловмисному сайту читати дані від імені жертви</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Захист від Broken Access Control</h3>
+            <ul class="checklist">
+              <li><strong>Deny by default</strong> — заборонити все, дозволити явно</li>
+              <li>Перевірка прав на КОЖНОМУ запиті (серверна сторона)</li>
+              <li>Disable directory listing</li>
+              <li>Log access control failures + alert</li>
+              <li>Rate limiting API</li>
+              <li>Інвалідація JWT/sessions після logout</li>
+              <li><strong>Тестування:</strong> Burp Autorize plugin</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

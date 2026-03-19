@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 6: Брутфорс та атаки на паролі — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 6: Брутфорс та атаки на паролі — словникові атаки, онлайн та офлайн атаки, Hydra, Hashcat, John the Ripper, wordlists, захист паролів.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 6. Брутфорс та атаки на паролі — Основи етичного хакінгу</title>
@@ -62,20 +62,142 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 6 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 6 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Брутфорс та атаки на паролі</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Словникові атаки, повний перебір, вразливі протоколи (SSH, FTP, VNC), використання wordlists.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Ця лекція присвячена одному з найпоширеніших векторів атаки — атакам на паролі. Студенти вивчать механізми автентифікації та зберігання паролів у різних операційних системах (Linux, Windows), зрозуміють різницю між хеш-функціями (MD5, SHA, bcrypt, Argon2) та навчаться ідентифікувати формати хешів. Ми детально розглянемо офлайн-атаки за допомогою John the Ripper та Hashcat — від словникових атак до масочного брутфорсу з GPU-прискоренням.</p>
+        <p>Друга частина лекції зосереджена на онлайн-атаках мережевих сервісів (SSH, FTP, RDP, VNC, HTTP) за допомогою THC-Hydra, Medusa та Ncrack, роботі зі словниками (rockyou.txt, SecLists, CeWL, CUPP), атаках на Wi-Fi паролі (WPA2, PMKID, aircrack-ng), а також сучасних техніках credential stuffing та password spraying. Завершимо аналізом захисних механізмів: MFA, fail2ban, FIDO2/passkeys та рекомендацій NIST.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Вступ до атак на паролі</strong> — Класифікація атак, статистика зламів, чому паролі залишаються вразливістю №1</li>
+          <li><strong>Механізми автентифікації та зберігання паролів</strong> — Хешування, солі, Linux /etc/shadow, Windows SAM/NTDS, bcrypt, Argon2</li>
+          <li><strong>Офлайн-атаки: John the Ripper та Hashcat</strong> — Крекінг хешів, rainbow tables, правила, маски, GPU-прискорення</li>
+          <li><strong>Онлайн-атаки: Hydra, Medusa, Ncrack</strong> — Брутфорс мережевих сервісів SSH, FTP, RDP, VNC, HTTP</li>
+          <li><strong>Словники та генерація wordlists</strong> — rockyou.txt, SecLists, CeWL, crunch, CUPP, мутації паролів</li>
+          <li><strong>Атаки на Wi-Fi паролі</strong> — WPA/WPA2, handshake, PMKID, aircrack-ng, hashcat</li>
+          <li><strong>Credential Stuffing та Password Spraying</strong> — Великомасштабні атаки, витоки даних, CrackMapExec</li>
+          <li><strong>Захист від атак на паролі</strong> — MFA, fail2ban, passkeys, NIST 800-63B, password managers</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 6</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/6/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.1 — Вступ до атак на паролі</h3>
+            <p>Класифікація, статистика, загрози</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.2 — Механізми автентифікації та зберігання паролів</h3>
+            <p>Хешування, солі, Linux, Windows</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.3 — Офлайн-атаки: John the Ripper та Hashcat</h3>
+            <p>Крекінг хешів, маски, GPU</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.4 — Онлайн-атаки: Hydra, Medusa, Ncrack</h3>
+            <p>Брутфорс мережевих сервісів</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.5 — Словники та генерація wordlists</h3>
+            <p>rockyou.txt, CeWL, crunch, CUPP</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.6 — Атаки на Wi-Fi паролі</h3>
+            <p>WPA2, handshake, PMKID, aircrack-ng</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.7 — Credential Stuffing та Password Spraying</h3>
+            <p>Масові атаки, витоки даних</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/6/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 6.8 — Захист від атак на паролі</h3>
+            <p>MFA, passkeys, fail2ban, NIST</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

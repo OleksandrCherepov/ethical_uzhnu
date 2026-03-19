@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.7 — Credential Stuffing та Password Spraying</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Credential Stuffing та Password Spraying</h1>
+      <div class="subtitle">Тема 6.7 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Credential Stuffing -->
+    <section class="slide">
+      <h2>Credential Stuffing</h2>
+
+      <div class="info-box">
+        <strong>Credential Stuffing</strong> — автоматичне використання пар email:password з витоків даних для входу в інші сервіси. 65% людей повторно використовують паролі.
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-red">
+            <h3>Як працює</h3>
+            <ol>
+              <li><strong>Отримати базу витоку</strong> (email:password)</li>
+              <li><strong>Автоматизувати логін</strong> на цільовому сайті</li>
+              <li><strong>Валідні пари</strong> = скомпрометовані акаунти</li>
+            </ol>
+            <ul>
+              <li><strong>Успішність:</strong> 0.1–2% (але при мільйонах пар = тисячі акаунтів)</li>
+              <li><strong>Статистика:</strong> 193 мільярди спроб credential stuffing у 2024 (Akamai)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-blue">
+            <h3>Інструменти</h3>
+            <ul>
+              <li><strong>SentryMBA</strong> — GUI credential stuffer (used by criminals)</li>
+              <li><strong>OpenBullet</strong> — модульний checker</li>
+              <li><strong>Snipr</strong> — автоматизований стаффер</li>
+              <li><strong>Custom scripts</strong> — Python + requests/selenium</li>
+            </ul>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># Python приклад (етичне тестування)</span>
+<span class="code-keyword">import</span> requests
+<span class="code-keyword">for</span> cred <span class="code-keyword">in</span> <span class="code-function">open</span>(<span class="code-string">'leaked.txt'</span>):
+    user, pwd = cred.strip().split(<span class="code-string">':'</span>)
+    r = requests.post(url,
+        data={<span class="code-string">'user'</span>: user, <span class="code-string">'pass'</span>: pwd})
+    <span class="code-keyword">if</span> <span class="code-string">'Welcome'</span> <span class="code-keyword">in</span> r.text:
+        <span class="code-function">print</span>(<span class="code-string">f'Valid: {user}:{pwd}'</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Password Spraying -->
+    <section class="slide">
+      <h2>Password Spraying</h2>
+
+      <div class="info-box">
+        <strong>Password Spraying</strong> — один пароль перевіряється проти багатьох облікових записів. Обходить блокування акаунтів (lockout policies).
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-yellow">
+            <h3>Стратегія</h3>
+            <ul>
+              <li><strong>Зворотній підхід:</strong> замість "багато паролів → 1 акаунт" → "1 пароль → багато акаунтів"</li>
+              <li><strong>Типові паролі:</strong> Season+Year (Spring2025!, Winter2024), Company+123, Welcome1, Password1!</li>
+              <li><strong>Пауза між спробами:</strong> 30–60 хвилин (обхід lockout)</li>
+              <li><strong>Ідеально для:</strong> Active Directory</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-purple">
+            <h3>Інструменти AD</h3>
+          </div>
+
+          <div class="code-block">
+            <pre><code><span class="code-comment"># CrackMapExec / NetExec (AD)</span>
+crackmapexec smb dc.target.com \
+  -u users.txt -p <span class="code-string">'Spring2025!'</span> \
+  --continue-on-success
+
+<span class="code-comment"># Spray (Greenwolf)</span>
+spray.sh -smb dc.target.com \
+  users.txt passwords.txt 1 60
+
+<span class="code-comment"># Ruler (Exchange/O365)</span>
+ruler -domain target.com brute \
+  --users users.txt \
+  --passwords passwords.txt
+
+<span class="code-comment"># kerbrute (Kerberos pre-auth)</span>
+kerbrute passwordspray \
+  --dc dc.target.com -d target.com \
+  users.txt <span class="code-string">'Winter2024!'</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Data Breaches -->
+    <section class="slide">
+      <h2>Витоки даних та масштаб проблеми</h2>
+
+      <div class="gradient-box gradient-red">
+        <h3>Масштаб витоків</h3>
+        <ul>
+          <li><strong>Collection #1–5 (2019):</strong> 2.2 мільярда email:password</li>
+          <li><strong>RockYou2024:</strong> 10 мільярдів паролів</li>
+          <li><strong>LinkedIn (2012/2021):</strong> 700M профілів</li>
+          <li><strong>Facebook (2021):</strong> 533M</li>
+          <li><strong>Yahoo (2013–2014):</strong> 3 мільярди акаунтів</li>
+        </ul>
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-blue">
+            <h3>Have I Been Pwned (HIBP)</h3>
+            <ul>
+              <li><strong>Troy Hunt's</strong> проект</li>
+              <li><strong>13+ мільярдів</strong> скомпрометованих акаунтів</li>
+              <li><strong>800+ витоків</strong> у базі</li>
+              <li><strong>API для перевірки паролів</strong> (k-anonymity)</li>
+              <li><strong>Інтегровано в:</strong> Firefox Monitor, 1Password</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-green">
+            <h3>Перевірка та захист</h3>
+            <div class="code-block">
+              <pre><code><span class="code-comment"># Перевірка через API (k-anonymity)</span>
+<span class="code-comment"># SHA1 пароля → перші 5 символів</span>
+echo -n <span class="code-string">"password"</span> | sha1sum
+<span class="code-comment"># 5BAA6... → запит до API</span>
+curl https://api.pwnedpasswords.com/\
+  range/5BAA6
+<span class="code-comment"># Відповідь: решта хешу:кількість</span></code></pre>
+            </div>
+            <p><strong>Ніколи не надсилає повний хеш</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Real Incidents -->
+    <section class="slide">
+      <h2>Реальні інциденти та уроки</h2>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h3>Colonial Pipeline (2021)</h3>
+          <ul>
+            <li>Одна скомпрометована VPN-обліковка</li>
+            <li>Пароль з витоку (без MFA)</li>
+            <li><strong>Наслідки:</strong> 5 днів без палива, $4.4M викуп</li>
+            <li><strong>Урок:</strong> MFA + моніторинг витоків</li>
+          </ul>
+        </div>
+
+        <div class="card-yellow">
+          <h3>Okta (2024)</h3>
+          <ul>
+            <li>Credential stuffing через проксі</li>
+            <li>Компрометація клієнтських тенантів</li>
+            <li>Анонімізація через residential proxies</li>
+            <li><strong>Урок:</strong> rate limiting + CAPTCHA + IP reputation</li>
+          </ul>
+        </div>
+
+        <div class="card-purple">
+          <h3>Microsoft (2024)</h3>
+          <ul>
+            <li>Password spraying від Midnight Blizzard (APT29)</li>
+            <li>Один тестовий акаунт без MFA</li>
+            <li>Доступ до email топ-менеджерів</li>
+            <li><strong>Урок:</strong> MFA для ВСІХ акаунтів, включаючи тестові</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Кожен з цих інцидентів міг бути попереджений простим увімкненням MFA!</strong>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.5 — Словники та генерація wordlists</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Словники та генерація wordlists</h1>
+      <div class="subtitle">Тема 6.5 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: rockyou.txt та SecLists -->
+    <section class="slide">
+      <h2>rockyou.txt та SecLists</h2>
+      <div class="info-box">
+        <strong>rockyou.txt</strong> — найвідоміший словник, створений з витоку 14,3 млн паролів сервісу RockYou у 2009 році. Входить до Kali Linux за замовчуванням.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>rockyou.txt</h3>
+            <ul>
+              <li><strong>14,344,392</strong> унікальних паролів</li>
+              <li>Шлях: <span class="highlight">/usr/share/wordlists/rockyou.txt.gz</span></li>
+              <li><strong>Топ-10:</strong> 123456, 12345, 123456789, password, iloveyou, princess, 1234567, rockyou, 12345678, abc123</li>
+              <li>Розмір: ~133 MB (розпакований)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h3>SecLists (Daniel Miessler)</h3>
+            <ul>
+              <li>Найбільша колекція словників для пентесту</li>
+              <li><strong>Категорії:</strong> Passwords/, Usernames/, Discovery/, Fuzzing/</li>
+              <li><strong>Ключові файли:</strong> xato-net-10-million, common-credentials, darkweb2017, leaked-databases</li>
+              <li>Шлях: <span class="highlight">/usr/share/seclists/</span></li>
+            </ul>
+            <div class="code-block" style="margin-top: 1rem;">
+              <span class="code-keyword">sudo</span> apt install seclists
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: CeWL та Crunch -->
+    <section class="slide">
+      <h2>CeWL та Crunch — кастомні словники</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>CeWL (Custom Word List generator)</h3>
+            <ul>
+              <li>Генерує словник з вмісту веб-сайту</li>
+              <li>Збирає слова з HTML-сторінок (spider)</li>
+              <li>Ідеально для цільових атак</li>
+            </ul>
+            <div class="code-block" style="margin-top: 1rem;">
+              <span class="code-comment"># Базове сканування</span><br>
+              <span class="code-keyword">cewl</span> https://target.com <span class="code-function">-d</span> <span class="code-string">2</span> <span class="code-function">-m</span> <span class="code-string">5</span> <span class="code-function">-w</span> wordlist.txt<br>
+              <span class="code-comment"># -d 2 = глибина 2 рівні</span><br>
+              <span class="code-comment"># -m 5 = мінімум 5 символів</span><br><br>
+              <span class="code-comment"># З email-адресами</span><br>
+              <span class="code-keyword">cewl</span> https://target.com <span class="code-function">-e</span> <span class="code-function">--email_file</span> emails.txt<br><br>
+              <span class="code-comment"># З мутаціями</span><br>
+              <span class="code-keyword">cewl</span> https://target.com <span class="code-function">--lowercase</span> <span class="code-function">-w</span> words.txt
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Crunch — генератор за шаблоном</h3>
+            <ul>
+              <li>Генерує <strong>ВСІ</strong> можливі комбінації</li>
+              <li>Можна вказати charset, pattern, довжину</li>
+            </ul>
+            <div class="code-block" style="margin-top: 1rem;">
+              <span class="code-comment"># 6-8 символів, тільки цифри</span><br>
+              <span class="code-keyword">crunch</span> <span class="code-string">6 8</span> 0123456789 <span class="code-function">-o</span> pins.txt<br><br>
+              <span class="code-comment"># За шаблоном: Слово + 4 цифри</span><br>
+              <span class="code-keyword">crunch</span> <span class="code-string">8 8</span> <span class="code-function">-t</span> Pass@@@@ <span class="code-function">-o</span> list.txt<br><br>
+              <span class="code-comment"># @ = нижній регістр</span><br>
+              <span class="code-comment"># , = верхній регістр</span><br>
+              <span class="code-comment"># % = цифри</span><br>
+              <span class="code-comment"># ^ = спецсимволи</span>
+            </div>
+          </div>
+          <div class="warning-box" style="margin-top: 1rem;">
+            <strong>Увага:</strong> crunch 8 8 (всі символи) = 6.6 квадрильйонів рядків = 62 PB файл!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: CUPP та Mentalist -->
+    <section class="slide">
+      <h2>CUPP та Mentalist — соціальна інженерія</h2>
+
+      <div class="info-box">
+        <strong>CUPP</strong> (Common User Password Profiler) створює словник на основі особистої інформації цілі: ім'я, дата народження, домашня тварина, хобі.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>CUPP</h3>
+            <ul>
+              <li><strong>Інтерактивний режим:</strong> запитує ім'я, прізвище, дату народження, nickname, ім'я партнера, дитини, тварини</li>
+              <li>Генерує мутації: John1990!, john_2024, J0hn#90</li>
+            </ul>
+            <div class="code-block" style="margin-top: 1rem;">
+              <span class="code-comment"># Інтерактивний режим</span><br>
+              <span class="code-keyword">cupp</span> <span class="code-function">-i</span><br><br>
+              <span class="code-comment"># Завантажити список Alecto (defaults)</span><br>
+              <span class="code-keyword">cupp</span> <span class="code-function">-a</span><br><br>
+              <span class="code-comment"># З файлу конфігурації</span><br>
+              <span class="code-keyword">cupp</span> <span class="code-function">-l</span> <span class="code-comment"># парсити профіль</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h3>Mentalist (GUI)</h3>
+            <ul>
+              <li>Графічний генератор словників</li>
+              <li><strong>Ланцюжок:</strong> Base Words → Mutations → Output</li>
+              <li><strong>Мутації:</strong> Case toggle, Append numbers, Leet speak (a→@, e→3, o→0), Prepend year</li>
+              <li><strong>Приклад:</strong> john → John, JOHN, j0hn, John2024!, john@123</li>
+              <li><strong>Kwprocessor:</strong> генерація keyboard walks (qwerty, 1qaz2wsx)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Правила мутації Hashcat/JtR -->
+    <section class="slide">
+      <h2>Правила мутації Hashcat/JtR</h2>
+
+      <div class="info-box">
+        <strong>Правила мутації</strong> — найефективніший підхід: маленький словник + розумні правила = мільйони варіантів.
+      </div>
+
+      <div class="card-blue">
+        <h3>Популярні правила Hashcat</h3>
+        <table class="comparison-table" style="margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Правило</th>
+              <th>Опис</th>
+              <th>password →</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="highlight">:</span></td>
+              <td>Без змін</td>
+              <td>password</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">l</span></td>
+              <td>Lowercase</td>
+              <td>password</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">u</span></td>
+              <td>Uppercase</td>
+              <td>PASSWORD</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">c</span></td>
+              <td>Capitalize</td>
+              <td>Password</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">$1</span></td>
+              <td>Append 1</td>
+              <td>password1</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">^!</span></td>
+              <td>Prepend !</td>
+              <td>!password</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">sa@</span></td>
+              <td>Replace a→@</td>
+              <td>p@ssword</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">se3</span></td>
+              <td>Replace e→3 (leet speak)</td>
+              <td>password</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">d</span></td>
+              <td>Duplicate</td>
+              <td>passwordpassword</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">r</span></td>
+              <td>Reverse</td>
+              <td>drowssap</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block" style="margin-top: 1.5rem;">
+        <span class="code-comment"># Вбудовані правила Hashcat</span><br>
+        <span class="code-keyword">hashcat</span> <span class="code-function">-m</span> <span class="code-string">0</span> <span class="code-function">-a</span> <span class="code-string">0</span> hashes.txt wordlist.txt <span class="code-function">-r</span> /usr/share/hashcat/rules/best64.rule<br><br>
+        <span class="code-comment"># Кастомне правило: capitalize + append рік</span><br>
+        <span class="code-keyword">echo</span> <span class="code-string">'c $2 $0 $2 $5'</span> > custom.rule<br>
+        <span class="code-keyword">hashcat</span> <span class="code-function">-m</span> <span class="code-string">0</span> <span class="code-function">-a</span> <span class="code-string">0</span> hashes.txt wordlist.txt <span class="code-function">-r</span> custom.rule
+      </div>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <strong>best64.rule + rockyou.txt</strong> зламують ~70% типових паролів.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

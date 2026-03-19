@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 7: Безпека веб-додатків: OWASP Top 10 (Частина 1) — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 7: Безпека веб-додатків: OWASP Top 10 (Частина 1) — SQL Injection, Broken Access Control, Cryptographic Failures, Burp Suite, OWASP ZAP.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 7. Безпека веб-додатків: OWASP Top 10 (Частина 1) — Основи етичного хакінгу</title>
@@ -62,20 +62,142 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 7 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 7 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Безпека веб-додатків: OWASP Top 10 (Частина 1)</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Ін'єкції (SQLi), недоліки контролю доступу (Broken Access Control), криптографічні збої.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Ця лекція присвячена безпеці веб-додатків — найпоширенішому вектору кібератак у сучасному світі. Студенти ознайомляться з фундацією OWASP та її флагманським проектом Top 10 — класифікацією найкритичніших вразливостей веб-додатків. Ми детально розглянемо перші п'ять категорій: порушення контролю доступу (IDOR, privilege escalation), криптографічні збої (слабкі алгоритми, відкриті дані), ін'єкції (SQL, Command, XSS) — включаючи практичну роботу з SQL Injection.</p>
+        <p>Друга частина лекції зосереджена на небезпечному дизайні та помилках конфігурації (дефолтні паролі, відсутні заголовки безпеки, XXE), а також на інструментах тестування веб-безпеки: Burp Suite (перехоплення та модифікація трафіку), OWASP ZAP (безкоштовний сканер), Nikto, gobuster та nuclei. Студенти навчаться виявляти та експлуатувати вразливості веб-додатків у контрольованому середовищі.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Вступ до безпеки веб-додатків</strong> — HTTP/HTTPS, клієнт-серверна архітектура, поверхня атаки</li>
+          <li><strong>OWASP Top 10: огляд 2021</strong> — Методологія, еволюція, категорії A01-A10</li>
+          <li><strong>A01: Порушення контролю доступу</strong> — IDOR, privilege escalation, path traversal, CORS</li>
+          <li><strong>A02: Криптографічні збої</strong> — Слабкі алгоритми, TLS, зберігання паролів, PII</li>
+          <li><strong>A03: Ін'єкції</strong> — SQL Injection, Command Injection, XSS (Reflected, Stored, DOM)</li>
+          <li><strong>SQL Injection: практика</strong> — UNION, Blind SQLi, SQLMap, параметризовані запити</li>
+          <li><strong>A04-A05: Небезпечний дизайн та помилки конфігурації</strong> — Threat modeling, дефолтні паролі, XXE, security headers</li>
+          <li><strong>Інструменти тестування веб-безпеки</strong> — Burp Suite, OWASP ZAP, Nikto, gobuster, nuclei</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 7</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/7/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.1 — Вступ до безпеки веб-додатків</h3>
+            <p>HTTP, архітектура, поверхня атаки</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.2 — OWASP Top 10: огляд 2021</h3>
+            <p>Методологія, категорії, еволюція</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.3 — A01: Порушення контролю доступу</h3>
+            <p>IDOR, privilege escalation, CORS</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.4 — A02: Криптографічні збої</h3>
+            <p>Алгоритми, TLS, зберігання даних</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.5 — A03: Ін'єкції</h3>
+            <p>SQLi, Command Injection, XSS</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.6 — SQL Injection: практика</h3>
+            <p>UNION, Blind, SQLMap</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.7 — A04-A05: Небезпечний дизайн та конфігурація</h3>
+            <p>Threat modeling, XXE, security headers</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/7/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 7.8 — Інструменти тестування веб-безпеки</h3>
+            <p>Burp Suite, ZAP, Nikto, nuclei</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

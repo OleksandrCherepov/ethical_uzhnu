@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 5.2 — Архітектура Metasploit Framework</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="5">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Архітектура Metasploit Framework</h1>
+      <div class="subtitle">Тема 5.2 — Фреймворк Metasploit та експлуатація</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Історія та версії -->
+    <section class="slide">
+      <h2>Історія та версії</h2>
+      <div class="info-box">
+        <h3>Історія розробки</h3>
+        <ul>
+          <li><strong>2003:</strong> HD Moore створює Metasploit на Perl</li>
+          <li><strong>2007:</strong> Повне переписування на Ruby</li>
+          <li><strong>2009:</strong> Придбано компанією Rapid7</li>
+          <li><strong>Сьогодні:</strong> Metasploit Framework 6.x — стандарт індустрії</li>
+        </ul>
+      </div>
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>Community Edition</h3>
+          <ul>
+            <li>Безкоштовна</li>
+            <li>Open-source (BSD license)</li>
+            <li>CLI msfconsole</li>
+            <li>Понад 2300+ модулів</li>
+            <li>Активна спільнота</li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h3>Metasploit Pro</h3>
+          <ul>
+            <li>Комерційна версія</li>
+            <li>Web UI</li>
+            <li>Автоматизація</li>
+            <li>Звітність</li>
+            <li>Team collaboration</li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h3>Framework</h3>
+          <ul>
+            <li>CLI інтерфейс</li>
+            <li>Найпопулярніша версія</li>
+            <li>Розширюваність</li>
+            <li>Інтеграція з іншими інструментами</li>
+            <li>Скриптування</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Архітектурні компоненти -->
+    <section class="slide">
+      <h2>Архітектурні компоненти</h2>
+      <div class="flow-row">
+        <div class="flow-step card-blue">
+          <strong>Rex</strong><br>
+          <small>Ruby Extension Library<br>Sockets, protocols, SSL</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step card-green">
+          <strong>MSF Core</strong><br>
+          <small>Framework API<br>Sessions, plugins</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step card-yellow">
+          <strong>MSF Base</strong><br>
+          <small>Simplified API<br>Module loading</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step card-purple">
+          <strong>Modules</strong><br>
+          <small>Exploits, payloads<br>Auxiliary, post</small>
+        </div>
+      </div>
+      <div class="two-column" style="margin-top: 30px;">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Структура каталогів</h3>
+            <p><strong>/usr/share/metasploit-framework/</strong></p>
+            <ul>
+              <li><code>modules/</code> — exploits, payloads, auxiliary, post, encoders, nops</li>
+              <li><code>data/</code> — wordlists, templates, exploits DB</li>
+              <li><code>lib/</code> — бібліотеки Rex, MSF Core, MSF Base</li>
+              <li><code>plugins/</code> — розширення функціональності</li>
+              <li><code>scripts/</code> — meterpreter, shell scripts</li>
+              <li><code>tools/</code> — standalone утиліти</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>База даних</h3>
+            <p><strong>PostgreSQL backend</strong></p>
+            <ul>
+              <li><code>msfdb init</code> — ініціалізація БД</li>
+              <li><code>msfdb start</code> — запуск</li>
+              <li><code>db_status</code> — перевірка підключення</li>
+              <li><strong>Workspaces:</strong> ізоляція проєктів</li>
+              <li>Збереження hosts, services, vulns, creds, loot</li>
+              <li>Швидкий пошук та фільтрація</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Інтерфейси -->
+    <section class="slide">
+      <h2>Інтерфейси Metasploit</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Інтерфейс</th>
+            <th>Тип</th>
+            <th>Особливості</th>
+            <th>Використання</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cell-blue"><strong>msfconsole</strong></td>
+            <td>CLI</td>
+            <td>Tab-completion, історія команд, інтеграція з БД</td>
+            <td>Основний інтерфейс, рекомендований</td>
+          </tr>
+          <tr>
+            <td class="cell-green"><strong>Armitage</strong></td>
+            <td>Java GUI</td>
+            <td>Візуалізація мережі, team collaboration, automation</td>
+            <td>Командна робота, візуальний аналіз</td>
+          </tr>
+          <tr>
+            <td class="cell-yellow"><strong>msfd</strong></td>
+            <td>Daemon</td>
+            <td>Віддалений доступ по мережі, багатокористувацький режим</td>
+            <td>Інтеграція з іншими інструментами</td>
+          </tr>
+          <tr>
+            <td class="cell-purple"><strong>MSF Web</strong></td>
+            <td>Web UI</td>
+            <td>Тільки Pro, REST API, звітність</td>
+            <td>Комерційні пентести, менеджмент</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="two-column" style="margin-top: 20px;">
+        <div class="column">
+          <div class="code-block">
+            <div class="code-header">Запуск msfconsole</div>
+            <pre><code><span class="code-comment"># Запуск консолі</span>
+<span class="code-keyword">msfconsole</span>
+
+<span class="code-comment"># Запуск з підключенням до БД</span>
+<span class="code-keyword">msfconsole -q</span>
+
+<span class="code-comment"># Виконати команду та вийти</span>
+<span class="code-keyword">msfconsole -x</span> <span class="code-string">"use exploit/windows/smb/ms17_010_eternalblue; show options"</span>
+
+<span class="code-comment"># Запустити resource script</span>
+<span class="code-keyword">msfconsole -r</span> <span class="code-string">script.rc</span></code></pre>
+          </div>
+        </div>
+        <div class="column">
+          <div class="info-box">
+            <h3>Рекомендований інтерфейс</h3>
+            <p><strong>msfconsole</strong> — найпотужніший та найгнучкіший інтерфейс:</p>
+            <ul>
+              <li>Повний доступ до всіх модулів</li>
+              <li>Tab-completion для команд та шляхів</li>
+              <li>Історія команд (↑/↓)</li>
+              <li>Інтеграція з PostgreSQL</li>
+              <li>Підтримка скриптів (resource files)</li>
+              <li>Найшвидша робота</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Summary -->
+    <section class="slide">
+      <h2>Ключові факти</h2>
+      <div class="three-col-grid">
+        <div class="gradient-box gradient-blue">
+          <h3>Модульність</h3>
+          <p>Архітектура Rex → Core → Base → Modules забезпечує гнучкість та розширюваність</p>
+        </div>
+        <div class="gradient-box gradient-green">
+          <h3>База даних</h3>
+          <p>PostgreSQL зберігає результати сканування, credentials, loot — основа для великих проєктів</p>
+        </div>
+        <div class="gradient-box gradient-purple">
+          <h3>Інтерфейси</h3>
+          <p>msfconsole — стандарт індустрії для exploit development та пентестів</p>
+        </div>
+      </div>
+      <div class="card-yellow" style="margin-top: 30px;">
+        <h3>Чому Metasploit — стандарт індустрії</h3>
+        <ul class="checklist">
+          <li>Найбільша база експлойтів (2300+ модулів)</li>
+          <li>Open-source з активною спільнотою</li>
+          <li>Інтеграція з Nmap, Nessus, Burp Suite</li>
+          <li>Автоматизація через скрипти та resource files</li>
+          <li>Підтримка від Rapid7 та щомісячні оновлення</li>
+          <li>Документація та навчальні ресурси</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

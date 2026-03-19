@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 7.7 — A04-A05: Небезпечний дизайн та помилки конфігурації</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="7">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A04-A05: Небезпечний дизайн та помилки конфігурації</h1>
+      <div class="subtitle">Тема 7.7 — Безпека веб-додатків: OWASP Top 10</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: A04 Insecure Design -->
+    <section class="slide">
+      <h2>A04: Insecure Design — нова категорія 2021</h2>
+
+      <div class="info-box">
+        <strong>Insecure Design</strong> — НОВА категорія у 2021. Фокус на помилках архітектури та дизайну, які не можна виправити ідеальною реалізацією.
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-red">
+            <h3>Проблеми дизайну</h3>
+            <ul>
+              <li>Відсутнє threat modeling</li>
+              <li>Бізнес-логіка без abuse cases</li>
+              <li>Немає rate limiting на критичних функціях</li>
+              <li>Відсутній принцип defense in depth</li>
+              <li>Надмірна довіра до клієнтських перевірок</li>
+              <li>Незахищені recovery flows (скидання пароля)</li>
+            </ul>
+            <p><strong>Приклад:</strong> необмежений password reset → account takeover</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-green">
+            <h3>Secure Design</h3>
+            <ul>
+              <li><strong>Threat Modeling:</strong> STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, DoS, Elevation of Privilege)</li>
+              <li><strong>Abuse Cases:</strong> "Що, якщо користувач зробить X?"</li>
+              <li><strong>Defense in Depth:</strong> кілька рівнів захисту</li>
+              <li><strong>Secure by Default:</strong> безпечні налаштування за замовчуванням</li>
+              <li><strong>Fail Secure:</strong> при помилці → заборонити доступ</li>
+              <li><strong>Least Privilege:</strong> мінімальні права</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: A05 Security Misconfiguration -->
+    <section class="slide">
+      <h2>A05: Security Misconfiguration</h2>
+
+      <div class="info-box">
+        90% додатків тестувалися на misconfiguration. Включає колишню A04 (XXE) з 2017 року.
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-yellow">
+          <h3>Типові помилки</h3>
+          <ul>
+            <li>Дефолтні паролі (admin/admin, root/toor)</li>
+            <li>Debug mode у production</li>
+            <li>Directory listing увімкнений</li>
+            <li>Sample/test додатки не видалені</li>
+            <li>Stack traces у помилках</li>
+            <li>Зайві HTTP методи (PUT, DELETE)</li>
+            <li>Не оновлене ПЗ</li>
+          </ul>
+        </div>
+
+        <div class="card-red">
+          <h3>XXE (XML External Entity)</h3>
+          <div class="code-block">
+            <pre><code><span class="code-comment">&lt;!-- Зловмисний XML --&gt;</span>
+&lt;?xml version=<span class="code-string">"1.0"</span>?&gt;
+&lt;!DOCTYPE foo [
+  &lt;!ENTITY xxe SYSTEM
+    <span class="code-string">"file:///etc/passwd"</span>&gt;
+]&gt;
+&lt;user&gt;&amp;xxe;&lt;/user&gt;</code></pre>
+          </div>
+          <p>Читання файлів сервера, SSRF, DoS (billion laughs)</p>
+        </div>
+
+        <div class="card-blue">
+          <h3>Дефолтні паролі</h3>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Система</th>
+                <th>Логін:Пароль</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Tomcat</td>
+                <td class="cell-red">tomcat:tomcat</td>
+              </tr>
+              <tr>
+                <td>Jenkins</td>
+                <td class="cell-red">(без пароля)</td>
+              </tr>
+              <tr>
+                <td>phpMyAdmin</td>
+                <td class="cell-red">root:(порожній)</td>
+              </tr>
+              <tr>
+                <td>WordPress</td>
+                <td class="cell-yellow">admin:admin</td>
+              </tr>
+              <tr>
+                <td>Router</td>
+                <td class="cell-red">admin:admin</td>
+              </tr>
+            </tbody>
+          </table>
+          <p><strong>Shodan:</strong> тисячі пристроїв з дефолтними credentials!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Security Headers -->
+    <section class="slide">
+      <h2>Security Headers та помилки конфігурації</h2>
+
+      <div class="info-box">
+        Правильні HTTP заголовки — простий, але ефективний захист. 80% сайтів не мають повного набору заголовків безпеки.
+      </div>
+
+      <div class="code-block">
+        <pre><code><span class="code-comment"># Повний набір заголовків безпеки</span>
+Content-Security-Policy: default-src <span class="code-string">'self'</span>; script-src <span class="code-string">'self'</span>; style-src <span class="code-string">'self'</span>
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), camera=(), microphone=()
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-XSS-Protection: 0    <span class="code-comment"># Вимкнути (CSP краще)</span></code></pre>
+      </div>
+
+      <div class="two-column">
+        <div>
+          <div class="card-purple">
+            <h3>Що перевіряти</h3>
+            <ul>
+              <li><strong>securityheaders.com</strong> — швидкий аудит</li>
+              <li><strong>Mozilla Observatory</strong> — комплексний скан</li>
+              <li><strong>Nikto</strong> — сканер misconfiguration</li>
+            </ul>
+
+            <div class="code-block">
+              <pre><code><span class="code-comment"># Перевірка headers</span>
+curl -I https://target.com
+
+<span class="code-comment"># Nikto scan</span>
+nikto -h https://target.com</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-green">
+            <h3>Cloud Misconfiguration</h3>
+            <ul>
+              <li>AWS S3 buckets з публічним доступом</li>
+              <li>Azure Blob Storage без автентифікації</li>
+              <li>GCP Cloud Storage: allUsers</li>
+            </ul>
+
+            <div class="code-block">
+              <pre><code><span class="code-comment"># Пошук відкритих S3 buckets</span>
+aws s3 ls s3://company-backup \
+  --no-sign-request
+
+<span class="code-comment"># Інструменти: S3Scanner, CloudSploit</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Protection -->
+    <section class="slide">
+      <h2>Захист від misconfiguration</h2>
+
+      <div class="two-column">
+        <div>
+          <div class="card-green">
+            <h3>Чеклист захисту</h3>
+            <ul class="checklist">
+              <li>Видалити/змінити дефолтні облікові дані</li>
+              <li>Вимкнути debug mode у production</li>
+              <li>Вимкнути directory listing</li>
+              <li>Налаштувати security headers</li>
+              <li>Видалити sample/test додатки</li>
+              <li>Мінімалізувати error messages</li>
+              <li>Сегментація мережі (додаток ↔ БД)</li>
+              <li>Регулярне оновлення та патчинг</li>
+              <li>Infrastructure as Code (Terraform, Ansible)</li>
+              <li>Автоматичне сканування (nuclei, ScoutSuite)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-blue">
+            <h3>Hardening Guides</h3>
+            <ul>
+              <li><strong>CIS Benchmarks</strong> — стандарти конфігурації</li>
+              <li><strong>OWASP Security Headers Project</strong></li>
+              <li><strong>NIST Configuration Checklists</strong></li>
+              <li><strong>DevSecOps:</strong> інтеграція безпеки у CI/CD</li>
+            </ul>
+
+            <div class="code-block">
+              <pre><code><span class="code-comment"># Nuclei — автоматичний скан</span>
+nuclei -u https://target.com \
+  -t misconfiguration/
+
+<span class="code-comment"># ScoutSuite — аудит хмари</span>
+scout --provider aws</code></pre>
+            </div>
+
+            <div class="warning-box">
+              <strong>Hardening — це процес, не одноразова дія. Автоматизуйте!</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

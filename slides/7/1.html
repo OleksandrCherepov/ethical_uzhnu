@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 7.1 — Вступ до безпеки веб-додатків</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="7">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Вступ до безпеки веб-додатків</h1>
+      <div class="subtitle">Тема 7.1 — Безпека веб-додатків: OWASP Top 10</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Чому веб-додатки — ціль №1 -->
+    <section class="slide">
+      <h2>Чому веб-додатки — ціль №1</h2>
+
+      <div class="info-box" style="margin-bottom: 2rem;">
+        За даними Verizon DBIR 2024, <strong class="highlight">26% усіх витоків даних пов'язані з атаками на веб-додатки.</strong> Веб-поверхня — найбільший вектор атаки.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Причини вразливості</h3>
+            <ul style="margin-top: 1rem; font-size: 0.9em; line-height: 1.6;">
+              <li><strong>Доступні з інтернету 24/7</strong> — постійна експозиція до атакуючих</li>
+              <li><strong>Складна архітектура</strong> — frontend + backend + DB + API + CDN</li>
+              <li><strong>Швидка розробка → недостатнє тестування</strong> — presure to ship fast</li>
+              <li><strong>Сторонні бібліотеки та компоненти</strong> — залежності зі своїми вразливостями</li>
+              <li><strong>Людський фактор</strong> — помилки розробників, copy-paste коду</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-blue">
+            <h3>Статистика 2024</h3>
+            <div style="margin-top: 1rem;">
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">4.7 млрд</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">інтернет-користувачів у світі</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">~200 млн</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">активних веб-сайтів</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">70%</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">додатків мають критичні вразливості (HackerOne)</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">$4.88M</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">середня вартість витоку даних</div>
+              </div>
+              <div class="stat-item">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">$45M</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">виплачено через HackerOne у 2024</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: HTTP: основа веб-комунікації -->
+    <section class="slide">
+      <h2>HTTP: основа веб-комунікації</h2>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-green">
+            <h3>HTTP методи</h3>
+            <table class="comparison-table" style="margin-top: 1rem;">
+              <thead>
+                <tr>
+                  <th>Метод</th>
+                  <th>Опис</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>GET</strong></td>
+                  <td>Отримання ресурсу</td>
+                </tr>
+                <tr>
+                  <td><strong>POST</strong></td>
+                  <td>Надсилання даних</td>
+                </tr>
+                <tr>
+                  <td><strong>PUT</strong></td>
+                  <td>Заміна ресурсу</td>
+                </tr>
+                <tr>
+                  <td><strong>DELETE</strong></td>
+                  <td>Видалення ресурсу</td>
+                </tr>
+                <tr>
+                  <td><strong>PATCH</strong></td>
+                  <td>Часткове оновлення</td>
+                </tr>
+                <tr>
+                  <td><strong>OPTIONS</strong></td>
+                  <td>Допустимі методи (CORS preflight)</td>
+                </tr>
+                <tr>
+                  <td><strong>HEAD</strong></td>
+                  <td>Тільки заголовки</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Статус-коди</h3>
+            <table class="comparison-table" style="margin-top: 1rem;">
+              <thead>
+                <tr>
+                  <th>Код</th>
+                  <th>Значення</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>200 OK</strong></td>
+                  <td class="cell-green">Успіх</td>
+                </tr>
+                <tr>
+                  <td><strong>301/302</strong></td>
+                  <td class="cell-blue">Редирект</td>
+                </tr>
+                <tr>
+                  <td><strong>400</strong></td>
+                  <td class="cell-yellow">Некоректний запит</td>
+                </tr>
+                <tr>
+                  <td><strong>401</strong></td>
+                  <td class="cell-yellow">Не автентифікований</td>
+                </tr>
+                <tr>
+                  <td><strong>403</strong></td>
+                  <td class="cell-red">Заборонено</td>
+                </tr>
+                <tr>
+                  <td><strong>404</strong></td>
+                  <td class="cell-yellow">Не знайдено</td>
+                </tr>
+                <tr>
+                  <td><strong>500</strong></td>
+                  <td class="cell-red">Помилка сервера</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Анатомія HTTP запиту та відповіді -->
+    <section class="slide">
+      <h2>Анатомія HTTP запиту та відповіді</h2>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-purple">
+            <h3>HTTP Запит</h3>
+            <div class="code-block" style="margin-top: 1rem; font-size: 0.8em;">
+GET /api/users/123 HTTP/1.1
+Host: example.com
+Cookie: session=abc123
+Authorization: Bearer eyJhbG...
+User-Agent: Mozilla/5.0
+Accept: application/json
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-blue">
+            <h3>HTTP Відповідь</h3>
+            <div class="code-block" style="margin-top: 1rem; font-size: 0.8em;">
+HTTP/1.1 200 OK
+Content-Type: application/json
+Set-Cookie: session=abc123; HttpOnly
+X-Frame-Options: DENY
+Content-Security-Policy: default-src 'self'
+
+{"id": 123, "name": "Admin"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 2rem;">
+        <strong>⚠️ Важливо:</strong> Кожен заголовок — потенційний вектор атаки. Cookie без <code>HttpOnly</code> → XSS крадіжка сесії. Відсутній <code>CSP</code> → ін'єкція скриптів.
+      </div>
+    </section>
+
+    <!-- Slide 5: Архітектура веб-додатку та поверхня атаки -->
+    <section class="slide">
+      <h2>Архітектура веб-додатку та поверхня атаки</h2>
+
+      <div class="flow-row" style="margin: 1.5rem 0;">
+        <div class="flow-step">
+          <div class="step-title">Браузер</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-title">HTTP/S</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-title">Веб-сервер</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-title">Backend</div>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-step">
+          <div class="step-title">База даних</div>
+        </div>
+      </div>
+
+      <div class="three-col-grid" style="margin-top: 2rem;">
+        <div class="card-red">
+          <h3>Frontend атаки</h3>
+          <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.6;">
+            <li><strong>XSS</strong> (Reflected, Stored, DOM)</li>
+            <li><strong>Clickjacking</strong></li>
+            <li><strong>CSRF</strong></li>
+            <li><strong>Open Redirect</strong></li>
+            <li><strong>Client-side injection</strong></li>
+          </ul>
+        </div>
+
+        <div class="card-yellow">
+          <h3>Backend атаки</h3>
+          <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.6;">
+            <li><strong>SQL Injection</strong></li>
+            <li><strong>Command Injection</strong></li>
+            <li><strong>SSRF</strong></li>
+            <li><strong>File Upload</strong></li>
+            <li><strong>Deserialization</strong></li>
+            <li><strong>SSTI</strong></li>
+          </ul>
+        </div>
+
+        <div class="card-purple">
+          <h3>Інфраструктура</h3>
+          <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.6;">
+            <li><strong>Misconfiguration</strong></li>
+            <li><strong>Default credentials</strong></li>
+            <li><strong>Exposed admin panels</strong></li>
+            <li><strong>Unpatched software</strong></li>
+            <li><strong>XXE</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="success-box" style="margin-top: 2rem;">
+        <strong>Same-Origin Policy (SOP)</strong> — основний механізм безпеки браузера: скрипт з origin A не може читати дані з origin B. <strong>CORS</strong> — контрольоване послаблення SOP.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

