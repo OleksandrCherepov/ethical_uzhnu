@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.1 — Вступ до пост-експлуатації</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Вступ до пост-експлуатації</h1>
+      <div class="subtitle">Тема 9.1 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Що таке пост-експлуатація?</h2>
+
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        Пост-експлуатація починається <strong class="highlight">після отримання початкового доступу</strong>. Це етап, де пентестер демонструє реальний бізнес-вплив компрометації.
+      </div>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step"><div class="step-title">Розвідка</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Сканування</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Експлуатація</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="border-color: var(--accent); box-shadow: 0 0 12px rgba(14,165,233,0.4);"><div class="step-title">Пост-експлуатація</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Звіт</div></div>
+      </div>
+
+      <div class="three-col-grid" style="margin-top: 1.5rem;">
+        <div class="card-red">
+          <h3>Ескалація</h3>
+          <ul style="font-size: 0.82em; margin-top: 0.5rem; line-height: 1.5;">
+            <li>Privilege Escalation</li>
+            <li>Token Impersonation</li>
+            <li>UAC Bypass</li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h3>Збір даних</h3>
+          <ul style="font-size: 0.82em; margin-top: 0.5rem; line-height: 1.5;">
+            <li>Credentials</li>
+            <li>Файли та конфігурації</li>
+            <li>Кейлоггінг</li>
+          </ul>
+        </div>
+        <div class="card-blue">
+          <h3>Рух</h3>
+          <ul style="font-size: 0.82em; margin-top: 0.5rem; line-height: 1.5;">
+            <li>Lateral Movement</li>
+            <li>Pivoting</li>
+            <li>Persistence</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>MITRE ATT&CK: тактики пост-експлуатації</h2>
+
+      <table class="comparison-table" style="font-size: 0.8em; margin-top: 1rem;">
+        <thead>
+          <tr><th>Тактика</th><th>ID</th><th>Приклади технік</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Execution</strong></td><td>TA0002</td><td class="cell-yellow">PowerShell, WMI, scripts</td></tr>
+          <tr><td><strong>Persistence</strong></td><td>TA0003</td><td class="cell-yellow">Registry, services, cron</td></tr>
+          <tr><td><strong>Privilege Escalation</strong></td><td>TA0004</td><td class="cell-red">UAC bypass, kernel exploits</td></tr>
+          <tr><td><strong>Defense Evasion</strong></td><td>TA0005</td><td class="cell-yellow">Process injection, timestomp</td></tr>
+          <tr><td><strong>Credential Access</strong></td><td>TA0006</td><td class="cell-red">LSASS dump, keylogging</td></tr>
+          <tr><td><strong>Discovery</strong></td><td>TA0007</td><td class="cell-blue">Network scan, enum users</td></tr>
+          <tr><td><strong>Lateral Movement</strong></td><td>TA0008</td><td class="cell-red">PsExec, RDP, WinRM</td></tr>
+          <tr><td><strong>Exfiltration</strong></td><td>TA0010</td><td class="cell-purple">C2, DNS tunneling</td></tr>
+        </tbody>
+      </table>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Етика:</strong> Пост-експлуатація повинна бути чітко прописана в Rules of Engagement. Деструктивні дії заборонені. Після тесту — очищення всіх артефактів.
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

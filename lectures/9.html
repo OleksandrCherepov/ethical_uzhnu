@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 9: Пост-експлуатація та Meterpreter — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 9: Пост-експлуатація та Meterpreter — збір інформації, кейлоггінг, ескалація привілеїв, credential harvesting, pivoting.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 9. Пост-експлуатація та Meterpreter — Основи етичного хакінгу</title>
@@ -62,20 +62,142 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 9 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 9 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Пост-експлуатація та Meterpreter</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Дії після отримання доступу, можливості Meterpreter: файли, кейлоггінг, міграція процесів.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Ця лекція присвячена етапу пост-експлуатації — діям після отримання початкового доступу до системи. Студенти вивчать архітектуру оболонки Meterpreter (in-memory execution, encrypted communication, extensible modules), її базові команди та можливості системної розвідки: збір інформації про ОС, мережу, процеси та користувачів.</p>
+        <p>Друга частина лекції охоплює практичні техніки пост-експлуатації: файлові операції та пошук цінних даних (timestomping), кейлоггінг та скріншоти, міграцію процесів та ескалацію привілеїв (getsystem, UAC bypass, token impersonation), credential harvesting (hashdump, Mimikatz/Kiwi, Pass-the-Hash), а також pivoting для латерального руху в корпоративній мережі (autoroute, port forwarding, SOCKS proxy).</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Вступ до пост-експлуатації</strong> — Методологія, цілі, MITRE ATT&CK тактики, етичні аспекти</li>
+          <li><strong>Meterpreter: архітектура та основи</strong> — In-memory execution, payload'и, stager/stage, базові команди</li>
+          <li><strong>Збір інформації про систему</strong> — sysinfo, мережа, процеси, користувачі, post-модулі enumeration</li>
+          <li><strong>Файлові операції та пошук даних</strong> — upload/download, search, timestomping, цінні файли</li>
+          <li><strong>Кейлоггінг, скріншоти та спостереження</strong> — keyscan, screenshot, webcam, audio, browser credentials</li>
+          <li><strong>Міграція процесів та ескалація привілеїв</strong> — migrate, getsystem, UAC bypass, token impersonation, kernel exploits</li>
+          <li><strong>Credential harvesting та хеш-дампінг</strong> — hashdump, Mimikatz/Kiwi, LSASS dump, Pass-the-Hash, крекінг</li>
+          <li><strong>Pivoting та латеральний рух</strong> — autoroute, portfwd, SOCKS proxy, PsExec, WinRM, управління сесіями</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/9.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 9</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/9/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.1 — Вступ до пост-експлуатації</h3>
+            <p>Методологія, цілі, MITRE ATT&CK</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.2 — Meterpreter: архітектура та основи</h3>
+            <p>Payload'и, stager/stage, команди</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.3 — Збір інформації про систему</h3>
+            <p>sysinfo, мережа, процеси, enumeration</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.4 — Файлові операції та пошук даних</h3>
+            <p>upload/download, search, timestomp</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.5 — Кейлоггінг, скріншоти та спостереження</h3>
+            <p>keyscan, screenshot, webcam</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.6 — Міграція та ескалація привілеїв</h3>
+            <p>migrate, getsystem, UAC bypass, tokens</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.7 — Credential harvesting та хеш-дампінг</h3>
+            <p>hashdump, Mimikatz, Pass-the-Hash</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/9/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 9.8 — Pivoting та латеральний рух</h3>
+            <p>autoroute, portfwd, SOCKS, PsExec</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

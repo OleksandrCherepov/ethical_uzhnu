@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.2 — XSS: експлуатація та захист</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>XSS: експлуатація та захист</h1>
+      <div class="subtitle">Тема 8.2 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Payload'и за контекстом -->
+    <section class="slide">
+      <h2>XSS Payload'и за контекстом ін'єкції</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>HTML Body</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+&lt;script&gt;alert(1)&lt;/script&gt;
+&lt;img src=x onerror=alert(1)&gt;
+&lt;svg/onload=alert(1)&gt;
+&lt;details open ontoggle=alert(1)&gt;
+            </div>
+          </div>
+
+          <div class="card-yellow" style="margin-top: 1rem;">
+            <h3>HTML Attribute</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+" onfocus=alert(1) autofocus="
+" onmouseover=alert(1) "
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>JavaScript String</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+'; alert(1); //
+"; alert(1); //
+\'; alert(1); //
+            </div>
+          </div>
+
+          <div class="card-blue" style="margin-top: 1rem;">
+            <h3>URL / href</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+javascript:alert(1)
+data:text/html,&lt;script&gt;
+  alert(1)&lt;/script&gt;
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Обхід фільтрів:</strong> Mixed case (<code>&lt;ScRiPt&gt;</code>), HTML entities (<code>&amp;#97;lert</code>), URL encoding (<code>%3Cscript%3E</code>), null bytes, template literals (<code>alert`1`</code>), конкатенація (<code>window['al'+'ert'](1)</code>).
+      </div>
+    </section>
+
+    <!-- Slide 3: CSP -->
+    <section class="slide">
+      <h2>Content Security Policy (CSP)</h2>
+
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        CSP — HTTP-заголовок, що визначає <strong class="highlight">дозволені джерела контенту</strong>. Найефективніший механізм захисту від XSS на рівні браузера.
+      </div>
+
+      <div class="card-green" style="margin-bottom: 1.5rem;">
+        <h3>Рекомендований CSP (nonce-based)</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.78em;">
+Content-Security-Policy:
+  script-src 'nonce-abc123Random' 'strict-dynamic';
+  default-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  frame-ancestors 'none';
+  base-uri 'self'
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size: 0.82em;">
+        <thead>
+          <tr>
+            <th>Директива</th>
+            <th>Контролює</th>
+            <th>Безпечне значення</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>script-src</code></td>
+            <td>JavaScript</td>
+            <td class="cell-green"><code>'nonce-xxx'</code></td>
+          </tr>
+          <tr>
+            <td><code>default-src</code></td>
+            <td>Fallback</td>
+            <td class="cell-green"><code>'self'</code></td>
+          </tr>
+          <tr>
+            <td><code>frame-ancestors</code></td>
+            <td>Embedding</td>
+            <td class="cell-green"><code>'none'</code></td>
+          </tr>
+          <tr>
+            <td><code>script-src</code></td>
+            <td>JavaScript</td>
+            <td class="cell-red"><code>'unsafe-inline'</code> — НЕБЕЗПЕЧНО!</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: Захист — комплексний підхід -->
+    <section class="slide">
+      <h2>Комплексний захист від XSS</h2>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step">
+          <div class="step-title">Input Validation</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Output Encoding</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">CSP</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Cookie Flags</div>
+        </div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-green">
+            <h3>Output Encoding</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+HTML: &amp;lt; &amp;gt; &amp;amp; &amp;quot;
+JS:   \x3c \x3e \x27
+URL:  encodeURIComponent()
+CSS:  CSS.escape()
+            </div>
+          </div>
+
+          <div class="card-blue" style="margin-top: 1rem;">
+            <h3>Cookie прапорці</h3>
+            <ul style="margin-top: 0.8rem; font-size: 0.85em; line-height: 1.6;">
+              <li><code>HttpOnly</code> — заборона JS-доступу</li>
+              <li><code>Secure</code> — тільки HTTPS</li>
+              <li><code>SameSite=Strict</code> — захист від CSRF</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>DOMPurify (Sanitization)</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+const clean = DOMPurify.sanitize(
+  dirty, {
+  ALLOWED_TAGS: ['b','i','a','p'],
+  ALLOWED_ATTR: ['href']
+});
+            </div>
+          </div>
+
+          <div class="card-yellow" style="margin-top: 1rem;">
+            <h3>Trusted Types (Chrome 83+)</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+CSP: require-trusted-types-for
+  'script'
+
+el.innerHTML =
+  policy.createHTML(input);
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

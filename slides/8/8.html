@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.8 — Практика: XSS-тестування з Burp Suite</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>Практика: XSS-тестування з Burp Suite</h1>
+      <div class="subtitle">Тема 8.8 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Workflow -->
+    <section class="slide">
+      <h2>Workflow тестування XSS</h2>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step">
+          <div class="step-title">1. Mapping</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">2. Reflected</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">3. Stored</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">4. DOM</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">5. PoC</div>
+        </div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Крок 1: Mapping</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.6;">
+              <li>Пройтись по всіх сторінках</li>
+              <li>Заповнити форми маркерами: <code>test123xss</code></li>
+              <li>Знайти де дані відображаються</li>
+              <li>Site map → аналіз reflection points</li>
+            </ul>
+          </div>
+
+          <div class="card-purple" style="margin-top: 1rem;">
+            <h3>Крок 2: Repeater</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+# Ctrl+R → надіслати в Repeater
+GET /search?q=test123xss
+
+# Визначити контекст:
+# HTML body? Attribute? JS?
+# Спробувати payload:
+GET /search?q=&lt;img src=x
+  onerror=alert(1)&gt;
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Крок 3: Stored XSS</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.6;">
+              <li>Знайти форми збереження (коментарі, профіль)</li>
+              <li>Ввести payload у кожне поле</li>
+              <li>Перевірити ВСІ місця відображення</li>
+              <li>Включно з admin panel, email, PDF</li>
+            </ul>
+          </div>
+
+          <div class="card-green" style="margin-top: 1rem;">
+            <h3>Крок 4: DOM Invader</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.6;">
+              <li>Вбудований браузер Burp → DOM Invader ON</li>
+              <li>"Inject canary into sources"</li>
+              <li>Автотрекінг sources → sinks</li>
+              <li>Кнопка "Exploit" для payload</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Intruder та автоматизація -->
+    <section class="slide">
+      <h2>Burp Intruder: автоматизація фазингу</h2>
+
+      <div class="card-purple" style="margin-bottom: 1.5rem;">
+        <h3>Налаштування Intruder для XSS</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+# 1. Ctrl+I → надіслати в Intruder
+# 2. Позначити payload position:
+   GET /search?q=§test§ HTTP/1.1
+
+# 3. Payload type: Simple list
+# 4. Завантажити XSS wordlist:
+   - PortSwigger XSS cheat sheet
+   - SecLists/Fuzzing/XSS/
+   - PayloadsAllTheThings/XSS/
+
+# 5. Grep → Match:
+   alert(  |  onerror=  |  &lt;script
+        </div>
+      </div>
+
+      <div class="two-column">
+        <div class="column">
+          <div class="card-green">
+            <h3>Burp Suite модулі</h3>
+            <ul style="font-size: 0.85em; margin-top: 0.8rem; line-height: 1.6;">
+              <li><strong>Proxy</strong> — перехоплення запитів</li>
+              <li><strong>Repeater</strong> — ручне тестування</li>
+              <li><strong>Intruder</strong> — автоматичний фазинг</li>
+              <li><strong>Collaborator</strong> — out-of-band</li>
+              <li><strong>DOM Invader</strong> — DOM XSS</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-blue">
+            <h3>OWASP ZAP (альтернатива)</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+# Автосканування
+docker run zaproxy/zap-stable \
+  zap-baseline.py \
+  -t https://target.com \
+  -r report.html
+
+# Результати:
+# Alerts → Cross Site Scripting
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: PoC та ресурси -->
+    <section class="slide">
+      <h2>Proof of Concept та ресурси для практики</h2>
+
+      <div class="card-red" style="margin-bottom: 1.5rem;">
+        <h3>Структура PoC для звіту</h3>
+        <div class="two-column" style="margin-top: 0.8rem;">
+          <div class="column">
+            <ol style="font-size: 0.82em; line-height: 1.6;">
+              <li>Тип XSS (Reflected/Stored/DOM)</li>
+              <li>Вразливий endpoint та параметр</li>
+              <li>Мінімальний payload</li>
+            </ol>
+          </div>
+          <div class="column">
+            <ol start="4" style="font-size: 0.82em; line-height: 1.6;">
+              <li>Кроки відтворення</li>
+              <li>Вплив (крадіжка сесії, дані...)</li>
+              <li>Рекомендації щодо виправлення</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size: 0.82em;">
+        <thead>
+          <tr>
+            <th>Ресурс</th>
+            <th>Тип</th>
+            <th>Опис</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PortSwigger Academy</strong></td>
+            <td class="cell-green">Labs</td>
+            <td>XSS labs з рішеннями</td>
+          </tr>
+          <tr>
+            <td><strong>DVWA</strong></td>
+            <td class="cell-blue">App</td>
+            <td>Вразливий додаток для практики</td>
+          </tr>
+          <tr>
+            <td><strong>XSS Game (Google)</strong></td>
+            <td class="cell-purple">CTF</td>
+            <td>Рівні з XSS-челенджами</td>
+          </tr>
+          <tr>
+            <td><strong>HackTheBox</strong></td>
+            <td class="cell-yellow">Labs</td>
+            <td>Web challenges з XSS</td>
+          </tr>
+          <tr>
+            <td><strong>PayloadsAllTheThings</strong></td>
+            <td class="cell-blue">Reference</td>
+            <td>XSS payload database</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <strong>Пам'ятайте:</strong> тестуйте XSS тільки на системах, на які маєте письмовий дозвіл (scope of engagement). Використовуйте лабораторні середовища: DVWA, WebGoat, PortSwigger Academy.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

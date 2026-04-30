@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.3 — Збір інформації про систему</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Збір інформації про систему</h1>
+      <div class="subtitle">Тема 9.3 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Системна розвідка</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Базова інформація</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; sysinfo
+Computer : WIN-TARGET01
+OS       : Windows 10 (Build 19041)
+Arch     : x64
+Domain   : CORP
+
+meterpreter&gt; getuid
+CORP\jsmith
+
+meterpreter&gt; getprivs
+SeChangeNotifyPrivilege
+SeShutdownPrivilege
+...
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>Мережа</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; ipconfig
+Interface 1: 192.168.1.100/24
+Interface 2: 10.0.0.5/24
+
+meterpreter&gt; route
+0.0.0.0 → 192.168.1.1
+10.0.0.0/24 → 10.0.0.1
+
+meterpreter&gt; arp
+192.168.1.1 → aa:bb:cc:dd:ee
+10.0.0.10  → 08:00:27:99:88
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-purple" style="margin-top: 1.5rem;">
+        <h3>Процеси (ps)</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+ PID   Name              Arch  User
+ 552   csrss.exe         x64   NT AUTHORITY\SYSTEM
+ 2816  explorer.exe      x64   CORP\jsmith           ← міграція для keylog
+ 3120  svchost.exe       x64   NT AUTHORITY\SYSTEM   ← цільовий для getsystem
+ 4872  notepad.exe       x64   CORP\jsmith           ← наш процес
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Post-модулі для Enumeration</h2>
+
+      <table class="comparison-table" style="font-size: 0.8em; margin-top: 1rem;">
+        <thead>
+          <tr><th>Модуль</th><th>Збирає</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>post/windows/gather/enum_logged_on_users</code></td><td class="cell-blue">Залоговані користувачі</td></tr>
+          <tr><td><code>post/windows/gather/enum_domain</code></td><td class="cell-purple">Інформація про домен</td></tr>
+          <tr><td><code>post/windows/gather/enum_shares</code></td><td class="cell-blue">SMB shares</td></tr>
+          <tr><td><code>post/windows/gather/enum_applications</code></td><td class="cell-green">Встановлене ПЗ</td></tr>
+          <tr><td><code>post/windows/gather/enum_patches</code></td><td class="cell-yellow">Встановлені патчі (KB)</td></tr>
+          <tr><td><code>post/windows/gather/checkvm</code></td><td class="cell-yellow">Перевірка на VM</td></tr>
+          <tr><td><code>post/windows/gather/enum_services</code></td><td class="cell-green">Запущені сервіси</td></tr>
+        </tbody>
+      </table>
+
+      <div class="card-green" style="margin-top: 1.5rem;">
+        <h3>Використання</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+meterpreter&gt; run post/windows/gather/enum_applications
+# або з msf console:
+msf6&gt; use post/windows/gather/enum_applications
+msf6&gt; set SESSION 1
+msf6&gt; run
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

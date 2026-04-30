@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.5 — A08: Порушення цілісності ПЗ та даних</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A08: Порушення цілісності ПЗ та даних</h1>
+      <div class="subtitle">Тема 8.5 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Insecure Deserialization -->
+    <section class="slide">
+      <h2>Небезпечна десеріалізація</h2>
+
+      <div class="warning-box" style="margin-bottom: 1.5rem;">
+        Десеріалізація ненадійних даних може привести до <strong class="highlight">Remote Code Execution</strong>, Privilege Escalation, DoS та Authentication Bypass.
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h3>PHP</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+// ВРАЗЛИВО
+$obj = unserialize(
+  $_COOKIE['data']
+);
+// __wakeup() або
+// __destruct() → RCE
+
+// БЕЗПЕЧНО
+$obj = json_decode(
+  $_COOKIE['data']
+);
+          </div>
+        </div>
+
+        <div class="card-yellow">
+          <h3>Python</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+# ВРАЗЛИВО
+import pickle
+obj = pickle.loads(data)
+# __reduce__() → RCE
+
+# БЕЗПЕЧНО
+import json
+obj = json.loads(data)
+          </div>
+        </div>
+
+        <div class="card-purple">
+          <h3>Java</h3>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+// ВРАЗЛИВО
+ObjectInputStream ois =
+  new ObjectInputStream(in);
+Object obj = ois.readObject();
+// Gadget chains → RCE
+
+// ysoserial — генерація
+// payload'ів
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <strong>Правило:</strong> НІКОЛИ не десеріалізувати ненадійні дані. Використовувати JSON, protobuf, msgpack замість бінарної серіалізації.
+      </div>
+    </section>
+
+    <!-- Slide 3: CI/CD Integrity -->
+    <section class="slide">
+      <h2>Цілісність CI/CD та Supply Chain</h2>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step">
+          <div class="step-title">Код</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Build</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Test</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Deploy</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Production</div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-bottom: 1.5rem;">
+        Кожен етап — потенційний вектор атаки. Компрометація CI/CD = компрометація продакшну.
+      </div>
+
+      <table class="comparison-table" style="font-size: 0.82em;">
+        <thead>
+          <tr>
+            <th>Вектор атаки</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Poisoned Pipeline</strong></td>
+            <td>Маніпуляція CI/CD конфігурації через PR</td>
+            <td class="cell-red">GitHub Actions ексфільтрація секретів</td>
+          </tr>
+          <tr>
+            <td><strong>Dependency Confusion</strong></td>
+            <td>Public пакет з назвою internal</td>
+            <td class="cell-red">Microsoft, Apple (2021)</td>
+          </tr>
+          <tr>
+            <td><strong>Typosquatting</strong></td>
+            <td>Схожа назва пакету</td>
+            <td class="cell-yellow">npm, PyPI регулярно</td>
+          </tr>
+          <tr>
+            <td><strong>Build Compromise</strong></td>
+            <td>Атака на систему збірки</td>
+            <td class="cell-red">SolarWinds, Codecov</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: SRI та захист -->
+    <section class="slide">
+      <h2>SRI, SLSA та захист цілісності</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-green">
+            <h3>Subresource Integrity (SRI)</h3>
+            <div class="code-block" style="margin-top: 0.8rem; font-size: 0.7em;">
+&lt;!-- Браузер перевіряє hash --&gt;
+&lt;script
+  src="https://cdn.com/lib.js"
+  integrity="sha384-oqVu..."
+  crossorigin="anonymous"&gt;
+&lt;/script&gt;
+
+# Генерація:
+shasum -b -a 384 lib.js |
+  xxd -r -p | base64
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-blue">
+            <h3>SLSA Framework</h3>
+            <p style="font-size: 0.85em; margin-top: 0.8rem; line-height: 1.5;">Supply-chain Levels for Software Artifacts (Google):</p>
+            <ul style="font-size: 0.82em; margin-top: 0.5rem; line-height: 1.6;">
+              <li><strong>L1:</strong> Документація процесу збірки</li>
+              <li><strong>L2:</strong> Hosted build + provenance</li>
+              <li><strong>L3:</strong> Hardened build platform</li>
+              <li><strong>L4:</strong> Two-party review + hermetic build</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <h3 style="margin-bottom: 0.8rem;">Чек-ліст захисту цілісності</h3>
+        <div class="checklist" style="font-size: 0.85em;">
+          <div>Цифрові підписи для оновлень та артефактів</div>
+          <div>SRI для зовнішніх скриптів і стилів</div>
+          <div>Lock-файли + <code>npm ci</code> (strict install)</div>
+          <div>Code review для CI/CD конфігурації</div>
+          <div>Sigstore / cosign для контейнерів</div>
+          <div>Не десеріалізувати ненадійні дані</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

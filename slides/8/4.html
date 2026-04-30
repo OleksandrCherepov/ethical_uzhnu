@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.4 — A07: Помилки ідентифікації та автентифікації</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A07: Помилки ідентифікації та автентифікації</h1>
+      <div class="subtitle">Тема 8.4 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Фактори та вразливості -->
+    <section class="slide">
+      <h2>Фактори автентифікації та типові вразливості</h2>
+
+      <div class="three-col-grid" style="margin-top: 1rem;">
+        <div class="card-green">
+          <h3>Knowledge</h3>
+          <p style="font-size: 0.85em; margin-top: 0.5rem; line-height: 1.5;">Щось, що ви <strong>знаєте</strong></p>
+          <ul style="font-size: 0.8em; margin-top: 0.5rem; line-height: 1.5;">
+            <li>Пароль</li>
+            <li>PIN</li>
+            <li>Секретне питання</li>
+          </ul>
+        </div>
+
+        <div class="card-blue">
+          <h3>Possession</h3>
+          <p style="font-size: 0.85em; margin-top: 0.5rem; line-height: 1.5;">Щось, що ви <strong>маєте</strong></p>
+          <ul style="font-size: 0.8em; margin-top: 0.5rem; line-height: 1.5;">
+            <li>TOTP (Google Auth)</li>
+            <li>FIDO2 ключ</li>
+            <li>Смарт-карта</li>
+          </ul>
+        </div>
+
+        <div class="card-purple">
+          <h3>Inherence</h3>
+          <p style="font-size: 0.85em; margin-top: 0.5rem; line-height: 1.5;">Щось, що ви <strong>є</strong></p>
+          <ul style="font-size: 0.8em; margin-top: 0.5rem; line-height: 1.5;">
+            <li>Відбиток пальця</li>
+            <li>Face ID</li>
+            <li>Голос</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>Типові атаки</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.6;">
+              <li><strong>Credential Stuffing</strong> — бази витечених паролів</li>
+              <li><strong>Brute Force</strong> — перебір (Hydra, Burp)</li>
+              <li><strong>Password Spraying</strong> — 1 пароль, багато акаунтів</li>
+              <li><strong>Session Fixation</strong> — встановлення session ID</li>
+              <li><strong>Session Hijacking</strong> — перехоплення через XSS</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>NIST 800-63B (2024)</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.6;">
+              <li>Мінімум 8 символів, рекомендовано 15+</li>
+              <li><strong>Не</strong> вимагати спецсимволів</li>
+              <li>Перевіряти у базах витоків</li>
+              <li><strong>Не</strong> вимагати періодичної зміни</li>
+              <li>Дозволяти paste (менеджери паролів)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: JWT та OAuth -->
+    <section class="slide">
+      <h2>JWT та OAuth: вразливості</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>JWT атаки</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.7;">
+              <li><strong>alg=none</strong> — підпис не перевіряється</li>
+              <li><strong>RS256→HS256</strong> — confusion з публічним ключем</li>
+              <li><strong>Weak secret</strong> — brute force через hashcat</li>
+              <li><strong>Відсутній exp</strong> — токен ніколи не закінчується</li>
+              <li><strong>kid injection</strong> — маніпуляція Key ID</li>
+            </ul>
+          </div>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.72em;">
+# JWT brute force
+hashcat -m 16500 jwt.txt
+  rockyou.txt
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-yellow">
+            <h3>OAuth 2.0 атаки</h3>
+            <ul style="font-size: 0.82em; margin-top: 0.8rem; line-height: 1.7;">
+              <li><strong>Open Redirect</strong> — маніпуляція redirect_uri</li>
+              <li><strong>CSRF на callback</strong> — відсутній state</li>
+              <li><strong>Token leakage</strong> — access_token у Referer</li>
+              <li><strong>Implicit flow</strong> — токен у URL (deprecated)</li>
+              <li><strong>PKCE bypass</strong> — без code_verifier</li>
+            </ul>
+          </div>
+
+          <div class="info-box" style="margin-top: 0.8rem;">
+            <strong>OAuth 2.1</strong> вимагає PKCE для всіх клієнтів і забороняє Implicit flow.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Захист -->
+    <section class="slide">
+      <h2>Захист автентифікації</h2>
+
+      <div class="flow-row" style="margin: 1rem 0;">
+        <div class="flow-step">
+          <div class="step-title">MFA</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Rate Limit</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Secure Sessions</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Passkeys</div>
+        </div>
+      </div>
+
+      <table class="comparison-table" style="margin-top: 1.5rem; font-size: 0.82em;">
+        <thead>
+          <tr>
+            <th>Вразливість</th>
+            <th>Захист</th>
+            <th>Реалізація</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Credential Stuffing</td>
+            <td class="cell-green">MFA + HIBP check</td>
+            <td>Перевірка у базі витоків при реєстрації</td>
+          </tr>
+          <tr>
+            <td>Brute Force</td>
+            <td class="cell-green">Rate limiting + CAPTCHA</td>
+            <td>5 спроб / 15 хв, progressive delay</td>
+          </tr>
+          <tr>
+            <td>Session Hijacking</td>
+            <td class="cell-green">HttpOnly + Secure</td>
+            <td>CSPRNG, timeout, IP binding</td>
+          </tr>
+          <tr>
+            <td>Слабкі паролі</td>
+            <td class="cell-green">bcrypt/Argon2</td>
+            <td>Salt + cost factor 12+</td>
+          </tr>
+          <tr>
+            <td>Паролі взагалі</td>
+            <td class="cell-green">Passkeys (FIDO2)</td>
+            <td>WebAuthn API, біометрія</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <strong>Passkeys / WebAuthn</strong> — безпарольна автентифікація на основі криптографії з публічним ключем. Підтримується Apple, Google, Microsoft. Фішинг-стійкий фактор.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

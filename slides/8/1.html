@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.1 — XSS: класифікація та механізми</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>XSS: класифікація та механізми</h1>
+      <div class="subtitle">Тема 8.1 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Що таке XSS -->
+    <section class="slide">
+      <h2>Cross-Site Scripting (XSS)</h2>
+
+      <div class="warning-box" style="margin-bottom: 2rem;">
+        XSS — впровадження шкідливого JavaScript у сторінки, що переглядаються іншими користувачами. Порушує <strong class="highlight">Same-Origin Policy</strong> — фундаментальний механізм безпеки браузера.
+      </div>
+
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h3>Reflected XSS</h3>
+          <p style="margin-top: 0.8rem; font-size: 0.85em; line-height: 1.5;">
+            Payload у запиті, відображається у відповіді. Потрібен клік на посилання.
+          </p>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+/search?q=&lt;script&gt;alert(1)&lt;/script&gt;
+          </div>
+        </div>
+
+        <div class="card-purple">
+          <h3>Stored XSS</h3>
+          <p style="margin-top: 0.8rem; font-size: 0.85em; line-height: 1.5;">
+            Payload зберігається на сервері. Атакує <strong>всіх</strong> відвідувачів. Найнебезпечніший.
+          </p>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+Коментар: &lt;img src=x
+  onerror=alert(1)&gt;
+          </div>
+        </div>
+
+        <div class="card-blue">
+          <h3>DOM-based XSS</h3>
+          <p style="margin-top: 0.8rem; font-size: 0.85em; line-height: 1.5;">
+            Вразливість у клієнтському JS. Сервер може <strong>не бачити</strong> payload.
+          </p>
+          <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+el.innerHTML =
+  location.hash.slice(1)
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 2rem;">
+        <strong>CWE-79</strong>: Improper Neutralization of Input During Web Page Generation. OWASP A03:2021 — Injection.
+      </div>
+    </section>
+
+    <!-- Slide 3: Механізми та sources/sinks -->
+    <section class="slide">
+      <h2>DOM XSS: Sources та Sinks</h2>
+
+      <div class="two-column" style="margin-top: 1.5rem;">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Sources (звідки дані)</h3>
+            <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.8;">
+              <li><code>location.hash</code></li>
+              <li><code>location.search</code></li>
+              <li><code>document.URL</code></li>
+              <li><code>document.referrer</code></li>
+              <li><code>window.name</code></li>
+              <li><code>postMessage</code> дані</li>
+              <li><code>localStorage / sessionStorage</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-red">
+            <h3>Sinks (куди потрапляють)</h3>
+            <ul style="margin-top: 1rem; font-size: 0.85em; line-height: 1.8;">
+              <li><code>innerHTML</code> / <code>outerHTML</code></li>
+              <li><code>document.write()</code></li>
+              <li><code>eval()</code></li>
+              <li><code>setTimeout(string)</code></li>
+              <li><code>location.href</code> (javascript:)</li>
+              <li><code>jQuery.html()</code></li>
+              <li><code>insertAdjacentHTML()</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-row" style="margin-top: 2rem;">
+        <div class="flow-step">
+          <div class="step-title">Source</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Без валідації</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Sink</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">XSS!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Порівняння та наслідки -->
+    <section class="slide">
+      <h2>Порівняння типів XSS та наслідки</h2>
+
+      <table class="comparison-table" style="margin-top: 1.5rem; font-size: 0.85em;">
+        <thead>
+          <tr>
+            <th>Критерій</th>
+            <th>Reflected</th>
+            <th>Stored</th>
+            <th>DOM-based</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Збереження</strong></td>
+            <td class="cell-yellow">Ні</td>
+            <td class="cell-red">Так (сервер)</td>
+            <td class="cell-yellow">Ні</td>
+          </tr>
+          <tr>
+            <td><strong>Масштаб</strong></td>
+            <td class="cell-yellow">1 жертва</td>
+            <td class="cell-red">Усі відвідувачі</td>
+            <td class="cell-yellow">1 жертва</td>
+          </tr>
+          <tr>
+            <td><strong>WAF захист</strong></td>
+            <td class="cell-green">Можливий</td>
+            <td class="cell-green">Можливий</td>
+            <td class="cell-red">Неефективний</td>
+          </tr>
+          <tr>
+            <td><strong>Виявлення</strong></td>
+            <td class="cell-yellow">Середня</td>
+            <td class="cell-green">Низька</td>
+            <td class="cell-red">Висока</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="two-column" style="margin-top: 2rem;">
+        <div class="column">
+          <div class="gradient-box gradient-red">
+            <h3>Наслідки XSS</h3>
+            <ul style="margin-top: 0.8rem; font-size: 0.85em; line-height: 1.6;">
+              <li>Крадіжка cookies та сесій</li>
+              <li>Keylogging (паролі, картки)</li>
+              <li>Фішинг у контексті довіреного сайту</li>
+              <li>Defacement сторінки</li>
+              <li>Криптомайнінг у браузері</li>
+              <li>XSS Worm (самопоширення)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="gradient-box gradient-purple">
+            <h3>Відомі інциденти</h3>
+            <ul style="margin-top: 0.8rem; font-size: 0.85em; line-height: 1.6;">
+              <li><strong>Samy Worm</strong> (2005) — 1M профілів MySpace</li>
+              <li><strong>TweetDeck</strong> (2014) — self-retweet worm</li>
+              <li><strong>British Airways</strong> (2018) — 380K карток, £20M штрафу</li>
+              <li><strong>Fortnite</strong> (2019) — крадіжка акаунтів</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 8.6 — A09: Недоліки журналювання та моніторингу</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="8">
+  <div class="slide-deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active title-slide">
+      <h1>A09: Недоліки журналювання та моніторингу</h1>
+      <div class="subtitle">Тема 8.6 — Безпека веб-додатків: OWASP Top 10 (Частина 2)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <!-- Slide 2: Проблема -->
+    <section class="slide">
+      <h2>Чому логування критично важливе</h2>
+
+      <div class="two-column" style="margin-top: 1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>IBM CDBR 2024</h3>
+            <div style="margin-top: 1rem;">
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 2em; font-weight: 700; color: var(--accent);">194</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">днів — середній час виявлення витоку</div>
+              </div>
+              <div class="stat-item" style="margin-bottom: 1rem;">
+                <div style="font-size: 2em; font-weight: 700; color: var(--accent);">64</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">дні — середній час стримування</div>
+              </div>
+              <div class="stat-item">
+                <div style="font-size: 2em; font-weight: 700; color: var(--accent);">108</div>
+                <div style="font-size: 0.85em; opacity: 0.8;">днів швидше з SIEM + SOC</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="card-green">
+            <h3>Що логувати</h3>
+            <ul style="font-size: 0.85em; margin-top: 0.8rem; line-height: 1.7;">
+              <li>Логін / логаут / невдалі спроби</li>
+              <li>Відмови в доступі</li>
+              <li>Помилки валідації вводу</li>
+              <li>Зміни привілеїв</li>
+              <li>Аномальні бізнес-операції</li>
+              <li>Зміни конфігурації</li>
+            </ul>
+          </div>
+
+          <div class="card-red" style="margin-top: 1rem;">
+            <h3>Чого НЕ логувати</h3>
+            <ul style="font-size: 0.85em; margin-top: 0.5rem; line-height: 1.7;">
+              <li>Паролі, токени, API keys</li>
+              <li>Номери карток, SSN</li>
+              <li>PII без маскування</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: SIEM системи -->
+    <section class="slide">
+      <h2>SIEM та структуровані логи</h2>
+
+      <div class="card-blue" style="margin-bottom: 1.5rem;">
+        <h3>Структурований лог (JSON)</h3>
+        <div class="code-block" style="margin-top: 0.8rem; font-size: 0.75em;">
+{
+  "timestamp": "2024-03-15T14:23:01Z",
+  "level": "WARN",
+  "event": "authentication.failed",
+  "source_ip": "192.168.1.100",
+  "username": "admin",
+  "reason": "invalid_password",
+  "attempt_count": 5
+}
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size: 0.82em;">
+        <thead>
+          <tr>
+            <th>SIEM</th>
+            <th>Тип</th>
+            <th>Особливості</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Splunk</strong></td>
+            <td>Комерційний</td>
+            <td class="cell-purple">Лідер ринку, SPL, дорогий</td>
+          </tr>
+          <tr>
+            <td><strong>Elastic SIEM</strong></td>
+            <td>OSS + комерц.</td>
+            <td class="cell-blue">ELK Stack (Elasticsearch + Kibana)</td>
+          </tr>
+          <tr>
+            <td><strong>Wazuh</strong></td>
+            <td>Open Source</td>
+            <td class="cell-green">HIDS + SIEM, безкоштовний</td>
+          </tr>
+          <tr>
+            <td><strong>MS Sentinel</strong></td>
+            <td>Cloud (Azure)</td>
+            <td class="cell-blue">KQL, AI-powered</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Slide 4: Incident Response -->
+    <section class="slide">
+      <h2>Алертинг та Incident Response</h2>
+
+      <div class="card-yellow" style="margin-bottom: 1.5rem;">
+        <h3>Типові правила алертингу</h3>
+        <ul style="font-size: 0.85em; margin-top: 0.8rem; line-height: 1.6;">
+          <li>&gt;5 невдалих логінів за 5 хв → <strong>Можливий brute force</strong></li>
+          <li>Логін з нової геолокації → <strong>Підозрілий доступ</strong></li>
+          <li>SQL-помилки у логах → <strong>Можлива SQLi</strong></li>
+          <li>Сплеск 4xx/5xx → <strong>Сканування або атака</strong></li>
+          <li>Зміна конфігурації поза робочими годинами → <strong>Компрометація</strong></li>
+        </ul>
+      </div>
+
+      <div class="flow-row" style="margin: 1.5rem 0;">
+        <div class="flow-step">
+          <div class="step-title">Detection</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Triage</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Containment</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Eradication</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <div class="step-title">Recovery</div>
+        </div>
+      </div>
+
+      <div class="success-box" style="margin-top: 1.5rem;">
+        <h3 style="margin-bottom: 0.5rem;">Запобігання</h3>
+        <div class="checklist" style="font-size: 0.85em;">
+          <div>Централізоване логування (SIEM)</div>
+          <div>JSON-формат для автоматичного парсингу</div>
+          <div>Захист логів від підробки (append-only)</div>
+          <div>Retention мінімум 90 днів</div>
+          <div>Регулярне тестування алертів (Purple Team)</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls">
+    <button id="btn-prev" onclick="prev()">&#8592;</button>
+    <button id="btn-next" onclick="next()">&#8594;</button>
+  </div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>
