@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Практико-орієнтована модель підготовки спеціалістів з ІБ</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- SLIDE 1: Title -->
+      <section id="title" class="section-divider">
+        <h1>Практико-орієнтована модель підготовки спеціалістів з інформаційної безпеки</h1>
+        <div class="title-meta">
+          <p>Черепов О.</p>
+          <p>Кафедра ТЕІБ, Ужгородський національний університет &bull; 2026</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: Agenda -->
+      <section id="agenda">
+        <h2>План доповіді</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <ul class="text-lg">
+                <li><strong>Проблема:</strong> глобальний дефіцит кадрів</li>
+                <li><strong>Аналіз:</strong> чому традиційна модель не працює</li>
+                <li><strong>Фреймворки:</strong> NICE, ECSF, ABCDE</li>
+                <li><strong>Міжнародний досвід:</strong> 9 країн та організацій</li>
+              </ul>
+            </div>
+            <div>
+              <ul class="text-lg">
+                <li><strong>Інструменти:</strong> Cyber Range, CTF, стажування</li>
+                <li><strong>Педагогіка:</strong> Блум, Kolb, ECAC</li>
+                <li><strong>Архітектура:</strong> модель 30/50/20</li>
+                <li><strong>Висновки</strong> та рекомендації</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: Divider — Problem -->
+      <section id="div-problem" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-color);"></i> Проблема</h1>
+        <p>Глобальний дефіцит кадрів у сфері кібербезпеки</p>
+      </section>
+
+      <!-- SLIDE 4: Global deficit stats -->
+      <section id="deficit-global">
+        <h2>Масштаб проблеми (ISC2, 2025)</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+            <div class="stat-box">
+              <span class="number">10.2M</span>
+              <span class="label">Глобальна потреба</span>
+            </div>
+            <div class="stat-box">
+              <span class="number">5.5M</span>
+              <span class="label">Наявна робоча сила</span>
+            </div>
+            <div class="stat-box" style="border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.08);">
+              <span class="number" style="color: #f87171;">4.76M</span>
+              <span class="label">Дефіцит (+19% YoY)</span>
+            </div>
+            <div class="stat-box" style="border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.08);">
+              <span class="number" style="color: #fbbf24;">88%</span>
+              <span class="label">Зазнали інцидентів через дефіцит навичок</span>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            <div class="card card-red">
+              <h3><i class="fa-solid fa-users-slash"></i> Нестача персоналу</h3>
+              <ul>
+                <li><strong>67%</strong> організацій мають нестачу кадрів</li>
+                <li><strong>48%</strong> компаній шукають спеціаліста <strong>> 6 місяців</strong></li>
+                <li>Найбільший дефіцит — Азія-Тихоокеанський регіон (3.4M)</li>
+              </ul>
+            </div>
+            <div class="card card-yellow">
+              <h3><i class="fa-solid fa-flag"></i> Україна</h3>
+              <ul>
+                <li>~<strong>2 000</strong> випускників спец. 125 щороку</li>
+                <li><strong>47</strong> ЗВО готують фахівців</li>
+                <li><strong>21</strong> професійний стандарт (Держспецзв'язку)</li>
+                <li>Ключова проблема — <span class="highlight">якість, не кількість</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">Джерело: ISC2 Cybersecurity Workforce Study 2025, Fortinet Skills Gap Report 2025</div>
+      </section>
+
+      <!-- SLIDE 5: Divider — Traditional model -->
+      <section id="div-traditional" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-graduation-cap" style="color: var(--accent-yellow);"></i> Традиційна модель</h1>
+        <p>Чому лекційно-семінарська форма не працює</p>
+      </section>
+
+      <!-- SLIDE 6: Bloom's taxonomy comparison -->
+      <section id="bloom">
+        <h2>Таксономія Блума: розрив між освітою та практикою</h2>
+        <div class="content">
+          <table>
+            <thead>
+              <tr>
+                <th>Рівень</th>
+                <th>Традиційний формат</th>
+                <th>Практико-орієнтований</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Запам'ятовування</strong></td>
+                <td>Лекції, підручники</td>
+                <td>Лекції + інтерактивні демо</td>
+              </tr>
+              <tr>
+                <td><strong>Розуміння</strong></td>
+                <td>Семінари</td>
+                <td>Розбір реальних інцидентів</td>
+              </tr>
+              <tr>
+                <td><strong>Застосування</strong></td>
+                <td>Стандартні лабораторні</td>
+                <td>CTF, Cyber Range, віртуальні лаби</td>
+              </tr>
+              <tr>
+                <td><strong>Аналіз</strong></td>
+                <td>Курсові роботи</td>
+                <td>Форензика, аналіз малварі</td>
+              </tr>
+              <tr>
+                <td><strong>Оцінювання</strong></td>
+                <td>Іспити, тести</td>
+                <td>Аудит безпеки реальних систем</td>
+              </tr>
+              <tr>
+                <td><strong>Створення</strong></td>
+                <td>Дипломна робота</td>
+                <td>Пентест-звіти, захисні рішення</td>
+              </tr>
+            </tbody>
+          </table>
+          <blockquote>
+            <p>Традиційне навчання охоплює переважно 2 нижні рівні, тоді як професійна діяльність вимагає вищих рівнів когнітивної діяльності.</p>
+            <cite>— IEEE, Optimizing Cyber Security Education, 2020</cite>
+          </blockquote>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: Divider — Frameworks -->
+      <section id="div-frameworks" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-layer-group" style="color: var(--accent-purple);"></i> Фреймворки компетенцій</h1>
+        <p>NICE, ECSF, ABCDE — спільна мова освіти та індустрії</p>
+      </section>
+
+      <!-- SLIDE 8: NICE + ECSF -->
+      <section id="frameworks">
+        <h2>Міжнародні рамкові моделі</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div class="card card-blue">
+              <h3>NICE Framework</h3>
+              <p><strong>NIST SP 800-181 Rev.1</strong></p>
+              <ul>
+                <li><strong>7</strong> категорій, <strong>52</strong> робочі ролі</li>
+                <li>Tasks, Knowledge, Skills</li>
+                <li>Основа для NSA CAE, SANS, ISC2</li>
+                <li>NICE Challenge Project — віртуалізовані задачі</li>
+              </ul>
+            </div>
+            <div class="card card-green">
+              <h3>ECSF (ENISA)</h3>
+              <p><strong>European Cybersecurity Skills Framework</strong></p>
+              <ul>
+                <li><strong>12</strong> професійних ролей</li>
+                <li>Workplace-driven + Learning-driven</li>
+                <li>Гармонізація освіти по ЄС</li>
+                <li>Релевантний для євроінтеграції України</li>
+              </ul>
+            </div>
+            <div class="card card-purple">
+              <h3>ABCDE (ACM)</h3>
+              <p><strong>Competency Model, 2023</strong></p>
+              <ul>
+                <li><strong>A</strong>ctor — ролі</li>
+                <li><strong>B</strong>ehaviour — задачі</li>
+                <li><strong>C</strong>ontext — середовище</li>
+                <li><strong>D</strong>egree — складність</li>
+                <li><strong>E</strong>mployability — готовність</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: Divider — International experience -->
+      <section id="div-international" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-globe" style="color: var(--secondary-color);"></i> Міжнародний досвід</h1>
+        <p>Практики 9 країн та організацій</p>
+      </section>
+
+      <!-- SLIDE 10: USA + Israel -->
+      <section id="usa-israel">
+        <h2>США та Ізраїль</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card card-blue">
+              <h3><i class="fa-solid fa-flag-usa"></i> США</h3>
+              <ul>
+                <li><strong>NCAE-C:</strong> 429 акредитованих ЗВО (NSA)</li>
+                <li><strong>CyberCorps SFS:</strong> стипендія за держслужбу</li>
+                <li><strong>SANS CyberStart:</strong> гейміфіковане навчання</li>
+                <li>Модель: <span class="highlight">освіта + сертифікація + служба</span></li>
+              </ul>
+            </div>
+            <div class="card card-yellow">
+              <h3><i class="fa-solid fa-shield-halved"></i> Ізраїль</h3>
+              <ul>
+                <li><strong>Unit 8200:</strong> відбір з 16 років (математика, криптографія)</li>
+                <li>Реальні кібероперації з <strong>18 років</strong></li>
+                <li><strong>90%</strong> high-tech сектору — з армії</li>
+                <li><strong>1/3</strong> CTO кіберстартапів — з Unit 8200</li>
+                <li>Модель: <span class="highlight">рання ідентифікація + бойовий досвід</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 11: UK + Estonia -->
+      <section id="uk-estonia">
+        <h2>Великобританія та Естонія</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card card-red">
+              <h3><i class="fa-solid fa-crown"></i> Великобританія — CyberFirst</h3>
+              <ul>
+                <li><strong>260 000</strong> студентів у <strong>2 500</strong> школах (з 2016)</li>
+                <li>Стипендія <strong>£4 000/рік</strong> за бакалаврат</li>
+                <li>Літня академія (1-й рік) + стажування (2-й рік)</li>
+                <li><strong>180+</strong> індустріальних партнерів + GCHQ</li>
+              </ul>
+            </div>
+            <div class="card card-green">
+              <h3><i class="fa-solid fa-laptop-code"></i> Естонія — від дитсадка до НАТО</h3>
+              <ul>
+                <li>Мета: <strong>10 000</strong> кіберталантів за 10 років</li>
+                <li><strong>CR14:</strong> кіберполігон (NATO Innovation Award)</li>
+                <li><strong>CCDCOE (Tallinn):</strong> 39 країн, координація навчань</li>
+                <li><strong>Locked Shields:</strong> 38 країн, 5 500 систем, live-fire</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 12: Singapore + Others -->
+      <section id="singapore-others">
+        <h2>Сінгапур, Південна Корея, Австралія, ЄС</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+            <div class="card card-purple">
+              <h3><i class="fa-solid fa-building-columns"></i> Сінгапур (CSA)</h3>
+              <ul>
+                <li><strong>$50M</strong> — план Cyber TIG на 3 роки</li>
+                <li>SG Cyber Associates — навчання не-кіберспеціалістів</li>
+                <li><strong>10 000</strong> місць ISC2 сертифікації</li>
+              </ul>
+            </div>
+            <div class="card card-yellow">
+              <h3><i class="fa-solid fa-bolt"></i> Південна Корея (KISA)</h3>
+              <ul>
+                <li><strong>K-Shield</strong> — підготовка топових кіберексперків</li>
+                <li>Кейс-орієнтоване навчання (MOU з ISC2)</li>
+              </ul>
+            </div>
+            <div class="card card-blue">
+              <h3><i class="fa-solid fa-kangaroo"></i> Австралія (ASD)</h3>
+              <ul>
+                <li><strong>ASD Cyber Skills Framework</strong></li>
+                <li>CyberEXP — інтерактивні симуляції</li>
+                <li><strong>200</strong> партнерів у Joint Cyber Centres</li>
+              </ul>
+            </div>
+            <div class="card card-green">
+              <h3><i class="fa-solid fa-flag-eu"></i> ЄС — ECSC (ENISA)</h3>
+              <ul>
+                <li>CTF для молоді <strong>14–25</strong> років</li>
+                <li>Навички → <strong>80%</strong> вакансій з кібербезпеки</li>
+                <li>International Cybersecurity Challenge</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 13: Key lessons from international -->
+      <section id="international-lessons">
+        <h2>Ключові уроки міжнародного досвіду</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <ul class="text-lg">
+                <li><i class="fa-solid fa-child" style="color: var(--secondary-color);"></i> <strong>Рання ідентифікація</strong> — більшість починають зі школи</li>
+                <li><i class="fa-solid fa-coins" style="color: var(--accent-yellow);"></i> <strong>Державне фінансування</strong> є критичним фактором успіху</li>
+                <li><i class="fa-solid fa-handshake" style="color: var(--primary-color);"></i> <strong>Партнерство з індустрією</strong> — стажування обов'язкові</li>
+              </ul>
+            </div>
+            <div>
+              <ul class="text-lg">
+                <li><i class="fa-solid fa-book" style="color: var(--accent-purple);"></i> <strong>Стандартизація</strong> через фреймворки (NICE, ECSF)</li>
+                <li><i class="fa-solid fa-trophy" style="color: var(--accent-color);"></i> <strong>Змагальний елемент</strong> — CTF як мотиватор та відбір</li>
+                <li><i class="fa-solid fa-arrows-spin" style="color: var(--secondary-color);"></i> <strong>Наскрізність</strong> — від школи до професійного розвитку</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 14: Divider — Tools -->
+      <section id="div-tools" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-toolbox" style="color: var(--primary-color);"></i> Інструменти моделі</h1>
+        <p>Cyber Range, CTF, проєктне навчання, сертифікація</p>
+      </section>
+
+      <!-- SLIDE 15: Cyber Range + CTF -->
+      <section id="tools">
+        <h2>Кіберполігони та CTF-змагання</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card card-blue">
+              <h3><i class="fa-solid fa-server"></i> Cyber Range</h3>
+              <ul>
+                <li>Віртуалізоване середовище реальної інфраструктури</li>
+                <li>Red Team / Blue Team сценарії</li>
+                <li>Масштабованість та відтворюваність</li>
+                <li>Платформи: TryHackMe, Hack The Box, CybExer</li>
+              </ul>
+              <blockquote style="margin-top: 8px;">
+                <p>Ефективні на всіх рівнях освіти — від школи до магістратури</p>
+                <cite>— Springer, 2025</cite>
+              </blockquote>
+            </div>
+            <div class="card card-green">
+              <h3><i class="fa-solid fa-flag-checkered"></i> CTF (Capture The Flag)</h3>
+              <ul>
+                <li>Підвищують <strong>мотивацію</strong> більше ніж традиційні вправи</li>
+                <li>Збільшують <strong>впевненість</strong> та практичні навички</li>
+                <li>Storytelling-інтеграція покращує результати</li>
+              </ul>
+              <div class="card card-yellow" style="margin-top: 8px;">
+                <p><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-yellow);"></i> <strong>Обмеження:</strong> CTF не замінюють глибокого теоретичного навчання — потрібна інтеграція обох підходів</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">Джерело: Schafeitel-Tähtinen et al., Wiley 2025 (Фінляндія vs Чехія)</div>
+      </section>
+
+      <!-- SLIDE 16: Internships + Certifications -->
+      <section id="internships">
+        <h2>Стажування та сертифікація</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <h3><i class="fa-solid fa-briefcase" style="color: var(--primary-color);"></i> Професійна інтеграція</h3>
+              <ul>
+                <li><strong>Студентські кібербригади</strong> (КУБГ) — робота на об'єктах КІ</li>
+                <li><strong>re/start in cyber</strong> (Мінцифри) — безкоштовне навчання</li>
+                <li><strong>Bug Bounty</strong> — легальний пошук вразливостей</li>
+                <li><strong>SOC-стажування</strong> — Security Operations Center</li>
+              </ul>
+            </div>
+            <div>
+              <h3><i class="fa-solid fa-certificate" style="color: var(--secondary-color);"></i> Сертифікації у навчальному плані</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Сертифікація</th>
+                    <th>Рівень</th>
+                    <th>Практика</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>CompTIA Security+</td>
+                    <td>Базовий</td>
+                    <td>Теоретичний іспит</td>
+                  </tr>
+                  <tr>
+                    <td>CEH</td>
+                    <td>Середній</td>
+                    <td>Практичний іспит</td>
+                  </tr>
+                  <tr>
+                    <td>OSCP</td>
+                    <td>Просунутий</td>
+                    <td>24-год практика</td>
+                  </tr>
+                  <tr>
+                    <td>BTL1</td>
+                    <td>Середній</td>
+                    <td>Практичний іспит</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 17: Divider — Architecture -->
+      <section id="div-architecture" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-cubes" style="color: var(--primary-color);"></i> Архітектура моделі</h1>
+        <p>Триблокова структура 30 / 50 / 20</p>
+      </section>
+
+      <!-- SLIDE 18: Model architecture -->
+      <section id="architecture">
+        <h2>Запропонована архітектура</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div class="card card-blue" style="text-align: center;">
+              <h3>Теоретичне ядро</h3>
+              <p style="font-size: 28pt; font-weight: 700; color: #38bdf8;">30%</p>
+              <ul>
+                <li>Криптографія</li>
+                <li>Мережеві технології</li>
+                <li>Безпека ОС</li>
+                <li>Правові аспекти</li>
+                <li>Стандарти (OWASP, NIST)</li>
+              </ul>
+            </div>
+            <div class="card card-green" style="text-align: center;">
+              <h3>Практичне ядро</h3>
+              <p style="font-size: 28pt; font-weight: 700; color: #4ade80;">50%</p>
+              <ul>
+                <li>Cyber Range</li>
+                <li>CTF-змагання</li>
+                <li>Red/Blue Team</li>
+                <li>Цифрова форензика</li>
+                <li>Пентест-проєкти</li>
+              </ul>
+            </div>
+            <div class="card card-purple" style="text-align: center;">
+              <h3>Професійна інтеграція</h3>
+              <p style="font-size: 28pt; font-weight: 700; color: #a78bfa;">20%</p>
+              <ul>
+                <li>Стажування на КІ</li>
+                <li>Кібербригади</li>
+                <li>Сертифікація</li>
+                <li>Bug Bounty</li>
+                <li>Менторство</li>
+              </ul>
+            </div>
+          </div>
+          <div class="flow-row" style="margin-top: 16px;">
+            <div class="flow-step">Фреймворки<br><small>NICE / ECSF</small></div>
+            <div class="flow-arrow">&harr;</div>
+            <div class="flow-step">Таксономія Блума<br><small>Kolb / ECAC</small></div>
+            <div class="flow-arrow">&harr;</div>
+            <div class="flow-step">Індустрія<br><small>Роботодавці + Держава</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 19: Semester distribution -->
+      <section id="semesters">
+        <h2>Розподіл за семестрами</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+            <div class="card card-blue">
+              <h3>1–2 семестр</h3>
+              <p><strong>Фундамент</strong></p>
+              <ul>
+                <li>Мережі, ОС, програмування</li>
+                <li>Введення у кібербезпеку</li>
+              </ul>
+              <p style="text-align: center; margin-top: 8px;">
+                <span style="color: #38bdf8; font-weight: 700;">60%</span> теорія /
+                <span style="color: #4ade80; font-weight: 700;">40%</span> практика
+              </p>
+            </div>
+            <div class="card card-green">
+              <h3>3–4 семестр</h3>
+              <p><strong>Спеціалізація</strong></p>
+              <ul>
+                <li>Криптографія, веб-безпека</li>
+                <li>CTF, віртуальні лаби</li>
+                <li>CompTIA Security+</li>
+              </ul>
+              <p style="text-align: center; margin-top: 8px;">
+                <span style="color: #38bdf8; font-weight: 700;">40%</span> /
+                <span style="color: #4ade80; font-weight: 700;">60%</span>
+              </p>
+            </div>
+            <div class="card card-purple">
+              <h3>5–6 семестр</h3>
+              <p><strong>Поглиблення</strong></p>
+              <ul>
+                <li>Пентест, форензика</li>
+                <li>Cyber Range, проєкти</li>
+                <li>CEH / OSCP</li>
+              </ul>
+              <p style="text-align: center; margin-top: 8px;">
+                <span style="color: #38bdf8; font-weight: 700;">20%</span> /
+                <span style="color: #4ade80; font-weight: 700;">80%</span>
+              </p>
+            </div>
+            <div class="card card-yellow">
+              <h3>7–8 семестр</h3>
+              <p><strong>Інтеграція</strong></p>
+              <ul>
+                <li>Стажування (SOC, КІ)</li>
+                <li>Дипломний пентест</li>
+                <li>Кібербригади</li>
+              </ul>
+              <p style="text-align: center; margin-top: 8px;">
+                <span style="color: #4ade80; font-weight: 700;">100%</span> практика
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 20: Divider — Conclusions -->
+      <section id="div-conclusions" class="section-divider" data-state="is-section-divider">
+        <h1><i class="fa-solid fa-bullseye" style="color: var(--secondary-color);"></i> Висновки</h1>
+      </section>
+
+      <!-- SLIDE 21: Conclusions -->
+      <section id="conclusions">
+        <h2>Ключові висновки</h2>
+        <div class="content">
+          <ul class="text-lg">
+            <li>Дефіцит <strong>4.76M</strong> фахівців — це проблема <span class="highlight">якості підготовки</span>, не лише кількості</li>
+            <li>Міжнародні фреймворки (<strong>NICE, ECSF</strong>) дають спільну мову для побудови програм на основі <strong>робочих ролей</strong></li>
+            <li>CTF та Cyber Range підвищують <strong>мотивацію та навички</strong>, але мають доповнюватися теорією</li>
+            <li>Оптимальне співвідношення: <span class="highlight">30% теорія / 50% практика / 20% професійна інтеграція</span></li>
+            <li>Українські ініціативи (<strong>кібербригади, re/start in cyber</strong>) — приклади успішного впровадження</li>
+            <li>Ключ до успіху — <strong>партнерство ЗВО + Індустрія + Держава</strong> (трикутник знань)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SLIDE 22: Thank you -->
+      <section id="thanks" class="section-divider">
+        <h1>Дякую за увагу!</h1>
+        <p class="text-xl">Черепов О. &bull; Кафедра ТЕІБ, УжНУ</p>
+        <p class="text-muted" style="margin-top: 20px;">Запитання?</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      controls: true,
+      progress: true,
+      slideNumber: true,
+      hash: true,
+      transition: 'slide',
+      center: false,
+      width: 1920,
+      height: 1080
+    });
+  </script>
+</body>
+</html>
