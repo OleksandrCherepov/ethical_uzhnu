@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.2 — Психологія соціальної інженерії</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Психологія соціальної інженерії</h1>
+      <div class="subtitle">Тема 11.2 — Принципи Чалдіні, biases, моделі Hadnagy і Mouton</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>System 1 vs System 2 (Kahneman, 2011)</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>System 1 — швидке</h3>
+            <ul style="font-size:0.88em;line-height:1.6;margin-top:0.5rem;">
+              <li>Автоматичне, інтуїтивне</li>
+              <li>Емоційне, асоціативне</li>
+              <li>Не потребує енергії</li>
+              <li><strong class="highlight">Ціль соц.інженера</strong></li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>System 2 — повільне</h3>
+            <ul style="font-size:0.88em;line-height:1.6;margin-top:0.5rem;">
+              <li>Аналітичне, свідоме</li>
+              <li>Логічне, критичне</li>
+              <li>Енергоємне</li>
+              <li><strong>Захист жертви</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        <strong>Тактика атаки:</strong> Тиск часу, страх, авторитет — все, що утримує жертву в System 1 і блокує перехід до критичного аналізу.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>6+1 принципів Чалдіні (Influence, 1984 + Pre-Suasion, 2016)</h2>
+      <table class="comparison-table" style="font-size:0.78em;">
+        <thead><tr><th>Принцип</th><th>Механізм</th><th>Приклад атаки</th></tr></thead>
+        <tbody>
+          <tr><td class="cell-blue"><strong>Reciprocity</strong></td><td>Обов'язок повернути послугу</td><td>«Я полагодив доступ, дайте OTP»</td></tr>
+          <tr><td class="cell-blue"><strong>Commitment</strong></td><td>Малий крок → великий крок</td><td>Спершу email, потім пароль, потім MFA</td></tr>
+          <tr><td class="cell-blue"><strong>Social Proof</strong></td><td>«Всі так роблять»</td><td>«73% колег уже оновили пароль»</td></tr>
+          <tr><td class="cell-red"><strong>Authority</strong></td><td>Підкорення владі</td><td>CEO fraud, «з СБУ», «з банку»</td></tr>
+          <tr><td class="cell-blue"><strong>Liking</strong></td><td>Симпатія, спільність</td><td>OSINT хобі → small talk</td></tr>
+          <tr><td class="cell-red"><strong>Scarcity</strong></td><td>Дефіцит = цінність</td><td>«24 год до блокування»</td></tr>
+          <tr><td class="cell-purple"><strong>Unity</strong> (2016)</td><td>Спільна ідентичність</td><td>«Я теж випускник КПІ»</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>Експеримент Мілгрема (1961)</h2>
+      <div class="gradient-box gradient-red">
+        <h3 style="color:white;">65% учасників підкорилися наказам «вченого» завдавати удари струмом</h3>
+        <p style="margin-top:1rem;">Навіть чуючи крики «жертви» (актора). Формальний титул і білий халат вимикали критичне мислення.</p>
+      </div>
+      <div class="info-box" style="margin-top:1.5rem;">
+        <strong>Висновок для SE:</strong> Authority bias — найпотужніший важіль. «Я Іван Петрович з СБУ» працює надійніше за технічний експлойт.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Когнітивні упередження</h2>
+      <div class="three-col-grid">
+        <div class="card-purple">
+          <h3>Halo effect</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;"><strong>29%</strong> фішинг-атак. Позитив від однієї характеристики → довіра до всього (Гарвард в темі → довіра до листа).</p>
+        </div>
+        <div class="card-purple">
+          <h3>Hyperbolic discounting</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;"><strong>28%</strong> атак. «Виграй AirPods зараз» &gt; «$1000 через рік». Купони, миттєві знижки.</p>
+        </div>
+        <div class="card-purple">
+          <h3>Confirmation bias</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">Очікуєш доставку DHL — отримуєш «DHL-листа». Атака під відомі очікування жертви.</p>
+        </div>
+        <div class="card-pink">
+          <h3>Urgency bias</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">Часовий тиск редукує когнітивну рефлексію. «Дій зараз!» паралізує System 2.</p>
+        </div>
+        <div class="card-pink">
+          <h3>Anchoring</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">Перша інформація = якір. «Ваш акаунт зламано!» — і всі наступні інструкції некритично сприймаються.</p>
+        </div>
+        <div class="card-pink">
+          <h3>Optimism bias</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">«Зі мною такого не станеться». Пояснює, чому навіть навчені користувачі продовжують клікати.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Цикл Hadnagy (4 фази атаки)</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>1. Information Gathering</strong><br>
+          <span style="font-size:0.82em;">OSINT, LinkedIn, breach-бази<br><em>«60% успіху»</em></span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>2. Hook</strong><br>
+          <span style="font-size:0.82em;">Pretexting, легенда<br><em>amygdala hijacking</em></span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>3. Play</strong><br>
+          <span style="font-size:0.82em;">Експлуатація довіри<br>Compliance без підозр</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>4. Exit</strong><br>
+          <span style="font-size:0.82em;">Вихід без слідів<br>Жертва «зробила добре»</span>
+        </div>
+      </div>
+      <div class="success-box" style="margin-top:1.5rem;">
+        <strong>Mouton SE Attack Framework</strong> (IEEE ISSA 2014) — академічна онтологічна модель: Attacker → Goal → Target ID → Info Gathering → Approach → Relationship → Exploitation → Debrief. Основа для SEADM-детекторів.
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

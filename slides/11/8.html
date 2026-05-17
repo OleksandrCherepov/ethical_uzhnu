@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.8 — Захист від соціальної інженерії</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Захист від соціальної інженерії</h1>
+      <div class="subtitle">Тема 11.8 — DMARC, FIDO2, awareness, NIS2, EU AI Act</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Багатошарова стратегія захисту</h2>
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h3>Технічний</h3>
+          <ul style="font-size:0.85em;line-height:1.6;margin-top:0.5rem;">
+            <li>SPF/DKIM/DMARC</li>
+            <li>FIDO2 / Passkeys</li>
+            <li>EDR / XDR</li>
+            <li>AI-фільтри (Abnormal)</li>
+            <li>DNS-фільтрація</li>
+          </ul>
+        </div>
+        <div class="card-yellow">
+          <h3>Організаційний</h3>
+          <ul style="font-size:0.85em;line-height:1.6;margin-top:0.5rem;">
+            <li>Helpdesk-протоколи</li>
+            <li>Vendor verification</li>
+            <li>Callback verification</li>
+            <li>Two-person rule</li>
+            <li>Just culture</li>
+          </ul>
+        </div>
+        <div class="card-blue">
+          <h3>Освітній</h3>
+          <ul style="font-size:0.85em;line-height:1.6;margin-top:0.5rem;">
+            <li>Phishing simulations</li>
+            <li>Just-in-time training</li>
+            <li>SLAM method</li>
+            <li>Microlearning</li>
+            <li>Targeted training</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>SPF + DKIM + DMARC</h2>
+      <div class="algorithm-step">
+        <strong>SPF</strong> (RFC 7208) — DNS TXT, які IP можуть слати від домену.<br>
+        <code>v=spf1 ip4:192.0.2.0/24 include:_spf.google.com -all</code>
+      </div>
+      <div class="algorithm-step">
+        <strong>DKIM</strong> (RFC 6376) — криптографічний підпис у заголовку (мінімум RSA-2048). Ротація — раз на 6 міс.
+      </div>
+      <div class="algorithm-step">
+        <strong>DMARC</strong> (RFC 7489) — поверх SPF+DKIM. Політика: <code>p=none</code> / <code>quarantine</code> / <code>reject</code>.<br>
+        <code>v=DMARC1; p=reject; rua=mailto:dmarc@ex.com; adkim=s; aspf=s</code>
+      </div>
+      <div class="success-box" style="margin-top:1.2rem;">
+        <strong>Gmail + Yahoo мандат (02.2024):</strong> для 5000+ листів/добу — обов'язкові SPF, DKIM <em>і</em> DMARC. Покриття DMARC топ-1M доменів зросло з ~40% до ~67% за рік.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Phishing-resistant MFA: FIDO2 / Passkeys</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Чому SMS/TOTP/Push обходяться</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li>AiTM перехоплює реверс-проксі</li>
+              <li>Push fatigue → Uber 2022</li>
+              <li>10K+ організацій постраждали (MS 2023)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-green">
+            <h3>FIDO2 / WebAuthn</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li>Прив'язка до <strong>origin</strong></li>
+              <li>Приватний ключ у TPM/Secure Enclave</li>
+              <li>YubiKey 5 ($50), Feitian ($25)</li>
+              <li>Passkeys 2024: 800M+ акаунтів Google</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:1.2rem;">
+        <strong>CISA Phishing-Resistant MFA Guide:</strong> 1) FIDO2/PIV — обов'язково для high-value · 2) App + number matching · 3) SMS/voice — last resort.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Security Awareness: метрики KnowBe4 2024</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>Baseline</strong><br>
+          <div style="font-size:2em;color:var(--accent);font-weight:700;">34.3%</div>
+          <span style="font-size:0.82em;">PPP без навчання</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>90 днів</strong><br>
+          <div style="font-size:2em;color:var(--accent);font-weight:700;">18.9%</div>
+          <span style="font-size:0.82em;">після симуляцій</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>12 місяців</strong><br>
+          <div style="font-size:2em;color:var(--accent);font-weight:700;">4.6%</div>
+          <span style="font-size:0.82em;">регулярна програма</span>
+        </div>
+      </div>
+      <div class="success-box" style="margin-top:1.5rem;">
+        <strong>Report Rate</strong> важливіший за Click Rate: якщо 30% клікнули, але 80% повідомили — атаку швидко блокують. Це <em>human firewall</em>.
+      </div>
+      <div class="info-box" style="margin-top:1rem;">
+        <strong>Вендори:</strong> KnowBe4 (65K+ клієнтів) · Proofpoint · Cofense · SANS · Hoxhunt · NINJIO.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>SLAM Method + helpdesk після MGM</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-purple">
+            <h3>SLAM (HIPAA Journal)</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.4rem;">
+              <li><strong>S</strong>ender — повна email-адреса</li>
+              <li><strong>L</strong>inks — навести курсор</li>
+              <li><strong>A</strong>ttachments — підозра</li>
+              <li><strong>M</strong>essage — граматика, тон, тиск</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>Helpdesk-протоколи</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.4rem;">
+              <li>Multi-factor identity (ID + manager + ticket)</li>
+              <li>Callback на номер з HR-системи</li>
+              <li>Video verification для passkey reset</li>
+              <li>Manager approval для MFA-resets</li>
+              <li>Logging усіх identity-перевірок</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Стандарти 2024–2026</h2>
+      <table class="comparison-table" style="font-size:0.78em;">
+        <thead><tr><th>Документ</th><th>Сфера</th><th>Вимога</th></tr></thead>
+        <tbody>
+          <tr><td><strong>NIST SP 800-50r1</strong> (2024)</td><td>Learning Program</td><td>Learn → Assess → Improve</td></tr>
+          <tr><td><strong>NIST SP 800-63B Rev.4</strong></td><td>Аутентифікація</td><td>Phishing-resistant для AAL3</td></tr>
+          <tr><td><strong>ISO/IEC 27001:2022</strong></td><td>ISMS</td><td>Annex A.6.3</td></tr>
+          <tr><td><strong>PCI DSS v4.0</strong></td><td>Платежі</td><td>Req. 12.6</td></tr>
+          <tr><td><strong>NIS2</strong> (EU 2024)</td><td>Critical infra</td><td>~150K організацій ЄС</td></tr>
+          <tr><td><strong>DORA</strong> (EU 2025)</td><td>Фінсектор</td><td>ICT awareness + TLPT</td></tr>
+          <tr><td><strong>EU AI Act</strong> Art.50</td><td>AI</td><td>Маркування deepfake (02.08.2026)</td></tr>
+        </tbody>
+      </table>
+      <div class="info-box" style="margin-top:1rem;">
+        <strong>Україна:</strong> Закон №2163-VIII, Закон №2297-VI, Указ №447/2021, Постанова НБУ №95, Конвенція Будапешт. Законопроєкт №8153 — санкції до 20 млн грн / 8% виручки.
+      </div>
+    </section>
+
+    <section class="slide title-slide">
+      <h1>Ключовий висновок</h1>
+      <div class="subtitle">Захист працює лише як комбінація трьох шарів</div>
+      <p style="margin-top:1.5rem;">DMARC + FIDO2 + EDR (технічне) + helpdesk-протоколи (організаційне) + awareness-тренінг (людське) = PPP падає з 34% до 4–5%</p>
+      <p style="margin-top:1.5rem;font-style:italic;">Жоден з шарів окремо не працює.<br>Усі разом — працюють.</p>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

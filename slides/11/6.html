@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.6 — Реальні кейси 2020–2025</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Реальні кейси 2020–2025</h1>
+      <div class="subtitle">Тема 11.6 — Vishing, MFA fatigue, AiTM, infostealers</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Vishing на helpdesk: MGM &amp; Caesars 2023</h2>
+      <table class="comparison-table" style="font-size:0.8em;">
+        <thead><tr><th>Інцидент</th><th>Дата</th><th>Вектор</th><th>Збитки</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Twitter</strong></td><td>15.07.2020</td><td>Vishing на IT (фейкова VPN)</td><td class="cell-yellow">130 акаунтів, $118K BTC</td></tr>
+          <tr><td><strong>Robinhood</strong></td><td>03.11.2021</td><td>Vishing на customer support</td><td class="cell-yellow">~7 млн користувачів</td></tr>
+          <tr><td><strong>MGM Resorts</strong></td><td>09.2023</td><td>10-хв vishing на helpdesk</td><td class="cell-red">$100+ млн, 6 ТБ</td></tr>
+          <tr><td><strong>Caesars</strong></td><td>09.2023</td><td>Vishing на IT-vendor</td><td class="cell-red">$15 млн викуп</td></tr>
+        </tbody>
+      </table>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        Усі чотири — <strong>Scattered Spider / UNC3944</strong>. Англомовні підлітки + soft skills + ретельна OSINT-розвідка через LinkedIn.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>MFA Fatigue: Lapsus$ і наступники</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>Lapsus$</strong><br>
+          <span style="font-size:0.82em;">2021–2022<br>Microsoft, Nvidia<br>Samsung, Okta<br>$15–50K інсайдерам</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>Uber</strong><br>
+          <span style="font-size:0.82em;">15.09.2022<br>18-річний хакер<br>WhatsApp «IT»<br>G-Suite, AWS, vSphere</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>Cisco</strong><br>
+          <span style="font-size:0.82em;">24.05.2022<br>Google sync паролі<br>+ vishing<br>2.8 ГБ Yanluowang</span>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:1.5rem;">
+        <strong>Загальна схема:</strong> credentials з infostealer/inside → MFA push bombing → vishing/WhatsApp «I am IT» → жертва approve → доступ.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>AiTM / PhaaS / Infostealers — масштабні витоки</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>AiTM / Smishing</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li><strong>Twilio 0ktapus (08.2022)</strong> — 209 клієнтів + 130 компаній</li>
+              <li><strong>Activision (12.2022)</strong> — smishing HR, 20K записів</li>
+              <li><strong>Retool (08.2023)</strong> — deepfake voice, $15M crypto</li>
+              <li><em>Cloudflare відбив — FIDO2 hardware keys</em></li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>Credentials через infostealers</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li><strong>Colonial Pipeline (05.2021)</strong> — leaked VPN без MFA, $4.4M</li>
+              <li><strong>Snowflake (04–06.2024)</strong> — 160+ організацій, AT&amp;T 109M, Ticketmaster 560M</li>
+              <li><strong>Change Healthcare (02.2024)</strong> — 100M+ осіб, $22M викуп, $2B+ збитків</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Український контекст: APT-кампанії</h2>
+      <div class="algorithm-step">
+        <strong>WhisperGate / HermeticWiper (01–02.2022):</strong> destructive wipers через spear-phishing держслужбовців, накопичені credentials, компрометацію постачальників.
+      </div>
+      <div class="algorithm-step">
+        <strong>Industroyer2 (04.2022) + блекаут (10.2022):</strong> Sandworm проти енергетики, синхронізовано з ракетними ударами.
+      </div>
+      <div class="algorithm-step">
+        <strong>Kyivstar (12.12.2023):</strong> phishing → перебування з травня 2023 → wiper знищив ~40% інфраструктури. Не працювали повітряні тривоги у Києві.
+      </div>
+      <div class="algorithm-step">
+        <strong>Gamaredon / Armageddon (ФСБ Крим):</strong> постійний spear-phishing держустанов, ЗСУ. Ексфільтрація за хвилини після кліку.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>CERT-UA H1 2025: статистика</h2>
+      <div class="three-col-grid">
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">3 018</div>
+          <p style="font-size:0.85em;">кіберінцидентів<br>(+17% до H2 2024)</p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">27%</div>
+          <p style="font-size:0.85em;">фішинг<br>(найбільша категорія)</p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">34%</div>
+          <p style="font-size:0.85em;">атак на ОМС/громади</p>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:1.5rem;">
+        <strong>Активні UAC-кластери:</strong> UAC-0218 (HOMESTEEL), UAC-0226 (GIFTEDCROOK), UAC-0102 (фейкові UKR.NET), UAC-0050 (RemcosRAT), WRECKSTEEL (03.2025).
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

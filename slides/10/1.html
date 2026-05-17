@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.1 — Вступ до Persistence</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Вступ до Persistence</h1>
+      <div class="subtitle">Тема 10.1 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Persistence: навіщо і як</h2>
+      <div class="info-box" style="margin-bottom: 1.5rem;">
+        <strong>Persistence</strong> — техніки збереження доступу до системи після перезавантаження, зміни паролів або інших подій. MITRE ATT&CK: <strong class="highlight">TA0003</strong>.
+      </div>
+      <div class="three-col-grid">
+        <div class="card-red">
+          <h3>Boot/Logon</h3>
+          <ul style="font-size:0.82em;margin-top:0.5rem;line-height:1.5;"><li>Registry Run Keys</li><li>Startup Folder</li><li>Services</li><li>Scheduled Tasks</li></ul>
+        </div>
+        <div class="card-purple">
+          <h3>Event-based</h3>
+          <ul style="font-size:0.82em;margin-top:0.5rem;line-height:1.5;"><li>WMI Subscription</li><li>COM Hijacking</li><li>Image File Execution</li><li>AppInit DLLs</li></ul>
+        </div>
+        <div class="card-blue">
+          <h3>Linux</h3>
+          <ul style="font-size:0.82em;margin-top:0.5rem;line-height:1.5;"><li>Cron Jobs</li><li>.bashrc / .profile</li><li>SSH Authorized Keys</li><li>Systemd Services</li></ul>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        <strong>Етика:</strong> Документувати кожний механізм persistence. Після пентесту — обов'язково видалити всі backdoor'и (cleanup).
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>MITRE ATT&CK: TA0003 Persistence</h2>
+      <table class="comparison-table" style="font-size:0.8em;margin-top:1rem;">
+        <thead><tr><th>ID</th><th>Техніка</th><th>Платформа</th><th>Привілеї</th></tr></thead>
+        <tbody>
+          <tr><td>T1547.001</td><td>Registry Run Keys</td><td>Windows</td><td class="cell-green">User / Admin</td></tr>
+          <tr><td>T1053.005</td><td>Scheduled Task</td><td>Windows</td><td class="cell-yellow">Admin</td></tr>
+          <tr><td>T1543.003</td><td>Windows Service</td><td>Windows</td><td class="cell-red">Admin</td></tr>
+          <tr><td>T1546.003</td><td>WMI Event Subscription</td><td>Windows</td><td class="cell-red">Admin</td></tr>
+          <tr><td>T1053.003</td><td>Cron</td><td>Linux</td><td class="cell-green">User / Root</td></tr>
+          <tr><td>T1098.004</td><td>SSH Authorized Keys</td><td>Linux</td><td class="cell-green">User</td></tr>
+          <tr><td>T1543.002</td><td>Systemd Service</td><td>Linux</td><td class="cell-red">Root</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

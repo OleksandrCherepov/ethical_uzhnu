@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.6 — Як працюють антивіруси</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Як працюють антивіруси</h1>
+      <div class="subtitle">Тема 10.6 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Багаторівневий захист</h2>
+      <table class="comparison-table" style="font-size:0.78em;margin-top:1rem;">
+        <thead><tr><th>Рівень</th><th>Метод</th><th>Коли працює</th><th>Проти</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1. Signature</strong></td><td>Хеші + byte patterns</td><td>Скан файлу</td><td class="cell-green">Відоме malware</td></tr>
+          <tr><td><strong>2. Heuristic</strong></td><td>Структура файлу, entropy</td><td>Скан файлу</td><td class="cell-yellow">Packers, anomalії</td></tr>
+          <tr><td><strong>3. Behavioral</strong></td><td>Моніторинг поведінки</td><td>Runtime</td><td class="cell-red">Ін'єкції, мережа</td></tr>
+          <tr><td><strong>4. Sandbox</strong></td><td>Ізольоване виконання</td><td>Перед запуском</td><td class="cell-red">Zero-day</td></tr>
+          <tr><td><strong>5. Cloud/ML</strong></td><td>Хмарний ML-аналіз</td><td>Постійно</td><td class="cell-red">Невідоме malware</td></tr>
+          <tr><td><strong>6. AMSI</strong></td><td>Перехоплення скриптів</td><td>PS, VBS, .NET</td><td class="cell-red">Скриптові атаки</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>AMSI та EDR</h2>
+      <div class="two-column" style="margin-top:1rem;">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>AMSI (Win 10+)</h3>
+            <div class="flow-row" style="margin:0.8rem 0;font-size:0.8em;">
+              <div class="flow-step"><div class="step-title" style="font-size:0.8em;">PowerShell</div></div>
+              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-step"><div class="step-title" style="font-size:0.8em;">amsi.dll</div></div>
+              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-step"><div class="step-title" style="font-size:0.8em;">Defender</div></div>
+              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-step"><div class="step-title" style="font-size:0.8em;">Block?</div></div>
+            </div>
+            <p style="font-size:0.82em;">Сканує <strong>розшифрований</strong> скрипт перед виконанням. Бачить фінальний код незалежно від обфускації.</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>EDR — наступне покоління</h3>
+            <ul style="font-size:0.82em;margin-top:0.8rem;line-height:1.6;">
+              <li><strong>Process telemetry</strong></li>
+              <li><strong>API hooking</strong> — перехоплення syscalls</li>
+              <li><strong>Memory scanning</strong></li>
+              <li><strong>Threat hunting</strong></li>
+              <li><strong>Auto response</strong> — ізоляція хоста</li>
+            </ul>
+            <p style="font-size:0.78em;margin-top:0.5rem;opacity:0.8;">CrowdStrike, Defender for Endpoint, SentinelOne, Carbon Black</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.3 — Фішинг та його варіації</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Фішинг та його варіації</h1>
+      <div class="subtitle">Тема 11.3 — Email, vishing, smishing, quishing, AiTM</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Класифікація фішингу за каналом</h2>
+      <table class="comparison-table" style="font-size:0.78em;">
+        <thead><tr><th>Тип</th><th>Канал</th><th>Тренд 2024–2025</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Email phishing</strong></td><td>Масова розсилка</td><td class="cell-yellow">CTR 0.1–1%</td></tr>
+          <tr><td><strong>Spear phishing</strong></td><td>Точково через OSINT</td><td class="cell-red">LLM-CTR 54% vs 12%</td></tr>
+          <tr><td><strong>Whaling / BEC</strong></td><td>Email на C-suite</td><td class="cell-red">$2.77B втрат 2024</td></tr>
+          <tr><td><strong>Vishing</strong></td><td>Голос (телефон)</td><td class="cell-red">+442% H2 2024</td></tr>
+          <tr><td><strong>Smishing</strong></td><td>SMS</td><td class="cell-yellow">35% усіх phishing</td></tr>
+          <tr><td><strong>Quishing</strong></td><td>QR-коди</td><td class="cell-red">+900% з 2021</td></tr>
+          <tr><td><strong>Angler phishing</strong></td><td>Соцмережі</td><td class="cell-yellow">Фейкові support-акаунти</td></tr>
+          <tr><td><strong>Clone / Reply-chain</strong></td><td>Email-thread</td><td class="cell-yellow">Hijacking</td></tr>
+          <tr><td><strong>Pharming</strong></td><td>DNS-poisoning</td><td class="cell-yellow">URL без зміни</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>Анатомія фішингового email</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Sender Spoofing</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li><strong>Display name:</strong> "CEO &lt;attacker@gmail.com&gt;"</li>
+              <li><strong>Lookalike:</strong> <code>paypa1.com</code></li>
+              <li><strong>Homograph:</strong> <code>аpple.com</code> (cyrillic а)</li>
+              <li><strong>Subdomain:</strong> <code>microsoft.com.evil.com</code></li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Subject Lines</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li>«URGENT: Action Required»</li>
+              <li>«Message from CEO»</li>
+              <li>«Suspicious login from Moscow»</li>
+              <li>«Account suspended in 24h»</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:1.2rem;">
+        <strong>Payload 2024–2025:</strong> AiTM-link (домінує) · HTML/SVG attachment · ISO+LNK → PowerShell · HTA · PDF з QR
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Phishing-as-a-Service (PhaaS)</h2>
+      <div class="info-box" style="margin-bottom:1.5rem;">
+        Сервісна індустрія: підписки <strong>$100–$1000/міс</strong>, мінімум технічних навичок. Обходять MFA через AiTM-проксі.
+      </div>
+      <table class="comparison-table" style="font-size:0.82em;">
+        <thead><tr><th>Kit</th><th>Частка ринку</th><th>Ціна</th><th>Особливості</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Tycoon 2FA</strong></td><td class="cell-red">~89%</td><td>$120/10 днів</td><td>Storm-1747, browser fingerprinting</td></tr>
+          <tr><td><strong>EvilProxy</strong></td><td>~8%</td><td>$400/міс</td><td>Apple, Google, Facebook, MS</td></tr>
+          <tr><td><strong>Mamba 2FA</strong></td><td>3%</td><td>$250/міс</td><td>Socket.IO для real-time</td></tr>
+          <tr><td><strong>Greatness</strong></td><td>—</td><td>—</td><td>Microsoft 365-фокус</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>AiTM: як обходить MFA</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>Victim</strong><br>
+          <span style="font-size:0.82em;">Вводить логін<br>+ пароль + OTP</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>Evilginx</strong><br>
+          <span style="font-size:0.82em;">Reverse-proxy<br>Транзит запиту</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>Real Site</strong><br>
+          <span style="font-size:0.82em;">Microsoft / Google<br>Видає session cookie</span>
+        </div>
+        <div class="flow-arrow">&larr;</div>
+        <div class="flow-step">
+          <strong>Attacker</strong><br>
+          <span style="font-size:0.82em;">Імпортує cookie<br>Сесія = доступ</span>
+        </div>
+      </div>
+      <div class="gradient-box gradient-purple" style="margin-top:1.5rem;">
+        <p><strong>Захист — лише phishing-resistant MFA</strong> (FIDO2/WebAuthn). Бо ключ прив'язаний до origin (схема + домен + порт), і реверс-проксі не може підмінити origin браузера.</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>MFA Fatigue / Push Bombing</h2>
+      <div class="algorithm-step">
+        <strong>1.</strong> Зловмисник має валідні credentials (з phishing або infostealer)
+      </div>
+      <div class="algorithm-step">
+        <strong>2.</strong> Викликає <strong>50–100 push-нотифікацій</strong> за вечір
+      </div>
+      <div class="algorithm-step">
+        <strong>3.</strong> Жертва втомлюється або помиляється — натискає «Approve»
+      </div>
+      <div class="algorithm-step">
+        <strong>4.</strong> Часто + vishing: «Доброго вечора, це Олексій з IT — підтвердіть push»
+      </div>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        <strong>Кейс Uber (вересень 2022):</strong> 18-річний з Lapsus$ → купив credentials → MFA-bombing → WhatsApp «I am Uber IT» → доступ до G-Suite, Slack, AWS, vSphere, HackerOne.
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

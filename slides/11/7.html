@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.7 — Інструменти: SET, Gophish, Evilginx</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Інструменти атак</h1>
+      <div class="subtitle">Тема 11.7 — SET, Gophish, Evilginx (для авторизованого пентесту)</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Social-Engineer Toolkit (SET)</h2>
+      <div class="info-box" style="margin-bottom:1rem;">
+        <strong>SET v8.0.3</strong> (TrustedSec, Дейв Кеннеді, 2009). Python 3, 2M+ завантажень. У Kali: <code>/usr/share/set/</code>. Запуск: <code>sudo setoolkit</code>.
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Website Attack Vectors</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li>Credential Harvester (Site Cloner)</li>
+              <li>Tabnabbing</li>
+              <li>Web Jacking (iframe-overlay)</li>
+              <li>Multi-Attack Web</li>
+              <li>HTA Attack (PowerShell)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-blue">
+            <h3>Інші модулі</h3>
+            <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+              <li>Spear-Phishing (PDF/DOCX payload)</li>
+              <li>Infectious Media Generator (USB)</li>
+              <li>Mass Mailer (SMTP, Gmail)</li>
+              <li>QRCode Generator</li>
+              <li>Powershell Attack Vectors</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:1.2rem;">
+        <strong>Обмеження:</strong> не клонує SPA (React/Angular) · CSP блокує iframe · Google Safe Browsing блокує клонів за години.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Gophish — корпоративний phishing-фреймворк</h2>
+      <div class="info-box" style="margin-bottom:1rem;">
+        <strong>Gophish v0.12.1</strong>: Go single binary, SQLite, REST API + web UI. Admin порт 3333 (HTTPS), phishing — порт 80.
+      </div>
+      <table class="comparison-table" style="font-size:0.8em;">
+        <thead><tr><th>Об'єкт</th><th>Призначення</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sending Profile</strong></td><td>SMTP (SendGrid, Mailgun, SES, O365)</td></tr>
+          <tr><td><strong>Email Template</strong></td><td>HTML з <code>{{.FirstName}}</code>, <code>{{.URL}}</code></td></tr>
+          <tr><td><strong>Landing Page</strong></td><td>Capture Passwords, redirect на справжній сайт</td></tr>
+          <tr><td><strong>Users &amp; Groups</strong></td><td>Імпорт CSV</td></tr>
+          <tr><td><strong>Campaigns</strong></td><td>Profile + Template + Landing + Group + Launch</td></tr>
+        </tbody>
+      </table>
+      <div class="success-box" style="margin-top:1.2rem;">
+        <strong>Tracking:</strong> 1×1 px pixel (open) + UUID-link (click) → стани Sent → Opened → Clicked → Submitted → Reported.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Evilginx 2/3 — AiTM reverse-proxy</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>Victim</strong><br>
+          <span style="font-size:0.82em;">Логін + пароль<br>+ справжній MFA</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>Evilginx</strong><br>
+          <span style="font-size:0.82em;">Phishlet YAML<br>Regex заміна доменів</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>Real Site</strong><br>
+          <span style="font-size:0.82em;">Видає session<br>cookie</span>
+        </div>
+        <div class="flow-arrow">&larr;</div>
+        <div class="flow-step">
+          <strong>Attacker</strong><br>
+          <span style="font-size:0.82em;">Перехоплює cookie<br>= повний доступ</span>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:1.5rem;">
+        <strong>Чому AV не допомагає:</strong> Evilginx не доставляє payload жертві. Це чиста крадіжка credentials + session cookie. EDR/AV неможливо тригерити — на стороні жертви немає виконуваного коду.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Інші інструменти</h2>
+      <div class="three-col-grid">
+        <div class="card-gray">
+          <h3>AiTM</h3>
+          <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+            <li>Modlishka (drk1wi)</li>
+            <li>Muraena + NecroBrowser</li>
+            <li>EvilProxy (комерц., $400/міс)</li>
+          </ul>
+        </div>
+        <div class="card-gray">
+          <h3>Mass phishing</h3>
+          <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+            <li>Zphisher, BlackEye</li>
+            <li>HiddenEye, MaskPhish</li>
+            <li>SocialFish, PyPhisher</li>
+            <li>+ ngrok / cloudflared</li>
+          </ul>
+        </div>
+        <div class="card-gray">
+          <h3>Wi-Fi / OSINT</h3>
+          <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+            <li>Wifiphisher (Evil Twin)</li>
+            <li>Maltego, SpiderFoot</li>
+            <li>theHarvester, Sherlock</li>
+            <li>HIBP, Hunter.io</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Етико-правові межі (Україна)</h2>
+      <div class="gradient-box gradient-red">
+        <h3 style="color:white;">Несанкціоноване використання — кримінальна відповідальність</h3>
+      </div>
+      <table class="comparison-table" style="font-size:0.82em;margin-top:1rem;">
+        <thead><tr><th>Стаття ККУ</th><th>Опис</th><th>Покарання</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Ст. 361</strong></td><td>Несанкціоноване втручання в ЕОМ</td><td class="cell-red">до 6 років</td></tr>
+          <tr><td><strong>Ст. 361-1</strong></td><td>Створення/розповсюдження шкідливих програм</td><td class="cell-red">до 6 років</td></tr>
+          <tr><td><strong>Ст. 362</strong></td><td>Несанкціоновані дії з інформацією в ЕОМ</td><td class="cell-yellow">штраф / до 6 років</td></tr>
+          <tr><td><strong>Ст. 190 ч.3</strong></td><td>Шахрайство через ЕОМ</td><td class="cell-red">3–8 років</td></tr>
+        </tbody>
+      </table>
+      <div class="success-box" style="margin-top:1.2rem;">
+        <strong>Авторизація обов'язкова:</strong> Rules of Engagement (RoE), scope, timeframe, дозволені техніки, контакти для escalation, NDA.
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

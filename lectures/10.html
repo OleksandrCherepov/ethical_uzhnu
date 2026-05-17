@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 10: Утримання доступу та обхід антивірусів — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 10: Утримання доступу (Persistence) та обхід антивірусів — msfvenom, encoders, evasion, EDR, LOTL.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 10. Утримання доступу та обхід антивірусів — Основи етичного хакінгу</title>
@@ -62,20 +62,70 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 10 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 10 з 12</span>
     </div>
 
     <article class="lecture-content">
-      <h1>Утримання доступу та обхід антивірусів</h1>
+      <h1>Утримання доступу (Persistence) та обхід антивірусів</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Методи Persistence, створення пейлоадів через msfvenom, основи Evasion та Encoders.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Ця лекція розглядає дві критичні теми пентесту: утримання доступу (Persistence) та обхід антивірусного захисту (Evasion). Студенти вивчать методи закріплення у Windows (Registry Run Keys, Scheduled Tasks, Services, WMI Event Subscriptions) та Linux (cron, SSH keys, systemd, SUID), класифіковані за MITRE ATT&CK TA0003.</p>
+        <p>Друга частина лекції присвячена інструменту msfvenom для генерації payload'ів у різних форматах (exe, elf, apk, war, ps1) та налаштуванню Multi/Handler. Завершуємо детальним аналізом роботи антивірусів (signature, heuristic, behavioral, AMSI, EDR) та сучасних технік evasion: encoders, packers/crypters, code obfuscation, Living Off the Land (LOLBins), fileless execution та AMSI bypass.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Вступ до Persistence</strong> — Концепція, MITRE ATT&CK TA0003, класифікація методів, етичні аспекти</li>
+          <li><strong>Windows Persistence</strong> — Registry Run Keys, Scheduled Tasks, Services, WMI, Startup, DLL Hijacking</li>
+          <li><strong>Linux Persistence</strong> — Cron, .bashrc, SSH Authorized Keys, systemd, SUID, rootkits</li>
+          <li><strong>msfvenom: створення payload'ів</strong> — Синтаксис, staged/stageless, формати, encoders, шаблони</li>
+          <li><strong>msfvenom: практика з Multi/Handler</strong> — Windows/Linux/Android/Web payloads, handler, доставка</li>
+          <li><strong>Як працюють антивіруси</strong> — Signature, heuristic, behavioral, sandbox, AMSI, EDR</li>
+          <li><strong>Обхід антивірусів (Evasion)</strong> — Encoders, packers, crypters, Veil, Shellter, obfuscation</li>
+          <li><strong>Сучасні техніки Evasion та захист</strong> — LOTL/LOLBins, fileless, AMSI bypass, sandbox evasion, detection</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/10.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 10</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/10/1.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.1 — Вступ до Persistence</h3><p>Концепція, MITRE ATT&CK, класифікація</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/2.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.2 — Windows Persistence</h3><p>Registry, Tasks, Services, WMI</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/3.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.3 — Linux Persistence</h3><p>Cron, SSH keys, systemd, rootkits</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/4.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.4 — msfvenom: створення payload'ів</h3><p>Синтаксис, формати, staged/stageless</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/5.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.5 — msfvenom: практика з Multi/Handler</h3><p>Генерація, handler, доставка</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/6.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.6 — Як працюють антивіруси</h3><p>Signature, behavioral, AMSI, EDR</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/7.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.7 — Обхід антивірусів (Evasion)</h3><p>Encoders, packers, crypters, obfuscation</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/10/8.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 10.8 — Сучасні техніки Evasion та захист</h3><p>LOTL, fileless, AMSI bypass, detection</p></div><span class="lecture-material-type">слайди</span></a>
       </section>
 
     </article>

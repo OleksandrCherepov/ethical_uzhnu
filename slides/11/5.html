@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.5 — AI-загрози: deepfake та LLM-фішинг</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>AI-загрози</h1>
+      <div class="subtitle">Тема 11.5 — Deepfake, voice cloning, LLM-фішинг</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Революція 2023–2025</h2>
+      <div class="gradient-box gradient-red">
+        <h3 style="color:white;">У березні 2025 AI-агенти перевершили елітні людські red teams на 24%</h3>
+        <p style="margin-top:0.8rem;">за даними Hoxhunt JKR Study (~70 000 симуляцій)</p>
+      </div>
+      <div class="three-col-grid" style="margin-top:1.5rem;">
+        <div class="stat-item">
+          <div style="font-size:2.2em;font-weight:700;color:var(--accent);">×41</div>
+          <p style="font-size:0.82em;">шкідливий email-трафік<br>з запуску ChatGPT</p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.2em;font-weight:700;color:var(--accent);">5 хв</div>
+          <p style="font-size:0.82em;">для AI-генерації листа<br>(замість 16 годин)</p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.2em;font-weight:700;color:var(--accent);">80%</div>
+          <p style="font-size:0.82em;">шкідливих посилань —<br>zero-day, AI-згенеровані</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Підпільні LLM (без safety guardrails)</h2>
+      <table class="comparison-table" style="font-size:0.8em;">
+        <thead><tr><th>Інструмент</th><th>Запуск</th><th>База</th><th>Ціна</th></tr></thead>
+        <tbody>
+          <tr><td><strong>WormGPT</strong></td><td>07.2023; нові 2024–2025</td><td>GPT-J, Grok, Mixtral</td><td class="cell-yellow">€60–550</td></tr>
+          <tr><td><strong>FraudGPT</strong></td><td>07.2023</td><td>Закритий код</td><td class="cell-red">$200/міс</td></tr>
+          <tr><td><strong>GhostGPT</strong></td><td>2024 (Abnormal 01.2025)</td><td>Jailbroken</td><td class="cell-red">$50/тиждень</td></tr>
+          <tr><td><strong>DarkGPT/EvilGPT</strong></td><td>2024–2025</td><td>Fine-tuned LLaMA</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        За оцінками Rapid7 (2025) — <strong>понад 212 шкідливих LLM</strong> активні у даркнеті.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Voice cloning: deepfake-vishing</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-red">
+            <h3>Інструменти</h3>
+            <ul style="font-size:0.82em;line-height:1.6;margin-top:0.4rem;">
+              <li><strong>ElevenLabs</strong>: 3 с аудіо, $5/міс</li>
+              <li><strong>Resemble AI</strong>: 20 с, 149 мов</li>
+              <li><strong>OpenVoice</strong>: open-source MIT, 10 с</li>
+              <li>PlayHT, Murf, Tortoise-TTS, RVC</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="gradient-box gradient-red">
+            <h3 style="color:white;">Arup, Гонконг<br>січень 2024</h3>
+            <p style="margin-top:0.5rem;">Deepfake CFO + усі учасники Zoom — DeepFake.<br>15 переказів = <strong>$25.6 млн</strong>.<br>Кошти не повернуто.</p>
+          </div>
+        </div>
+      </div>
+      <div class="success-box" style="margin-top:1.2rem;">
+        <strong>Ferrari (07.2024)</strong> — атаку відбили: топ-менеджер запитав deepfake-«CEO» про книгу, яку CEO рекомендував — шахрай не зміг відповісти.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Deepfake video</h2>
+      <div class="three-col-grid">
+        <div class="card-purple">
+          <h3>Комерційні</h3>
+          <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+            <li>HeyGen, D-ID</li>
+            <li>Synthesia, Hour One</li>
+            <li>2 хв відео → аватар</li>
+          </ul>
+        </div>
+        <div class="card-purple">
+          <h3>Open-source</h3>
+          <ul style="font-size:0.82em;line-height:1.5;margin-top:0.4rem;">
+            <li>DeepFaceLab (HD)</li>
+            <li>FaceFusion, Roop</li>
+            <li>DeepFaceLive (60 FPS)</li>
+            <li>Deep-Live-Cam (1 фото)</li>
+          </ul>
+        </div>
+        <div class="card-red">
+          <h3>Кейс KnowBe4 (07.2024)</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">Найняли «розробника» — оператор КНДР з deepfake інтерв'ю. Через 30 хв malware. SOC заблокував за 25 хв.</p>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:1.5rem;">
+        <strong>DPRK IT Worker scheme:</strong> Уряд КНДР масово влаштовує IT-працівників у західні компанії remote. Заробіток — сотні мільйонів USD/рік на ядерну програму.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Інфооперації РФ з AI проти України</h2>
+      <div class="gradient-box gradient-red">
+        <h3 style="color:white;">Центр протидії дезінформації РНБО 2025:</h3>
+        <div style="display:flex;justify-content:space-around;margin-top:1rem;">
+          <div><div style="font-size:2.5em;font-weight:700;">191</div><p style="font-size:0.85em;">російська інфооперація з AI</p></div>
+          <div><div style="font-size:2.5em;font-weight:700;">84.5M</div><p style="font-size:0.85em;">переглядів</p></div>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        <strong>Знаковий кейс — фейк капітуляції Зеленського (16.03.2022).</strong> Перший в історії інтенційний deepfake у війні: зламали трансляцію «Україна 24», вивели біжучий рядок і фальшиве звернення. ЦСК заздалегідь попереджав (02.03.2022) — приклад pre-bunking.
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

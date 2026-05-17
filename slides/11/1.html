@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.1 — Людський фактор як найслабша ланка</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Людський фактор як найслабша ланка</h1>
+      <div class="subtitle">Тема 11.1 — Соціальна інженерія</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Що таке соціальна інженерія</h2>
+      <div class="info-box" style="margin-bottom:1.5rem;">
+        <strong>ENISA Threat Landscape 2024:</strong> «Дії, спрямовані на експлуатацію людської помилки або поведінки для отримання доступу до інформації чи сервісів».
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-blue">
+            <h3>Економіка асиметрії</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.5rem;">
+              <li>Zero-day exploit: <strong>$50K–$2M</strong></li>
+              <li>Фішингова кампанія: <strong>$50–$500</strong></li>
+              <li>Експлойт прив'язаний до версії ПЗ</li>
+              <li>Cognitive bias — універсальний</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>Чому обходить технічний захист</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.5rem;">
+              <li>Доставка через довірений канал</li>
+              <li>EDR не бачить email</li>
+              <li>NGFW не блокує дзвінок</li>
+              <li>IPS не виявляє соц.інж.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Статистика 2024–2025: масштаб проблеми</h2>
+      <div class="three-col-grid">
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">68%</div>
+          <p style="font-size:0.85em;">breaches з людським елементом<br><em>Verizon DBIR 2024</em></p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">21 с</div>
+          <p style="font-size:0.85em;">median time to click<br><em>Verizon DBIR 2024</em></p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">$4.88M</div>
+          <p style="font-size:0.85em;">середня вартість breach<br><em>IBM CODB 2024</em></p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">+442%</div>
+          <p style="font-size:0.85em;">vishing H2 2024<br><em>CrowdStrike GTR</em></p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">$2.77B</div>
+          <p style="font-size:0.85em;">втрати BEC 2024<br><em>FBI IC3</em></p>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:2.5em;font-weight:700;color:var(--accent);">+703%</div>
+          <p style="font-size:0.85em;">credential phishing H2 2024<br><em>SlashNext</em></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Історія: від phreaker'ів до Mitnick</h2>
+      <div class="flow-row">
+        <div class="flow-step">
+          <strong>1960-ті</strong><br>
+          <span style="font-size:0.85em;">Phone phreaking<br>Captain Crunch<br>Blue boxes</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>1960–70-ті</strong><br>
+          <span style="font-size:0.85em;">Frank Abagnale<br>Pan Am, лікар<br>$2.5M чеків</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>1980–90-ті</strong><br>
+          <span style="font-size:0.85em;">Kevin Mitnick<br>DEC, Sun, Motorola<br>FBI 1995, 5 років</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <strong>2000-ні+</strong><br>
+          <span style="font-size:0.85em;">Hadnagy<br>Cialdini в SE<br>Cybersec індустрія</span>
+        </div>
+      </div>
+      <div class="gradient-box gradient-purple" style="margin-top:1.5rem;">
+        <p style="font-style:italic;">«The human side of computer security is easily exploited and constantly overlooked.<br>Companies spend millions on firewalls — it's money wasted because none of these measures address the weakest link.»</p>
+        <p style="margin-top:0.5rem;text-align:right;">— Kevin Mitnick, <em>The Art of Deception</em> (2002)</p>
+      </div>
+    </section>
+
+    <section class="slide title-slide">
+      <h1>Ключова теза</h1>
+      <div class="subtitle">Технічний захист без розуміння психології людини не працює</div>
+      <p style="margin-top:2rem;">Соціальна інженерія — окрема дисципліна на стику психології, когнітивних наук і кібербезпеки</p>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

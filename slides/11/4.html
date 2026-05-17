@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 11.4 — Інші вектори SE</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="11">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Інші вектори соціальної інженерії</h1>
+      <div class="subtitle">Тема 11.4 — Pretexting, baiting, tailgating, watering hole</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Pretexting: створення легенди</h2>
+      <div class="info-box" style="margin-bottom:1rem;">
+        <strong>Verizon DBIR 2024:</strong> Pretexting <strong>обігнав phishing</strong> як найпоширеніший action у breaches.
+      </div>
+      <div class="three-col-grid">
+        <div class="card-blue">
+          <h3>Помічник директора</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">Просить перенаправити дзвінок або email; обхід стандартних процедур.</p>
+        </div>
+        <div class="card-blue">
+          <h3>Зовнішній аудитор</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">Вимагає доступ до фінансових систем «для перевірки».</p>
+        </div>
+        <div class="card-red">
+          <h3>IT-підтримка</h3>
+          <p style="font-size:0.82em;margin-top:0.4rem;">«Забув пароль, втратив телефон з MFA» — Help Desk SE.</p>
+        </div>
+      </div>
+      <div class="warning-box" style="margin-top:1.5rem;">
+        <strong>Кейс MGM Resorts (вересень 2023):</strong> Scattered Spider — 10-хвилинний дзвінок на helpdesk → $100+ млн прямих збитків, 6 ТБ викрадених даних.
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Baiting: фізичний і цифровий</h2>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Physical (USB drops)</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.4rem;">
+              <li>Лейбли «Salary 2024», «Confidential»</li>
+              <li><strong>17%</strong> знайдених USB підключаються (CompTIA)</li>
+              <li>BadUSB / Rubber Ducky / O.MG Cable</li>
+              <li>HID-emulation → клавіатурні команди</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-red">
+            <h3>Digital baiting</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.4rem;">
+              <li>Фейкові torrent, crack для AutoCAD</li>
+              <li>Malvertising через Google Ads</li>
+              <li>Top-результати для «Notion download»</li>
+              <li>AMOS + Lumma 2024: ClickFix-техніка</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Фізичне проникнення</h2>
+      <div class="three-col-grid">
+        <div class="card-purple">
+          <h3>Tailgating</h3>
+          <p style="font-size:0.85em;margin-top:0.5rem;">Без відома працівника — просто пройти за ним у дверях.</p>
+        </div>
+        <div class="card-purple">
+          <h3>Piggybacking</h3>
+          <p style="font-size:0.85em;margin-top:0.5rem;">З погодженням: «Забув бейдж, можете відкрити?»</p>
+        </div>
+        <div class="card-purple">
+          <h3>Pretext-и</h3>
+          <p style="font-size:0.85em;margin-top:0.5rem;">Кур'єр, ремонтник кондиціонера, новий стажер.</p>
+        </div>
+        <div class="card-gray">
+          <h3>Shoulder surfing</h3>
+          <p style="font-size:0.85em;margin-top:0.5rem;">Підглядання за PIN. Coworking, кафе, аеропорти.</p>
+        </div>
+        <div class="card-gray">
+          <h3>Dumpster diving</h3>
+          <p style="font-size:0.85em;margin-top:0.5rem;">Org-charts, листи з реквізитами, старі HDD без wipe.</p>
+        </div>
+        <div class="card-gray">
+          <h3>Quid pro quo</h3>
+          <p style="font-size:0.85em;margin-top:0.5rem;">«Виправлю комп'ютер» → AnyDesk, Quick Assist. MS заблокував у 2024.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Watering Hole та Honey Trap</h2>
+      <div class="info-box" style="margin-bottom:1rem;">
+        <strong>Watering Hole:</strong> компрометація сайту, який часто відвідує цільова група, з впровадженням 0-day або exploit kit.
+      </div>
+      <div class="two-column">
+        <div class="column">
+          <div class="card-pink">
+            <h3>Watering Hole — кейси 2024–2025</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.4rem;">
+              <li><strong>Evasive Panda</strong> — 3 тибетські сайти</li>
+              <li><strong>UNC6395 (03.2025)</strong> — Salesloft → Salesforce десятків клієнтів</li>
+              <li>25 курдських сайтів (2024)</li>
+              <li>Mongolian government 2023–2024</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-pink">
+            <h3>Pig Butchering 2024</h3>
+            <ul style="font-size:0.85em;line-height:1.6;margin-top:0.4rem;">
+              <li><strong>$5.8B</strong> втрат від crypto-fraud</li>
+              <li>$2.8B у віковій групі 60+</li>
+              <li>FBI Op. Level Up: 4 300+ жертв</li>
+              <li>Камбоджа, М'янма, Лаос — sha zhu pan</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

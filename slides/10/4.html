@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.4 — msfvenom: створення payload'ів</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>msfvenom: створення payload'ів</h1>
+      <div class="subtitle">Тема 10.4 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Синтаксис та параметри msfvenom</h2>
+      <div class="card-blue" style="margin-bottom:1.5rem;">
+        <div class="code-block" style="margin-top:0.5rem;font-size:0.72em;">
+msfvenom -p &lt;payload&gt; LHOST=IP LPORT=PORT -f &lt;format&gt; -o &lt;output&gt;
+
+-p    Payload           -f    Формат (exe, elf, apk, raw, python, ps1...)
+-e    Encoder           -i    Ітерації кодування
+-b    Bad characters    -x    Шаблон (легітимний exe)
+-k    Зберегти шаблон   -a    Архітектура (x86, x64)
+        </div>
+      </div>
+      <table class="comparison-table" style="font-size:0.8em;">
+        <thead><tr><th>Характеристика</th><th>Staged (/)</th><th>Stageless (_)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Розмір</strong></td><td class="cell-green">~5 KB</td><td class="cell-yellow">~200 KB+</td></tr>
+          <tr><td><strong>Мережа</strong></td><td>Stager завантажує stage</td><td>Все в одному файлі</td></tr>
+          <tr><td><strong>Надійність</strong></td><td class="cell-yellow">Потрібне стабільне з'єднання</td><td class="cell-green">Працює офлайн</td></tr>
+          <tr><td><strong>Payload</strong></td><td><code>meterpreter<strong>/</strong>reverse_tcp</code></td><td><code>meterpreter<strong>_</strong>reverse_tcp</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>Формати та encoders</h2>
+      <div class="two-column" style="margin-top:1rem;">
+        <div class="column">
+          <div class="card-green">
+            <h3>Executable</h3>
+            <ul style="font-size:0.82em;margin-top:0.5rem;line-height:1.6;">
+              <li><strong>exe</strong> — Windows PE</li>
+              <li><strong>elf</strong> — Linux ELF</li>
+              <li><strong>apk</strong> — Android</li>
+              <li><strong>msi</strong> — Windows Installer</li>
+              <li><strong>war / jar</strong> — Java</li>
+              <li><strong>dll</strong> — Windows DLL</li>
+              <li><strong>hta</strong> — HTML Application</li>
+            </ul>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>Shellcode / Script</h3>
+            <ul style="font-size:0.82em;margin-top:0.5rem;line-height:1.6;">
+              <li><strong>raw</strong> — Raw shellcode</li>
+              <li><strong>c, csharp</strong> — Byte array</li>
+              <li><strong>python, ruby</strong> — Scripting</li>
+              <li><strong>powershell, ps1</strong> — PS</li>
+              <li><strong>vba, vba-exe</strong> — Office macros</li>
+              <li><strong>base64, hex</strong> — Encoding</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:1.5rem;">
+        <strong>Top Encoder:</strong> <code>x86/shikata_ga_nai</code> — polymorphic XOR. Змінює binary pattern кожну ітерацію, але stub декодера сам є сигнатурою для сучасних AV.
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

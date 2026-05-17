@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Лекція 11: Соціальна інженерія — Основи етичного хакінгу.">
+  <meta name="description" content="Лекція 11: Соціальна інженерія — психологія, фішинг, vishing, deepfake, SET, Gophish, Evilginx, захист.">
   <meta name="author" content="Кафедра ТЕІБ, УжНУ">
   <meta name="theme-color" content="#0ea5e9">
   <title>Лекція 11. Соціальна інженерія — Основи етичного хакінгу</title>
@@ -62,20 +62,70 @@
   <main>
     <div class="lecture-nav-top">
       <a href="../index.html" class="back-link">&larr; Назад до лекцій</a>
-      <div>
-        <span class="lecture-badge">Лекція 11 з 12</span>
-        <span class="badge badge-locked">Скоро</span>
-      </div>
+      <span class="lecture-badge">Лекція 11 з 12</span>
     </div>
 
     <article class="lecture-content">
       <h1>Соціальна інженерія</h1>
+      <div class="lecture-info">
+        <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 год</span>
+        <span class="badge badge-new">Нова</span>
+      </div>
 
       <hr>
 
       <section>
-        <p>Людський фактор як найслабша ланка, фішинг, претекстінг, психологічні аспекти атак.</p>
-        <p>Матеріали цієї лекції готуються. Слідкуйте за оновленнями.</p>
+        <h2>Огляд лекції</h2>
+        <p>Лекція 11 присвячена соціальній інженерії — найдешевшому і найефективнішому вектору атак, що домінує у кіберзлочинності 2020–2025. За даними Verizon DBIR 2024, 68% усіх breaches мають людський компонент, а медіана часу до кліку на фішингове посилання — лише 21 секунда. Студенти вивчать теоретичні основи (6+1 принципів Чалдіні, моделі Hadnagy і Mouton, System 1/2 Kahneman), повну класифікацію атак (email, spear, whaling/BEC, vishing, smishing, quishing, watering hole), а також новітні AI-загрози: deepfake voice/video, LLM-генерований фішинг, підпільні моделі WormGPT/FraudGPT/GhostGPT.</p>
+        <p>Друга частина лекції детально розглядає реальні кейси 2020–2025 (Twitter, MGM, Caesars, Uber, Snowflake, Arup deepfake $25.6M) та український контекст (WhisperGate, Kyivstar, Gamaredon, CERT-UA 2024–2025), інструменти для авторизованих симуляцій (SET v8.0.3, Gophish, Evilginx 2/3) і багатошарову стратегію захисту: SPF/DKIM/DMARC, phishing-resistant MFA (FIDO2/Passkeys), security awareness training (KnowBe4 PPP-метрика), helpdesk-протоколи, NIST SP 800-50r1, NIS2, EU AI Act Article 50.</p>
+      </section>
+
+      <section>
+        <h2>Теми лекції</h2>
+        <ol class="lecture-topics">
+          <li><strong>Людський фактор як найслабша ланка</strong> — Статистика DBIR/IBM/CrowdStrike, історія SE (Mitnick, Abagnale)</li>
+          <li><strong>Психологія соціальної інженерії</strong> — 6+1 принципів Чалдіні, cognitive biases, моделі Hadnagy і Mouton</li>
+          <li><strong>Фішинг та його варіації</strong> — Email/spear/whaling/BEC, vishing, smishing, quishing, AiTM, PhaaS</li>
+          <li><strong>Інші вектори SE</strong> — Pretexting, baiting, tailgating, watering hole, romance scams</li>
+          <li><strong>AI-загрози: deepfake та LLM-фішинг</strong> — WormGPT, voice cloning, кейс Arup, DPRK IT workers, дезінформація РФ</li>
+          <li><strong>Реальні кейси 2020–2025</strong> — Twitter, MGM, Caesars, Uber, Snowflake + Україна (Kyivstar, Gamaredon, CERT-UA)</li>
+          <li><strong>Інструменти атак</strong> — SET, Gophish, Evilginx, ст. 361 ККУ та етико-правові межі</li>
+          <li><strong>Захист від соціальної інженерії</strong> — DMARC, FIDO2, Passkeys, KnowBe4 PPP, NIST SP 800-50r1, NIS2, EU AI Act</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Матеріали лекції</h2>
+        <a href="../konspekty/11.html" class="lecture-material-card">
+          <div class="lecture-material-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </div>
+          <div class="lecture-material-info">
+            <h3>Конспект лекції 11</h3>
+            <p>Повний текст лекції з усіх тем</p>
+          </div>
+          <span class="lecture-material-type">конспект</span>
+        </a>
+      </section>
+
+      <section>
+        <h2>Презентації</h2>
+
+        <a href="../slides/11/1.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.1 — Людський фактор</h3><p>Статистика, історія, найслабша ланка</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/2.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.2 — Психологія SE</h3><p>Принципи Чалдіні, biases, моделі Hadnagy</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/3.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.3 — Фішинг</h3><p>Email/spear/whaling, vishing, AiTM, PhaaS</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/4.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.4 — Інші вектори</h3><p>Pretexting, baiting, watering hole</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/5.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.5 — AI-загрози</h3><p>Deepfake, LLM-фішинг, WormGPT, Arup</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/6.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.6 — Реальні кейси</h3><p>MGM, Snowflake, Kyivstar, Gamaredon</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/7.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.7 — Інструменти</h3><p>SET, Gophish, Evilginx, ст. 361 ККУ</p></div><span class="lecture-material-type">слайди</span></a>
+
+        <a href="../slides/11/8.html" class="lecture-material-card"><div class="lecture-material-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div><div class="lecture-material-info"><h3>Тема 11.8 — Захист</h3><p>DMARC, FIDO2, KnowBe4, NIST, NIS2</p></div><span class="lecture-material-type">слайди</span></a>
       </section>
 
     </article>
