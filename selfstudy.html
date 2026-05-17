@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="40 питань для самостійної підготовки до іспиту з курсу Основи етичного хакінгу.">
+  <meta name="author" content="Кафедра ТЕІБ, УжНУ">
+  <meta name="theme-color" content="#0ea5e9">
+  <title>Питання до самопідготовки — Основи етичного хакінгу</title>
+  <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .study-section {
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card-bg);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease;
+    }
+    .study-section:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    .study-section summary {
+      padding: 18px 24px;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-weight: 600;
+      font-size: 1.05em;
+      color: var(--text);
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .study-section summary:hover {
+      background: var(--bg-subtle, rgba(14,165,233,0.04));
+    }
+    .study-section summary::-webkit-details-marker { display: none; }
+    .study-section summary::after {
+      content: '';
+      margin-left: auto;
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid var(--text-muted);
+      border-bottom: 2px solid var(--text-muted);
+      transform: rotate(45deg);
+      transition: transform 0.2s ease;
+    }
+    .study-section[open] summary::after {
+      transform: rotate(-135deg);
+    }
+    .study-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2, #6366f1));
+      color: white;
+      font-weight: 700;
+      font-size: 0.95em;
+      flex-shrink: 0;
+    }
+    .study-section .study-body {
+      padding: 8px 24px 24px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle, rgba(0,0,0,0.015));
+    }
+    .study-section ol {
+      margin: 16px 0 0 0;
+      padding-left: 0;
+      list-style: none;
+      counter-reset: q-counter;
+    }
+    .study-section ol li {
+      counter-increment: q-counter;
+      position: relative;
+      padding: 14px 16px 14px 56px;
+      margin-bottom: 8px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      line-height: 1.55;
+      font-size: 0.97em;
+      color: var(--text);
+    }
+    .study-section ol li::before {
+      content: counter(q-counter, decimal-leading-zero);
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.95em;
+      font-variant-numeric: tabular-nums;
+    }
+    .study-section ol li strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .study-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 0.85em;
+      color: var(--text-muted);
+      margin-left: auto;
+      margin-right: 18px;
+      flex-shrink: 0;
+    }
+    .study-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .study-intro {
+      background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(99,102,241,0.08));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .study-intro strong { color: var(--accent); }
+    @media (max-width: 768px) {
+      .study-section summary { padding: 14px 16px; font-size: 0.95em; gap: 12px; }
+      .study-section .study-body { padding: 6px 16px 18px; }
+      .study-section ol li { padding: 12px 14px 12px 48px; font-size: 0.92em; }
+      .study-meta { display: none; }
+    }
+  </style>
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body>
+
+  <aside>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        Основи<br>етичного хакінгу
+        <span>онлайн-курс</span>
+      </div>
+    </div>
+
+    <nav>
+      <a href="index.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span>
+        Лекції
+      </a>
+      <a href="practicals.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></span>
+        Практичні
+      </a>
+      <a href="tests.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        Тести
+      </a>
+      <a href="selfstudy.html" class="active">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
+        Самопідготовка
+      </a>
+      <a href="materials.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
+        Матеріали
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <span id="theme-label">Темна тема</span>
+      </button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="page-header">
+      <h1>Питання до самопідготовки</h1>
+      <p>40 відкритих питань для самостійної підготовки до підсумкового контролю. Питання охоплюють весь матеріал лекцій 1–11 та вимагають розгорнутих відповідей із розумінням теорії і практичних аспектів.</p>
+    </div>
+
+    <div class="study-intro">
+      <p><strong>Як працювати з питаннями:</strong> на кожне питання спробуйте дати повну відповідь самостійно (5–10 хвилин), після чого звіртеся з конспектом відповідної лекції. Якщо питання містить декілька термінів — розкрийте кожен. Якщо є приклад — поясніть механізм роботи, а не лише назву.</p>
+      <p style="margin-top:10px;"><strong>Розподіл за лекціями:</strong> Л1 — 4 питання, Л2 — 3, Л3 — 4, Л4 — 4, Л5 — 4, Л6 — 4, Л7 — 4, Л8 — 4, Л9 — 3, Л10 — 3, Л11 — 3. Лекція 12 (звітування) ще готується.</p>
+    </div>
+
+    <h2 class="section-title">Модуль 1. Фундамент, інфраструктура та мережевий злам</h2>
+
+    <details class="study-section" open>
+      <summary>
+        <span class="study-number">01</span>
+        Вступ до професії та етика
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Визначення етичного хакінгу.</strong> Опишіть типи хакерів: White Hat, Black Hat, Grey Hat, Hacktivist, Script Kiddie. У чому полягає юридична та етична відмінність пентесту від кіберзлочину?</li>
+          <li><strong>Методологія PTES.</strong> Перерахуйте та охарактеризуйте 7 фаз стандарту Penetration Testing Execution Standard. Порівняйте з моделлю Cyber Kill Chain (Lockheed Martin).</li>
+          <li><strong>Авторизація пентесту.</strong> Опишіть призначення документів NDA, Statement of Work, Rules of Engagement, Get Out of Jail Letter. Чому пентестер повинен мати їх при собі?</li>
+          <li><strong>Сертифікації та кар'єра.</strong> Порівняйте CEH, OSCP, OSCE, CRTP за форматом, складністю, фокусом. Назвіть статті 361, 361-1, 362, 363 ККУ та статтю 190 ККУ.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">02</span>
+        Linux та командний рядок для хакера
+        <div class="study-meta"><span>3 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Файлова система Linux і права доступу.</strong> Опишіть структуру <code>/etc</code>, <code>/var</code>, <code>/home</code>, <code>/tmp</code>. Поясніть систему прав <code>rwx</code> для user/group/other та значення SUID-біта (<code>s</code> замість <code>x</code> в <code>-rwsr-xr-x</code>).</li>
+          <li><strong>Команди для пентестера.</strong> Призначення і синтаксис: <code>find / -perm -4000</code>, <code>sudo -l</code>, <code>tail -f /var/log/auth.log</code>, <code>grep -rn</code>, <code>netstat -tulpn</code>, <code>ss -tulpn</code>. Які <code>apt remove</code> vs <code>apt purge</code> відмінності?</li>
+          <li><strong>Tor, Tails, Whonix та OPSEC.</strong> У чому полягає різниця між цими інструментами? Який з них повністю маршрутизує трафік через Tor і не залишає слідів на хост-системі?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">03</span>
+        Розвідка (Reconnaissance) та OSINT
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Пасивна vs активна розвідка.</strong> Наведіть по 3 інструменти кожного типу. Чому Shodan, Censys, crt.sh вважаються пасивними, а Nmap, masscan — активними?</li>
+          <li><strong>DNS-аналіз як засіб розвідки.</strong> Опишіть типи DNS-записів (A, AAAA, MX, NS, TXT, CNAME, SOA, PTR). Який з них найбільш корисний для виявлення subdomain takeover і чому?</li>
+          <li><strong>Certificate Transparency vs subdomain bruteforce.</strong> Як працює crt.sh? У чому перевага CT-моніторингу перед traceroute-style брутфорсом піддоменів?</li>
+          <li><strong>Maltego, SpiderFoot, theHarvester.</strong> Опишіть призначення кожного, переваги та обмеження. Як побудувати граф зв'язків «домен → IP → email → особа»?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">04</span>
+        Сканування мережі та Enumeration
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Типи TCP-сканування Nmap.</strong> Поясніть принцип роботи <code>-sS</code> (SYN), <code>-sT</code> (Connect), <code>-sA</code> (ACK), <code>-sF</code> (FIN), <code>-sN</code> (Null), <code>-sX</code> (Xmas). Який з них «напіввідкритий» і чому?</li>
+          <li><strong>Idle Scan (<code>-sI</code>).</strong> Опишіть роль «зомбі»-хоста, механізм визначення стану порту через IP ID. Які умови потрібні для успішного сканування?</li>
+          <li><strong>UDP-сканування і його обмеження.</strong> Чому повне UDP-сканування 65535 портів на Linux триває годинами? Як працює rate-limit ICMP Port Unreachable?</li>
+          <li><strong>Enumeration сервісів.</strong> Як отримати інформацію про SMB через Null Session, про SMTP через VRFY/EXPN/RCPT TO, про SNMP через community strings public/private. Чому NFS-опція <code>no_root_squash</code> критично небезпечна?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">05</span>
+        Фреймворк Metasploit та експлуатація
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Архітектура Metasploit Framework.</strong> Опишіть типи модулів: exploit, payload, auxiliary, post, encoder, evasion, nop. Чим відрізняються staged (<code>/</code>) та stageless (<code>_</code>) payload'и?</li>
+          <li><strong>Робочий процес msfconsole.</strong> Послідовність команд: <code>search</code>, <code>use</code>, <code>show options</code>, <code>set RHOSTS/LHOST</code>, <code>check</code>, <code>exploit</code>/<code>run</code>, <code>sessions -i</code>. Як налаштувати reverse vs bind shell?</li>
+          <li><strong>CVE, NVD, Exploit-DB, AttackerKB.</strong> Призначення кожного ресурсу. Чим NVD відрізняється від cve.org? Як зрозуміти CVSS-вектор (наприклад, AV:N/AC:L/Au:N/C:C/I:C/A:C)?</li>
+          <li><strong>Кейс vsftpd 2.3.4 (CVE-2011-2523) та Log4Shell (CVE-2021-44228).</strong> Опишіть механізм активації backdoor у vsftpd. Чому Log4Shell вразила до 93% хмарних середовищ?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">06</span>
+        Брутфорс та атаки на паролі
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Класифікація атак на паролі.</strong> Brute-force, dictionary, hybrid, mask, credential stuffing, password spraying, rainbow tables. У чому ключова відмінність credential stuffing від password spraying?</li>
+          <li><strong>John the Ripper vs Hashcat.</strong> Режими John (Single Crack, Wordlist, Incremental, External). Чому режим Single Crack ефективний для слабких паролів? Що таке GECOS-мутації?</li>
+          <li><strong>Хешування і захист паролів.</strong> Чому NTLM критично слабкий проти bcrypt/Argon2id? Що означає «memory-hard функція»? Як сіль (salt) нейтралізує rainbow tables? Рекомендація NIST SP 800-63B щодо ротації паролів.</li>
+          <li><strong>Hydra та атаки на мережеві сервіси.</strong> Синтаксис атаки на SSH, FTP, VNC, HTTP-форму. Чому PMKID-атака на WPA2 не потребує підключеного клієнта на відміну від 4-Way Handshake capture?</li>
+        </ol>
+      </div>
+    </details>
+
+    <h2 class="section-title">Модуль 2. Веб-безпека, пост-експлуатація та професійні навички</h2>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">07</span>
+        Безпека веб-додатків: OWASP Top 10 (Частина 1)
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>A01 Broken Access Control.</strong> Опишіть IDOR (Insecure Direct Object Reference), missing function-level authorization, privilege escalation. Наведіть приклад payload.</li>
+          <li><strong>A03 Injection (SQLi).</strong> Типи: in-band, blind (boolean/time-based), out-of-band, second-order. Як SQLMap автоматизує виявлення? Що таке <code>UNION SELECT</code> та <code>--</code> в контексті MySQL/PostgreSQL?</li>
+          <li><strong>A02 Cryptographic Failures.</strong> Опишіть проблеми використання MD5, SHA-1, RC4. Чим відрізняються hashing, encoding, encryption? Що таке padding oracle attack?</li>
+          <li><strong>A07 Identification and Authentication Failures.</strong> Чому SMS/TOTP MFA обходяться через AiTM (Evilginx)? Як працює FIDO2/WebAuthn і чому він phishing-resistant?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">08</span>
+        Безпека веб-додатків: OWASP Top 10 (Частина 2)
+        <div class="study-meta"><span>4 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>A03 XSS — типи.</strong> Reflected, Stored, DOM-based. Наведіть приклад payload для кожного. Як CSP (Content Security Policy) обмежує XSS? Що таке <code>httpOnly</code> cookie?</li>
+          <li><strong>A08 Software and Data Integrity Failures.</strong> SolarWinds (грудень 2020) — атака на supply chain. Що таке SBOM (Software Bill of Materials) і чому Executive Order 14028 його вимагає?</li>
+          <li><strong>Burp Suite vs OWASP ZAP.</strong> Архітектура proxy, перехоплення HTTP/HTTPS, Intruder/Repeater/Sequencer/Scanner. Як налаштувати CA-сертифікат у браузері для перехоплення HTTPS?</li>
+          <li><strong>A05 Security Misconfiguration та A06 Vulnerable Components.</strong> Як перевірити версії компонентів (<code>composer audit</code>, <code>npm audit</code>, <code>pip-audit</code>)? Що таке default credentials та чому ShellShock (CVE-2014-6271) досі експлуатується?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">09</span>
+        Пост-експлуатація та Meterpreter
+        <div class="study-meta"><span>3 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Можливості Meterpreter.</strong> Команди <code>sysinfo</code>, <code>getuid</code>, <code>hashdump</code>, <code>screenshot</code>, <code>keyscan_start</code>, <code>migrate</code>, <code>getsystem</code>, <code>portfwd</code>, <code>route</code>. Чому міграція у legitimate-процес (<code>explorer.exe</code>) критична?</li>
+          <li><strong>In-memory execution та fileless attacks.</strong> Чому Meterpreter не створює файлів на диску і як це ускладнює forensics? Що таке reflective DLL injection?</li>
+          <li><strong>Privilege Escalation у Windows та Linux.</strong> Windows: token impersonation, UAC bypass, AlwaysInstallElevated. Linux: SUID-binaries (GTFOBins), Dirty COW (CVE-2016-5195), <code>sudo -l</code> misconfigurations, capabilities.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">10</span>
+        Утримання доступу (Persistence) та обхід антивірусів
+        <div class="study-meta"><span>3 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Persistence-механізми у Windows.</strong> Registry Run Keys (HKCU/HKLM), Scheduled Tasks, Services, WMI Event Subscription, Startup Folder, DLL Hijacking. Які з них MITRE ATT&amp;CK класифікує як TA0003?</li>
+          <li><strong>Persistence-механізми у Linux.</strong> Cron, <code>.bashrc</code>/<code>.profile</code>, SSH Authorized Keys, systemd, SUID, rootkits (LKM, userland LD_PRELOAD).</li>
+          <li><strong>msfvenom та обхід антивірусів.</strong> Синтаксис генерації .exe, .elf, .apk, .ps1. Чому сучасні encoders (Shikata_ga_nai) неефективні проти AV з ML/behavioral analysis? Що таке LOLBins (Living Off the Land Binaries), AMSI bypass, fileless execution?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="study-section">
+      <summary>
+        <span class="study-number">11</span>
+        Соціальна інженерія
+        <div class="study-meta"><span>3 питання</span></div>
+      </summary>
+      <div class="study-body">
+        <ol>
+          <li><strong>Психологічна основа SE.</strong> 6+1 принципів Чалдіні (Reciprocity, Commitment, Social Proof, Authority, Liking, Scarcity, Unity). System 1 vs System 2 (Kahneman). Цикл Hadnagy (Information Gathering → Hook → Play → Exit).</li>
+          <li><strong>Класифікація фішингу.</strong> Email phishing, spear phishing, whaling/BEC, vishing, smishing, quishing, angler phishing. Як AiTM (Evilginx, EvilProxy, Tycoon 2FA) обходить MFA? Що таке MFA Fatigue (кейс Uber 2022)?</li>
+          <li><strong>Захист від SE.</strong> Email-автентифікація (SPF, DKIM, DMARC). Phishing-resistant MFA (FIDO2/WebAuthn, Passkeys). Метрика Phish-Prone Percentage (KnowBe4). NIST SP 800-50r1, NIS2, EU AI Act Article 50. Кейс MGM 2023 і helpdesk-протоколи.</li>
+        </ol>
+      </div>
+    </details>
+
+    <footer id="site-footer"></footer>
+  </main>
+
+  <script src="js/main.js"></script>
+  <script src="js/footer.js"></script>
+
+</body>
+</html>
